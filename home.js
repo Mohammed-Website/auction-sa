@@ -426,22 +426,22 @@
     // Data mapping configuration
     const dataConfig = {
         'home-section': {
-            url: '/json-data/home-property.json',
+            url: 'json-data/home-property.json',
             gridId: 'home-properties-grid',
             renderFunction: 'renderPropertyCard'
         },
         'sell-section': {
-            url: '/json-data/sell-property.json',
+            url: 'json-data/sell-property.json',
             gridId: 'sell-properties-grid',
             renderFunction: 'renderPropertyCard'
         },
         'rent-section': {
-            url: '/json-data/rent-property.json',
+            url: 'json-data/rent-property.json',
             gridId: 'rent-properties-grid',
             renderFunction: 'renderRentalCard'
         },
         'auction-section': {
-            url: '/json-data/auction-property.json',
+            url: 'json-data/auction-property.json',
             gridId: 'auction-properties-grid',
             renderFunction: 'renderAuctionCard'
         }
@@ -813,7 +813,7 @@
     // Fetch user data from JSON
     async function fetchUserData() {
         try {
-            const response = await fetch('/json-data/user-data.json');
+            const response = await fetch('json-data/user-data.json');
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
