@@ -79,6 +79,67 @@
     function switchToSection(sectionId) {
         // Prevent switching to the same section
         if (sectionId === currentSection) {
+            // If clicking the same section, still update visibility of subsections
+            if (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+                toggleHomeSubsections(sectionId);
+            }
+            return;
+        }
+
+        // Handle special cases: auction-section, sell-section, rent-section
+        // These are now subsections within home-section
+        if (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+            // Switch to home-section and show/hide appropriate subsections
+            const homeSection = document.getElementById('home-section');
+            const currentActiveSection = document.querySelector('.tab-section.active');
+
+            if (!homeSection) {
+                return;
+            }
+
+            // Hide profile if it's active
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection && profileSection.classList.contains('active')) {
+                profileSection.classList.remove('active');
+                profileSection.style.display = 'none';
+                profileSection.style.opacity = '0';
+                profileSection.style.visibility = 'hidden';
+                profileSection.style.pointerEvents = 'none';
+            }
+
+            // Switch to home-section if not already active
+            if (currentActiveSection && currentActiveSection.id !== 'home-section') {
+                currentActiveSection.classList.remove('active');
+                currentActiveSection.style.display = 'none';
+                currentActiveSection.style.opacity = '0';
+                currentActiveSection.style.visibility = 'hidden';
+                currentActiveSection.style.pointerEvents = 'none';
+            }
+
+            // Show home-section
+            homeSection.style.display = 'block';
+            homeSection.style.visibility = 'visible';
+            homeSection.style.opacity = '1';
+            homeSection.style.pointerEvents = 'auto';
+            homeSection.style.transform = 'translateX(0)';
+            homeSection.classList.add('active');
+
+            // Toggle visibility of subsections
+            toggleHomeSubsections(sectionId);
+
+            // Update current section
+            currentSection = sectionId;
+
+            // Update active states on all navigation items
+            updateActiveNavItems(sectionId);
+
+            // Load data if needed
+            if (typeof window.reloadSectionData === 'function') {
+                setTimeout(() => {
+                    window.reloadSectionData('home-section');
+                }, 100);
+            }
+
             return;
         }
 
@@ -177,6 +238,11 @@
 
         // Update current section
         currentSection = sectionId;
+
+        // If switching to home-section, show all subsections
+        if (sectionId === 'home-section') {
+            toggleHomeSubsections('home-section');
+        }
 
         // Update active states on all navigation items
         updateActiveNavItems(sectionId);
@@ -302,6 +368,73 @@
         }
     }
 
+    // Toggle visibility of home-section subsections with smooth animation
+    function toggleHomeSubsections(activeSubsection) {
+        const auctionsSubsection = document.getElementById('auctions-section');
+        const sellSubsection = document.getElementById('sell-section');
+        const rentSubsection = document.getElementById('rent-section');
+
+        const allSubsections = [auctionsSubsection, sellSubsection, rentSubsection].filter(Boolean);
+
+        // First, fade out all subsections
+        allSubsections.forEach(subsection => {
+            if (subsection) {
+                subsection.style.opacity = '0';
+                subsection.style.transform = 'translateX(20px)';
+                subsection.style.visibility = 'hidden';
+            }
+        });
+
+        // After fade out completes, update display and fade in selected ones
+        setTimeout(() => {
+            // Hide all subsections
+            allSubsections.forEach(subsection => {
+                if (subsection) {
+                    subsection.style.display = 'none';
+                }
+            });
+
+            // Show the selected subsection(s) and fade in
+            if (activeSubsection === 'auction-section' && auctionsSubsection) {
+                auctionsSubsection.style.display = 'block';
+                requestAnimationFrame(() => {
+                    auctionsSubsection.style.opacity = '1';
+                    auctionsSubsection.style.transform = 'translateX(0)';
+                    auctionsSubsection.style.visibility = 'visible';
+                });
+            } else if (activeSubsection === 'sell-section' && sellSubsection) {
+                sellSubsection.style.display = 'block';
+                requestAnimationFrame(() => {
+                    sellSubsection.style.opacity = '1';
+                    sellSubsection.style.transform = 'translateX(0)';
+                    sellSubsection.style.visibility = 'visible';
+                });
+            } else if (activeSubsection === 'rent-section' && rentSubsection) {
+                rentSubsection.style.display = 'block';
+                requestAnimationFrame(() => {
+                    rentSubsection.style.opacity = '1';
+                    rentSubsection.style.transform = 'translateX(0)';
+                    rentSubsection.style.visibility = 'visible';
+                });
+            } else if (activeSubsection === 'home-section') {
+                // Show all subsections for home-section
+                allSubsections.forEach((subsection, index) => {
+                    if (subsection) {
+                        subsection.style.display = 'block';
+                        // Stagger the animations slightly for a nicer effect
+                        setTimeout(() => {
+                            requestAnimationFrame(() => {
+                                subsection.style.opacity = '1';
+                                subsection.style.transform = 'translateX(0)';
+                                subsection.style.visibility = 'visible';
+                            });
+                        }, index * 50);
+                    }
+                });
+            }
+        }, 200); // Wait for fade out to complete
+    }
+
     // Handle quick access box click
     function handleQuickAccessClick(e) {
         e.preventDefault();
@@ -393,6 +526,23 @@
             activeSection.style.opacity = '1';
             activeSection.style.visibility = 'visible';
             activeSection.style.pointerEvents = 'auto';
+
+            // If home-section is active, show all subsections
+            if (activeSection.id === 'home-section') {
+                toggleHomeSubsections('home-section');
+            }
+        } else {
+            // If no section is active, activate home-section
+            const homeSection = document.getElementById('home-section');
+            if (homeSection) {
+                homeSection.classList.add('active');
+                homeSection.style.display = 'block';
+                homeSection.style.transform = 'translateX(0)';
+                homeSection.style.opacity = '1';
+                homeSection.style.visibility = 'visible';
+                homeSection.style.pointerEvents = 'auto';
+                toggleHomeSubsections('home-section');
+            }
         }
 
         // If profile section is active initially, ensure property sections are hidden and cleared
@@ -426,9 +576,12 @@
     // Data mapping configuration
     const dataConfig = {
         'home-section': {
-            url: 'json-data/home-property.json',
-            gridId: 'home-properties-grid',
-            renderFunction: 'renderPropertyCard'
+            // Home section loads all data and organizes into 3 grids
+            grids: {
+                auctions: { gridId: 'home-auctions-grid', renderFunction: 'renderAuctionCard', url: 'json-data/auction-property.json' },
+                sell: { gridId: 'home-sell-grid', renderFunction: 'renderPropertyCard', url: 'json-data/sell-property.json' },
+                rent: { gridId: 'home-rent-grid', renderFunction: 'renderRentalCard', url: 'json-data/rent-property.json' }
+            }
         },
         'sell-section': {
             url: 'json-data/sell-property.json',
@@ -506,6 +659,34 @@
         }
 
         return imageUrl;
+    }
+
+    // Preload image and return a promise
+    function preloadImage(url) {
+        return new Promise((resolve, reject) => {
+            if (!url) {
+                resolve(null);
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => resolve(url);
+            img.onerror = () => {
+                console.warn(`Failed to load image: ${url}`);
+                resolve(url); // Resolve anyway to not block rendering
+            };
+            img.src = url;
+        });
+    }
+
+    // Preload all images from properties
+    async function preloadAllImages(properties) {
+        const imageUrls = properties
+            .map(property => getImageUrl(property))
+            .filter(url => url !== null);
+
+        const preloadPromises = imageUrls.map(url => preloadImage(url));
+        await Promise.all(preloadPromises);
     }
 
     // Render property card (for home and sell sections)
@@ -603,15 +784,15 @@
                         <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
                     </div>
                     <button class="auction-cta-btn">
-                        تصفح التفاصيل وشارك بالمزاد الآن
+                        شوف التفاصيل وشارك بالمزاد
                     </button>
                 </div>
             </div>
         `;
     }
 
-    // Render properties to grid
-    function renderProperties(properties, gridElement, renderFunction) {
+    // Render properties to grid with image preloading
+    async function renderProperties(properties, gridElement, renderFunction) {
         if (!gridElement) {
             console.error('Grid element not found');
             return;
@@ -624,6 +805,13 @@
         if (!properties || !Array.isArray(properties) || properties.length === 0) {
             gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">لا توجد عقارات متاحة حالياً</p>';
             return;
+        }
+
+        // Preload all images before rendering
+        try {
+            await preloadAllImages(properties);
+        } catch (error) {
+            console.warn('Some images failed to preload, continuing with rendering:', error);
         }
 
         // Render each property
@@ -707,12 +895,6 @@
             return;
         }
 
-        const gridElement = document.getElementById(config.gridId);
-        if (!gridElement) {
-            console.error(`Grid element not found: ${config.gridId}`);
-            return;
-        }
-
         // Ensure section is visible before loading
         const sectionElement = document.getElementById(sectionId);
         if (sectionElement) {
@@ -725,6 +907,51 @@
             if (!sectionElement.classList.contains('active')) {
                 sectionElement.classList.add('active');
             }
+        }
+
+        // Handle home-section differently (has multiple grids)
+        if (sectionId === 'home-section' && config.grids) {
+            // Load all three grids for home section
+            const loadPromises = Object.entries(config.grids).map(async ([key, gridConfig]) => {
+                const gridElement = document.getElementById(gridConfig.gridId);
+                if (!gridElement) {
+                    console.error(`Grid element not found: ${gridConfig.gridId}`);
+                    return;
+                }
+
+                // Show loading state
+                gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">جاري التحميل...</p>';
+
+                try {
+                    const data = await fetchPropertyData(gridConfig.url);
+                    if (data === null) {
+                        gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #dc3545;">حدث خطأ في تحميل البيانات.</p>';
+                        return;
+                    }
+
+                    const properties = Array.isArray(data) ? data : (data.properties || data.items || []);
+                    if (!properties || properties.length === 0) {
+                        gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">لا توجد عقارات متاحة حالياً</p>';
+                        return;
+                    }
+
+                    await renderProperties(properties, gridElement, gridConfig.renderFunction);
+                    console.log(`Home section ${key} loaded: ${properties.length} items`);
+                } catch (error) {
+                    console.error(`Error loading ${key} for home section:`, error);
+                    gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #dc3545;">حدث خطأ في تحميل البيانات.</p>';
+                }
+            });
+
+            await Promise.all(loadPromises);
+            return;
+        }
+
+        // Handle other sections (single grid)
+        const gridElement = document.getElementById(config.gridId);
+        if (!gridElement) {
+            console.error(`Grid element not found: ${config.gridId}`);
+            return;
         }
 
         // Show loading state (optional)
@@ -751,8 +978,8 @@
                 return;
             }
 
-            // Render properties
-            renderProperties(properties, gridElement, config.renderFunction);
+            // Render properties (with image preloading)
+            await renderProperties(properties, gridElement, config.renderFunction);
 
             // Verify cards were rendered
             const renderedCards = gridElement.querySelectorAll('.property-card, .auction-card-new');

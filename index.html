@@ -32,14 +32,14 @@
             </a>
             <a href="#" class="top-nav-item" data-section="sell-section">
                 <i data-lucide="tag" class="top-nav-icon"></i>
-                <span class="top-nav-label">البيع</span>
+                <span class="top-nav-label">للبيع</span>
             </a>
             <button class="add-property-btn" aria-label="إضافة عقار">
                 <i data-lucide="plus" class="add-icon"></i>
             </button>
             <a href="#" class="top-nav-item" data-section="rent-section">
                 <i data-lucide="key" class="top-nav-icon"></i>
-                <span class="top-nav-label">الإيجار</span>
+                <span class="top-nav-label">للإيجار</span>
             </a>
             <a href="#" class="top-nav-item" data-section="auction-section">
                 <i data-lucide="hammer" class="top-nav-icon"></i>
@@ -86,42 +86,38 @@
         <!-- Home Section: Featured Properties -->
         <section id="home-section" class="tab-section active">
             <div class="section-content">
-                <h2 class="section-title">العروض المميزة</h2>
-                <div class="properties-grid" id="home-properties-grid">
-                    <!-- Property cards will be rendered here dynamically -->
+                <!-- Auction Cards Section -->
+                <div id="auctions-section" class="home-subsection">
+                    <h2 class="section-title">المزادات المتاحة</h2>
+                    <div class="horizontal-scroll-container">
+                        <div class="horizontal-scroll-grid" id="home-auctions-grid">
+                            <!-- Auction cards will be rendered here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sell Cards Section -->
+                <div id="sell-section" class="home-subsection">
+                    <h2 class="section-title">عقارات للبيع</h2>
+                    <div class="horizontal-scroll-container">
+                        <div class="horizontal-scroll-grid" id="home-sell-grid">
+                            <!-- Sell cards will be rendered here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rent Cards Section -->
+                <div id="rent-section" class="home-subsection">
+                    <h2 class="section-title">عقارات للإيجار</h2>
+                    <div class="horizontal-scroll-container">
+                        <div class="horizontal-scroll-grid" id="home-rent-grid">
+                            <!-- Rent cards will be rendered here dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Sell Section: Selling Properties -->
-        <section id="sell-section" class="tab-section">
-            <div class="section-content">
-                <h2 class="section-title">عقارات للبيع</h2>
-                <div class="properties-grid" id="sell-properties-grid">
-                    <!-- Property cards will be rendered here dynamically -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Rent Section: Rental Properties -->
-        <section id="rent-section" class="tab-section">
-            <div class="section-content">
-                <h2 class="section-title">عقارات للإيجار</h2>
-                <div class="properties-grid" id="rent-properties-grid">
-                    <!-- Rental property cards will be rendered here dynamically -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Auctions Section: Live Auctions -->
-        <section id="auction-section" class="tab-section">
-            <div class="section-content">
-                <h2 class="section-title">المزادات الحية</h2>
-                <div class="auctions-grid" id="auction-properties-grid">
-                    <!-- Auction cards will be rendered here dynamically -->
-                </div>
-            </div>
-        </section>
 
         <!-- Profile Section: User Info -->
         <section id="profile-section" class="tab-section">
@@ -203,14 +199,14 @@
         </a>
         <a href="#" class="nav-item" data-section="sell-section">
             <i data-lucide="tag" class="nav-icon"></i>
-            <span class="nav-label">البيع</span>
+            <span class="nav-label">للبيع</span>
         </a>
         <button class="add-property-btn" aria-label="إضافة عقار">
             <i data-lucide="plus" class="add-icon"></i>
         </button>
         <a href="#" class="nav-item" data-section="rent-section">
             <i data-lucide="key" class="nav-icon"></i>
-            <span class="nav-label">الإيجار</span>
+            <span class="nav-label">للإيجار</span>
         </a>
         <a href="#" class="nav-item" data-section="auction-section">
             <i data-lucide="hammer" class="nav-icon"></i>
