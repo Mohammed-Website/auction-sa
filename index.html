@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مزادنا للعقارات السعودية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="home.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="home.js" defer></script>
+</head>
+
+<body>
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <button class="header-profile-btn" data-section="profile-section" aria-label="حسابي">
+                <i data-lucide="user" class="profile-icon"></i>
+            </button>
+            <h1 class="logo">مزادنا للعقارات السعودية</h1>
+            <div></div>
+        </div>
+    </header>
+
+    <!-- Top Quick Access Navigation (Desktop Only) -->
+    <nav class="top-nav">
+        <div class="top-nav-container">
+            <a href="#" class="top-nav-item active" data-section="home-section">
+                <i data-lucide="home" class="top-nav-icon"></i>
+                <span class="top-nav-label">الرئيسية</span>
+            </a>
+            <a href="#" class="top-nav-item" data-section="sell-section">
+                <i data-lucide="tag" class="top-nav-icon"></i>
+                <span class="top-nav-label">البيع</span>
+            </a>
+            <button class="add-property-btn" aria-label="إضافة عقار">
+                <i data-lucide="plus" class="add-icon"></i>
+            </button>
+            <a href="#" class="top-nav-item" data-section="rent-section">
+                <i data-lucide="key" class="top-nav-icon"></i>
+                <span class="top-nav-label">الإيجار</span>
+            </a>
+            <a href="#" class="top-nav-item" data-section="auction-section">
+                <i data-lucide="hammer" class="top-nav-icon"></i>
+                <span class="top-nav-label">المزادات</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Banner Slider -->
+    <section class="banner-section">
+        <div class="banner-slider">
+            <div class="banner-slide active" data-slide="0">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <h2>اكتشف عقارات أحلامك</h2>
+                    <p>أفضل العروض العقارية في المملكة العربية السعودية</p>
+                </div>
+            </div>
+            <div class="banner-slide" data-slide="1">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <h2>مزادات حية مباشرة</h2>
+                    <p>شارك في المزادات الإلكترونية واحصل على أفضل الصفقات</p>
+                </div>
+            </div>
+            <div class="banner-slide" data-slide="2">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <h2>بيع وإيجار بسهولة</h2>
+                    <p>منصة موثوقة لبيع وإيجار العقارات في جميع أنحاء المملكة</p>
+                </div>
+            </div>
+        </div>
+        <div class="banner-indicators">
+            <span class="indicator active" data-indicator="0"></span>
+            <span class="indicator" data-indicator="1"></span>
+            <span class="indicator" data-indicator="2"></span>
+        </div>
+    </section>
+
+
+
+    <div id="app-content">
+        <!-- Home Section: Featured Properties -->
+        <section id="home-section" class="tab-section active">
+            <div class="section-content">
+                <h2 class="section-title">العروض المميزة</h2>
+                <div class="properties-grid" id="home-properties-grid">
+                    <!-- Property cards will be rendered here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sell Section: Selling Properties -->
+        <section id="sell-section" class="tab-section">
+            <div class="section-content">
+                <h2 class="section-title">عقارات للبيع</h2>
+                <div class="properties-grid" id="sell-properties-grid">
+                    <!-- Property cards will be rendered here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Rent Section: Rental Properties -->
+        <section id="rent-section" class="tab-section">
+            <div class="section-content">
+                <h2 class="section-title">عقارات للإيجار</h2>
+                <div class="properties-grid" id="rent-properties-grid">
+                    <!-- Rental property cards will be rendered here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Auctions Section: Live Auctions -->
+        <section id="auction-section" class="tab-section">
+            <div class="section-content">
+                <h2 class="section-title">المزادات الحية</h2>
+                <div class="auctions-grid" id="auction-properties-grid">
+                    <!-- Auction cards will be rendered here dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section: User Info -->
+        <section id="profile-section" class="tab-section">
+            <div class="section-content">
+                <div class="profile-container">
+                    <!-- Profile Header with Image -->
+                    <div class="profile-header-card">
+                        <div class="profile-image-wrapper">
+                            <div class="profile-image" id="profile-image">
+                                <i class="fas fa-user profile-image-placeholder"></i>
+                            </div>
+                            <button class="profile-image-upload" type="button" aria-label="تغيير الصورة">
+                                <i class="fas fa-camera upload-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Profile Information Form -->
+                    <div class="profile-info-card">
+                        <h2 class="profile-card-title">معلوماتي الشخصية</h2>
+
+                        <div class="profile-form">
+                            <!-- Full Name Field -->
+                            <div class="form-group">
+                                <label for="profile-fullname" class="form-label">الاسم الكامل</label>
+                                <div class="input-wrapper">
+                                    <i data-lucide="user" class="input-icon"></i>
+                                    <input type="text" id="profile-fullname" class="form-input profile-fullname-input"
+                                        placeholder="أدخل الاسم الكامل" dir="rtl">
+                                </div>
+                            </div>
+
+                            <!-- Phone Number Field -->
+                            <div class="form-group">
+                                <label for="profile-phone" class="form-label">رقم الجوال</label>
+                                <div class="input-wrapper">
+                                    <i data-lucide="phone" class="input-icon"></i>
+                                    <input type="tel" id="profile-phone" class="form-input"
+                                        placeholder="+966 50 000 0000" dir="ltr">
+                                </div>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="form-group">
+                                <label for="profile-email" class="form-label">البريد الإلكتروني</label>
+                                <div class="input-wrapper">
+                                    <i data-lucide="mail" class="input-icon"></i>
+                                    <input type="email" id="profile-email" class="form-input"
+                                        placeholder="example@email.com" dir="ltr">
+                                </div>
+                            </div>
+
+                            <!-- National ID Field with Hide/Show Toggle -->
+                            <div class="form-group">
+                                <label for="profile-national-id" class="form-label">الهوية الوطنية</label>
+                                <div class="input-wrapper with-toggle">
+                                    <i data-lucide="id-card" class="input-icon"></i>
+                                    <input type="password" id="profile-national-id" class="form-input"
+                                        placeholder="10 أرقام" dir="ltr" maxlength="10">
+                                    <button type="button" class="toggle-visibility-btn" id="toggle-national-id"
+                                        aria-label="إظهار/إخفاء الهوية الوطنية">
+                                        <i data-lucide="eye" class="eye-icon" id="eye-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-section="home-section">
+            <i data-lucide="home" class="nav-icon"></i>
+            <span class="nav-label">الرئيسية</span>
+        </a>
+        <a href="#" class="nav-item" data-section="sell-section">
+            <i data-lucide="tag" class="nav-icon"></i>
+            <span class="nav-label">البيع</span>
+        </a>
+        <button class="add-property-btn" aria-label="إضافة عقار">
+            <i data-lucide="plus" class="add-icon"></i>
+        </button>
+        <a href="#" class="nav-item" data-section="rent-section">
+            <i data-lucide="key" class="nav-icon"></i>
+            <span class="nav-label">الإيجار</span>
+        </a>
+        <a href="#" class="nav-item" data-section="auction-section">
+            <i data-lucide="hammer" class="nav-icon"></i>
+            <span class="nav-label">المزادات</span>
+        </a>
+    </nav>
+    <script>
+        // Initialize Lucide icons after DOM loads
+        function initLucideIcons() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLucideIcons);
+        } else {
+            initLucideIcons();
+        }
+
+        // Export for use in other scripts
+        window.initLucideIcons = initLucideIcons;
+    </script>
+</body>
+
+</html>

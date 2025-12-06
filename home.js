@@ -1,0 +1,1228 @@
+// Tab Switching Logic with Horizontal Sliding Animation
+(function () {
+    'use strict';
+
+    // Section order for direction detection (RTL)
+    const sectionOrder = [
+        'home-section',
+        'sell-section',
+        'rent-section',
+        'auction-section',
+        'profile-section'
+    ];
+
+    // Get all sections and navigation items
+    const sections = document.querySelectorAll('.tab-section');
+    const bottomNavItems = document.querySelectorAll('.bottom-nav .nav-item');
+    const topNavItems = document.querySelectorAll('.top-nav .top-nav-item');
+    const quickAccessBoxes = document.querySelectorAll('.access-box');
+
+    // Current active section
+    let currentSection = 'home-section';
+
+    // Get section index in order
+    function getSectionIndex(sectionId) {
+        return sectionOrder.indexOf(sectionId);
+    }
+
+    // Get direction of slide animation
+    function getSlideDirection(fromIndex, toIndex) {
+        // For RTL: moving to higher index means sliding from right (translateX 100%)
+        // Moving to lower index means sliding from left (translateX -100%)
+        return toIndex > fromIndex ? 'right' : 'left';
+    }
+
+    // Clear all property cards from view
+    function clearPropertyCards() {
+        const propertyGrids = [
+            'home-properties-grid',
+            'sell-properties-grid',
+            'rent-properties-grid',
+            'auction-properties-grid'
+        ];
+
+        propertyGrids.forEach(gridId => {
+            const grid = document.getElementById(gridId);
+            if (grid) {
+                // Clear all property cards but keep the grid element
+                const cards = grid.querySelectorAll('.property-card, .auction-card');
+                cards.forEach(card => {
+                    card.style.display = 'none';
+                    card.remove();
+                });
+            }
+        });
+    }
+
+    // Ensure only profile section content is visible
+    function ensureProfileOnlyVisible() {
+        // Hide all property sections
+        const propertySections = ['home-section', 'sell-section', 'rent-section', 'auction-section'];
+
+        propertySections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.remove('active');
+                section.style.display = 'none';
+                section.style.opacity = '0';
+                section.style.visibility = 'hidden';
+                section.style.pointerEvents = 'none';
+                section.style.transform = 'translateX(100%)';
+            }
+        });
+
+        // Clear any visible property cards
+        clearPropertyCards();
+    }
+
+    // Switch to a section with animation
+    function switchToSection(sectionId) {
+        // Prevent switching to the same section
+        if (sectionId === currentSection) {
+            return;
+        }
+
+        const targetSection = document.getElementById(sectionId);
+        const currentActiveSection = document.querySelector('.tab-section.active');
+
+        if (!targetSection || !currentActiveSection) {
+            return;
+        }
+
+        // Special handling for profile section
+        if (sectionId === 'profile-section') {
+            ensureProfileOnlyVisible();
+
+            // Show profile section immediately
+            targetSection.style.display = 'block';
+            targetSection.style.opacity = '1';
+            targetSection.style.visibility = 'visible';
+            targetSection.style.pointerEvents = 'auto';
+            targetSection.style.transform = 'translateX(0)';
+            targetSection.classList.add('active');
+
+            // Clean up current section
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.display = 'none';
+            currentActiveSection.style.opacity = '0';
+            currentActiveSection.style.visibility = 'hidden';
+            currentActiveSection.style.pointerEvents = 'none';
+
+            // Update current section
+            currentSection = sectionId;
+
+            // Update active states on all navigation items
+            updateActiveNavItems(sectionId);
+
+            return;
+        }
+
+        // For non-profile sections, ensure profile is hidden
+        const profileSection = document.getElementById('profile-section');
+        if (profileSection && profileSection.classList.contains('active')) {
+            profileSection.classList.remove('active');
+            profileSection.style.display = 'none';
+            profileSection.style.opacity = '0';
+            profileSection.style.visibility = 'hidden';
+            profileSection.style.pointerEvents = 'none';
+        }
+
+        // Get direction for animation
+        const fromIndex = getSectionIndex(currentSection);
+        const toIndex = getSectionIndex(sectionId);
+        const direction = getSlideDirection(fromIndex, toIndex);
+
+        // Remove active class from current section (will trigger exit animation)
+        currentActiveSection.classList.remove('active');
+
+        // Add appropriate slide-out class based on direction
+        if (direction === 'right') {
+            currentActiveSection.classList.add('slide-out-left');
+        } else {
+            currentActiveSection.classList.add('slide-out-right');
+        }
+
+        // Ensure target section is visible before animation
+        targetSection.style.display = 'block';
+
+        // Prepare target section - position it off-screen in opposite direction
+        if (direction === 'right') {
+            targetSection.classList.remove('slide-in-left');
+            targetSection.classList.add('slide-in-right');
+        } else {
+            targetSection.classList.remove('slide-in-right');
+            targetSection.classList.add('slide-in-left');
+        }
+
+        // Force reflow to ensure classes are applied
+        targetSection.offsetHeight;
+
+        // Small delay to ensure exit animation starts
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                // Remove slide-in class and add active to trigger enter animation
+                targetSection.classList.remove('slide-in-left', 'slide-in-right');
+                targetSection.classList.add('active');
+
+                // Clean up current section after animation completes
+                setTimeout(() => {
+                    currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
+                    currentActiveSection.style.display = 'none';
+                }, 350); // Match CSS transition duration
+            });
+        });
+
+        // Save previous section before updating
+        const previousSection = currentSection;
+
+        // Update current section
+        currentSection = sectionId;
+
+        // Update active states on all navigation items
+        updateActiveNavItems(sectionId);
+
+        // Load section data if it's a property section and hasn't been loaded
+        if (sectionId !== 'profile-section' && typeof window.reloadSectionData === 'function') {
+            // Wait for section to become visible (after animation completes)
+            setTimeout(() => {
+                // Verify section is actually visible
+                const sectionElement = document.getElementById(sectionId);
+                if (sectionElement) {
+                    const sectionStyle = window.getComputedStyle(sectionElement);
+                    const isVisible = sectionElement.classList.contains('active') &&
+                        sectionStyle.visibility !== 'hidden' &&
+                        sectionStyle.opacity !== '0' &&
+                        sectionStyle.display !== 'none';
+
+                    if (!isVisible) {
+                        console.warn(`Section ${sectionId} is not visible yet, waiting...`);
+                        // Force visibility
+                        sectionElement.style.display = 'block';
+                        sectionElement.style.visibility = 'visible';
+                        sectionElement.style.opacity = '1';
+                        sectionElement.style.pointerEvents = 'auto';
+                    }
+                }
+
+                // Find the grid element by ID based on section
+                let gridId = '';
+                if (sectionId === 'home-section') gridId = 'home-properties-grid';
+                else if (sectionId === 'sell-section') gridId = 'sell-properties-grid';
+                else if (sectionId === 'rent-section') gridId = 'rent-properties-grid';
+                else if (sectionId === 'auction-section') gridId = 'auction-properties-grid';
+
+                const targetGrid = document.getElementById(gridId);
+                if (targetGrid) {
+                    // Always reload when switching to a different section
+                    // This ensures cards are properly rendered and visible
+                    const wasPreviousActive = (previousSection === sectionId);
+
+                    if (!wasPreviousActive) {
+                        // Switching to a new section - always reload
+                        const config = window.dataConfig ? window.dataConfig[sectionId] : null;
+                        const jsonFile = config ? config.url : 'unknown';
+                        console.log(`Switching to section: ${sectionId} (from ${previousSection}), loading data from: ${jsonFile}`);
+                        window.reloadSectionData(sectionId).then(() => {
+                            // Re-initialize Lucide icons after cards are rendered
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+
+                            // Double-check section visibility after rendering
+                            if (sectionElement) {
+                                sectionElement.style.display = 'block';
+                                sectionElement.style.visibility = 'visible';
+                                sectionElement.style.opacity = '1';
+                                sectionElement.style.pointerEvents = 'auto';
+                                if (!sectionElement.classList.contains('active')) {
+                                    sectionElement.classList.add('active');
+                                }
+                            }
+                        }).catch(err => {
+                            console.error(`Error loading data for ${sectionId}:`, err);
+                        });
+                    } else {
+                        // Same section (shouldn't happen due to early return, but check anyway)
+                        const hasCards = targetGrid.querySelector('.property-card, .auction-card-new');
+                        const isEmpty = targetGrid.children.length === 0;
+
+                        if (!hasCards || isEmpty) {
+                            console.log(`Section ${sectionId} has no cards, loading data...`);
+                            window.reloadSectionData(sectionId).then(() => {
+                                if (typeof lucide !== 'undefined') {
+                                    lucide.createIcons();
+                                }
+                            }).catch(err => {
+                                console.error(`Error loading data for ${sectionId}:`, err);
+                            });
+                        }
+                    }
+                } else {
+                    // Grid not found, try to load anyway
+                    console.warn(`Grid not found for ${sectionId} (gridId: ${gridId}), attempting to load data...`);
+                    window.reloadSectionData(sectionId).then(() => {
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }).catch(err => {
+                        console.error(`Error loading data for ${sectionId}:`, err);
+                    });
+                }
+            }, 450); // Wait for animation to complete (slightly longer to ensure visibility)
+        }
+    }
+
+    // Update active class on navigation items
+    function updateActiveNavItems(sectionId) {
+        // Update bottom nav
+        bottomNavItems.forEach(item => {
+            if (item.getAttribute('data-section') === sectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Update top nav
+        topNavItems.forEach(item => {
+            if (item.getAttribute('data-section') === sectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Handle navigation item click
+    function handleNavClick(e) {
+        e.preventDefault();
+        const sectionId = this.getAttribute('data-section');
+        if (sectionId) {
+            switchToSection(sectionId);
+        }
+    }
+
+    // Handle quick access box click
+    function handleQuickAccessClick(e) {
+        e.preventDefault();
+        const sectionId = this.getAttribute('data-section');
+        if (sectionId) {
+            switchToSection(sectionId);
+        }
+    }
+
+    // Attach event listeners
+    function init() {
+        // Bottom navigation items
+        bottomNavItems.forEach(item => {
+            item.addEventListener('click', handleNavClick);
+        });
+
+        // Top navigation items
+        topNavItems.forEach(item => {
+            item.addEventListener('click', handleNavClick);
+        });
+
+        // Quick access boxes
+        quickAccessBoxes.forEach(box => {
+            box.addEventListener('click', handleQuickAccessClick);
+        });
+
+        // Header profile button
+        const headerProfileBtn = document.querySelector('.header-profile-btn');
+        if (headerProfileBtn) {
+            headerProfileBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const sectionId = this.getAttribute('data-section');
+                if (sectionId) {
+                    switchToSection(sectionId);
+                }
+            });
+        }
+
+        // Add property buttons
+        const addPropertyBtns = document.querySelectorAll('.add-property-btn');
+        addPropertyBtns.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('Add new property');
+            });
+        });
+
+        // Prevent default anchor behavior on all navigation links
+        document.querySelectorAll('a[href="#"]').forEach(link => {
+            link.addEventListener('click', function (e) {
+                // Only prevent if it's a nav item or access box
+                if (this.classList.contains('nav-item') ||
+                    this.classList.contains('top-nav-item') ||
+                    this.classList.contains('access-box')) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Initialize Lucide icons
+        if (typeof window.initLucideIcons === 'function') {
+            setTimeout(() => {
+                window.initLucideIcons();
+            }, 100);
+        } else if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        }
+    }
+
+    // Ensure initial active section is visible
+    function ensureInitialState() {
+        const activeSection = document.querySelector('.tab-section.active');
+
+        // Hide all sections first
+        sections.forEach(section => {
+            section.style.display = 'none';
+            section.style.opacity = '0';
+            section.style.visibility = 'hidden';
+            section.style.pointerEvents = 'none';
+            section.style.transform = 'translateX(100%)';
+        });
+
+        // Show only the active section
+        if (activeSection) {
+            activeSection.style.display = 'block';
+            activeSection.style.transform = 'translateX(0)';
+            activeSection.style.opacity = '1';
+            activeSection.style.visibility = 'visible';
+            activeSection.style.pointerEvents = 'auto';
+        }
+
+        // If profile section is active initially, ensure property sections are hidden and cleared
+        if (activeSection && activeSection.id === 'profile-section') {
+            ensureProfileOnlyVisible();
+            // Re-show profile section after clearing
+            activeSection.style.display = 'block';
+            activeSection.style.opacity = '1';
+            activeSection.style.visibility = 'visible';
+            activeSection.style.pointerEvents = 'auto';
+            activeSection.style.transform = 'translateX(0)';
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            ensureInitialState();
+            init();
+        });
+    } else {
+        ensureInitialState();
+        init();
+    }
+})();
+
+// Property Data Loading and Rendering
+(function () {
+    'use strict';
+
+    // Data mapping configuration
+    const dataConfig = {
+        'home-section': {
+            url: '/json-data/home-property.json',
+            gridId: 'home-properties-grid',
+            renderFunction: 'renderPropertyCard'
+        },
+        'sell-section': {
+            url: '/json-data/sell-property.json',
+            gridId: 'sell-properties-grid',
+            renderFunction: 'renderPropertyCard'
+        },
+        'rent-section': {
+            url: '/json-data/rent-property.json',
+            gridId: 'rent-properties-grid',
+            renderFunction: 'renderRentalCard'
+        },
+        'auction-section': {
+            url: '/json-data/auction-property.json',
+            gridId: 'auction-properties-grid',
+            renderFunction: 'renderAuctionCard'
+        }
+    };
+
+    // Format number with thousand separators
+    function formatNumber(num) {
+        if (!num) return '0';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // Format price for display
+    function formatPrice(price) {
+        return formatNumber(price) + ' ريال';
+    }
+
+    // Format rental price
+    function formatRentalPrice(price) {
+        return formatNumber(price) + ' ريال / شهرياً';
+    }
+
+    // Render property features
+    function renderFeatures(property) {
+        const features = [];
+
+        if (property.bedrooms) {
+            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.bedrooms} ${property.bedrooms === 1 ? 'غرفة' : 'غرف'}`);
+        }
+        if (property.bathrooms) {
+            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.bathrooms} ${property.bathrooms === 1 ? 'حمام' : 'حمامات'}`);
+        }
+        if (property.area) {
+            // Handle area format - could be "450 م²" or just "450"
+            const areaValue = property.area.toString().replace(/[^\d]/g, '');
+            const areaText = areaValue ? `${formatNumber(areaValue)} م²` : property.area;
+            features.push(`<i data-lucide="maximize" class="feature-icon"></i> ${areaText}`);
+        }
+
+        if (features.length === 0) return '';
+
+        return `
+            <div class="property-features">
+                ${features.map(feature => `<span>${feature}</span>`).join('')}
+            </div>
+        `;
+    }
+
+    // Render property badge if exists
+    function renderBadge(badge) {
+        if (!badge) return '';
+        return `<div class="property-badge">${badge}</div>`;
+    }
+
+    // Get image URL with proper formatting
+    function getImageUrl(property) {
+        const imageUrl = property.image || property.imageUrl || null;
+        if (!imageUrl) return null;
+
+        // If it's an Unsplash URL without proper dimensions, add them
+        if (imageUrl.includes('unsplash.com') && !imageUrl.includes('?w=') && !imageUrl.includes('?auto=')) {
+            return `${imageUrl}?w=800&auto=format&fit=crop`;
+        }
+
+        return imageUrl;
+    }
+
+    // Render property card (for home and sell sections)
+    function renderPropertyCard(property) {
+        if (!property) return '';
+
+        const imageUrl = getImageUrl(property);
+        const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+
+        return `
+            <div class="property-card">
+                <div class="property-image" ${imageStyle}></div>
+                ${renderBadge(property.badge)}
+                <div class="property-info">
+                    <h3>${property.title || 'عقار للبيع'}</h3>
+                    <p class="property-location"><i data-lucide="map-pin" class="location-icon"></i> ${property.location || 'غير محدد'}</p>
+                    ${renderFeatures(property)}
+                    <p class="property-price">${property.price ? (property.price.includes('ريال') ? property.price : `${property.price} ريال`) : 'غير محدد'}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Render rental card (for rent section)
+    function renderRentalCard(property) {
+        if (!property) return '';
+
+        const imageUrl = getImageUrl(property);
+        const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+
+        // Handle price - check if it already includes "/ شهرياً" or "/ سنوياً"
+        let priceText = property.price || '';
+        if (priceText && !priceText.includes('/')) {
+            priceText = formatRentalPrice(priceText);
+        }
+
+        return `
+            <div class="property-card rental-card">
+                <div class="property-image" ${imageStyle}></div>
+                ${renderBadge(property.badge)}
+                <div class="property-info">
+                    <h3>${property.title || 'عقار للإيجار'}</h3>
+                    <p class="property-location"><i data-lucide="map-pin" class="location-icon"></i> ${property.location || 'غير محدد'}</p>
+                    ${renderFeatures(property)}
+                    <p class="property-price rental-price">${priceText || 'غير محدد'}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Render auction card (for auction section)
+    function renderAuctionCard(auction) {
+        if (!auction) return '';
+
+        const imageUrl = getImageUrl(auction);
+        const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+
+        // Handle timer - use 'timer' from JSON or fallback to 'timeRemaining'
+        const timeRemaining = auction.timer || auction.timeRemaining || 'غير محدد';
+
+        // Get start date (if available in JSON)
+        const startDate = auction.startDate || auction.date || '';
+
+        // Format starting bid/current bid - check if it already includes "ريال"
+        let startingBid = auction.currentBid || auction.startingBid || '';
+        if (startingBid && !startingBid.includes('ريال')) {
+            startingBid = formatPrice(startingBid);
+        }
+
+        return `
+            <div class="auction-card-new">
+                <div class="auction-banner" ${imageStyle}>
+                    <div class="auction-badges">
+                        <span class="status-badge live-badge">
+                            <i data-lucide="circle" class="badge-dot"></i>
+                            جاري الآن
+                        </span>
+                        <span class="status-badge electronic-badge">
+                            <i data-lucide="globe" class="badge-icon"></i>
+                            إلكتروني
+                        </span>
+                    </div>
+                </div>
+                <div class="auction-content">
+                    <h3 class="auction-title">${auction.title || 'عقار في المزاد'}</h3>
+                    <div class="auction-meta">
+                        ${startDate ? `<div class="auction-date"><i data-lucide="calendar" class="meta-icon"></i> ${startDate}</div>` : ''}
+                        <div class="auction-timer-new">
+                            <i data-lucide="clock" class="meta-icon"></i>
+                            <span class="timer-text">المتبقي: <strong>${timeRemaining}</strong></span>
+                        </div>
+                    </div>
+                    <div class="auction-bid-section">
+                        <div class="starting-bid-label">المزايدة الابتدائية</div>
+                        <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
+                    </div>
+                    <button class="auction-cta-btn">
+                        تصفح التفاصيل وشارك بالمزاد الآن
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Render properties to grid
+    function renderProperties(properties, gridElement, renderFunction) {
+        if (!gridElement) {
+            console.error('Grid element not found');
+            return;
+        }
+
+        // Clear existing content
+        gridElement.innerHTML = '';
+
+        // Handle empty data
+        if (!properties || !Array.isArray(properties) || properties.length === 0) {
+            gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">لا توجد عقارات متاحة حالياً</p>';
+            return;
+        }
+
+        // Render each property
+        properties.forEach(property => {
+            let cardHTML = '';
+
+            switch (renderFunction) {
+                case 'renderPropertyCard':
+                    cardHTML = renderPropertyCard(property);
+                    break;
+                case 'renderRentalCard':
+                    cardHTML = renderRentalCard(property);
+                    break;
+                case 'renderAuctionCard':
+                    cardHTML = renderAuctionCard(property);
+                    break;
+                default:
+                    console.error('Unknown render function:', renderFunction);
+                    return;
+            }
+
+            // Create temporary container to parse HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = cardHTML.trim();
+            const cardElement = temp.firstChild;
+
+            if (cardElement) {
+                gridElement.appendChild(cardElement);
+            }
+        });
+
+        // Reinitialize Lucide icons after rendering
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        }
+
+        // Log rendering completion
+        console.log(`Rendering completed. Grid now has ${gridElement.children.length} children.`);
+
+        // Verify grid is visible
+        const gridStyle = window.getComputedStyle(gridElement);
+        const gridParent = gridElement.parentElement;
+        const parentStyle = gridParent ? window.getComputedStyle(gridParent) : null;
+
+        console.log(`Grid visibility check:`, {
+            gridDisplay: gridStyle.display,
+            gridVisibility: gridStyle.visibility,
+            gridOpacity: gridStyle.opacity,
+            parentDisplay: parentStyle ? parentStyle.display : 'N/A',
+            parentVisibility: parentStyle ? parentStyle.visibility : 'N/A',
+            parentOpacity: parentStyle ? parentStyle.opacity : 'N/A',
+            hasActiveClass: gridParent ? gridParent.closest('.tab-section.active') !== null : false
+        });
+    }
+
+    // Fetch JSON data
+    async function fetchPropertyData(url) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+            return null;
+        }
+    }
+
+    // Load and render data for a specific section
+    async function loadSectionData(sectionId) {
+        const config = dataConfig[sectionId];
+
+        if (!config) {
+            console.warn(`No configuration found for section: ${sectionId}`);
+            return;
+        }
+
+        const gridElement = document.getElementById(config.gridId);
+        if (!gridElement) {
+            console.error(`Grid element not found: ${config.gridId}`);
+            return;
+        }
+
+        // Ensure section is visible before loading
+        const sectionElement = document.getElementById(sectionId);
+        if (sectionElement) {
+            // Force section to be visible
+            sectionElement.style.display = 'block';
+            sectionElement.style.visibility = 'visible';
+            sectionElement.style.opacity = '1';
+            sectionElement.style.pointerEvents = 'auto';
+            sectionElement.style.transform = 'translateX(0)';
+            if (!sectionElement.classList.contains('active')) {
+                sectionElement.classList.add('active');
+            }
+        }
+
+        // Show loading state (optional)
+        gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">جاري التحميل...</p>';
+
+        try {
+            // Fetch data
+            const data = await fetchPropertyData(config.url);
+            console.log(`Data fetched for ${sectionId}:`, data);
+
+            if (data === null) {
+                console.error(`Failed to fetch data for ${sectionId}`);
+                gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #dc3545;">حدث خطأ في تحميل البيانات. يرجى المحاولة لاحقاً.</p>';
+                return;
+            }
+
+            // Handle array data
+            const properties = Array.isArray(data) ? data : (data.properties || data.items || []);
+            console.log(`Properties extracted for ${sectionId}:`, properties.length, 'items');
+
+            if (!properties || properties.length === 0) {
+                console.warn(`No properties found in data for ${sectionId}`);
+                gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">لا توجد عقارات متاحة حالياً</p>';
+                return;
+            }
+
+            // Render properties
+            renderProperties(properties, gridElement, config.renderFunction);
+
+            // Verify cards were rendered
+            const renderedCards = gridElement.querySelectorAll('.property-card, .auction-card-new');
+            console.log(`Cards rendered for ${sectionId}:`, renderedCards.length, 'cards');
+
+            if (renderedCards.length === 0) {
+                console.error(`No cards were rendered for ${sectionId}! Check render function: ${config.renderFunction}`);
+            } else {
+                // Double-check section is still visible after rendering
+                if (sectionElement) {
+                    sectionElement.style.display = 'block';
+                    sectionElement.style.visibility = 'visible';
+                    sectionElement.style.opacity = '1';
+                    sectionElement.style.pointerEvents = 'auto';
+                    sectionElement.style.transform = 'translateX(0)';
+                    if (!sectionElement.classList.contains('active')) {
+                        sectionElement.classList.add('active');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error loading section data for ${sectionId}:`, error);
+            gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #dc3545;">حدث خطأ في تحميل البيانات. يرجى المحاولة لاحقاً.</p>';
+        }
+    }
+
+    // Load all sections data
+    async function loadAllData() {
+        const sectionIds = Object.keys(dataConfig);
+
+        // Load data for all sections in parallel
+        await Promise.all(sectionIds.map(sectionId => loadSectionData(sectionId)));
+    }
+
+    // Initialize data loading when DOM is ready
+    function initDataLoading() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadAllData);
+        } else {
+            loadAllData();
+        }
+    }
+
+    // Start data loading
+    initDataLoading();
+
+    // Export function to reload specific section (optional, for future use)
+    window.reloadSectionData = loadSectionData;
+
+    // Export dataConfig for debugging/access
+    window.dataConfig = dataConfig;
+})();
+
+// Profile Section - Load and Bind User Data
+(function () {
+    'use strict';
+
+    // Fetch user data from JSON
+    async function fetchUserData() {
+        try {
+            const response = await fetch('/json-data/user-data.json');
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    }
+
+    // Update profile image
+    function updateProfileImage(imageUrl) {
+        const profileImage = document.getElementById('profile-image');
+        const placeholder = profileImage ? profileImage.querySelector('.profile-image-placeholder') : null;
+
+        if (!profileImage) return;
+
+        if (imageUrl) {
+            // Create img element if it doesn't exist
+            let img = profileImage.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                img.alt = 'صورة الملف الشخصي';
+                profileImage.appendChild(img);
+            }
+
+            img.src = imageUrl;
+            img.onerror = function () {
+                // If image fails to load, show placeholder
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                }
+                if (placeholder) {
+                    placeholder.style.display = 'block';
+                }
+            };
+
+            // Hide placeholder when image loads successfully
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        } else {
+            // Remove image if no URL provided
+            const img = profileImage.querySelector('img');
+            if (img) {
+                img.remove();
+            }
+            if (placeholder) {
+                placeholder.style.display = 'block';
+            }
+        }
+    }
+
+    // Bind user data to profile form
+    function bindUserData(userData) {
+        if (!userData) {
+            console.warn('No user data provided');
+            return;
+        }
+
+        // Update profile image
+        const imageUrl = userData.imageUrl || userData.image || userData.profileImage || null;
+        updateProfileImage(imageUrl);
+
+        // Update full name
+        const fullNameInput = document.getElementById('profile-fullname');
+        if (fullNameInput) {
+            const fullName = userData.fullName || userData.name || userData.fullname || '';
+            fullNameInput.value = fullName;
+        }
+
+        // Update phone number
+        const phoneInput = document.getElementById('profile-phone');
+        if (phoneInput) {
+            const phone = userData.phone || userData.phoneNumber || userData.mobile || '';
+            phoneInput.value = phone;
+        }
+
+        // Update email
+        const emailInput = document.getElementById('profile-email');
+        if (emailInput) {
+            const email = userData.email || userData.emailAddress || '';
+            emailInput.value = email;
+        }
+
+        // Update national ID (store real value, display masked)
+        const nationalIdInput = document.getElementById('profile-national-id');
+        if (nationalIdInput) {
+            const nationalId = userData.nationalId || userData.nationalID || userData.idNumber || '';
+            // Store the real value in data attribute
+            if (nationalId) {
+                nationalIdInput.setAttribute('data-real-value', nationalId);
+                // Mask the value with dots
+                nationalIdInput.value = '•'.repeat(nationalId.length);
+            } else {
+                nationalIdInput.removeAttribute('data-real-value');
+                nationalIdInput.value = '';
+            }
+            // Set type to text for proper dot masking (not password type)
+            nationalIdInput.type = 'text';
+        }
+    }
+
+    // Load and bind user data
+    async function loadUserData() {
+        const userData = await fetchUserData();
+
+        if (userData) {
+            bindUserData(userData);
+        } else {
+            console.warn('Failed to load user data. Profile fields will remain empty.');
+        }
+    }
+
+    // Initialize profile toggle and load user data
+    function initProfileToggle() {
+        const toggleBtn = document.getElementById('toggle-national-id');
+        const nationalIdInput = document.getElementById('profile-national-id');
+        const eyeIcon = document.getElementById('eye-icon');
+        const inputWrapper = toggleBtn ? toggleBtn.closest('.input-wrapper') : null;
+
+        if (!toggleBtn || !nationalIdInput || !eyeIcon) {
+            return;
+        }
+
+        // Add class to wrapper for styling
+        if (inputWrapper) {
+            inputWrapper.classList.add('with-toggle');
+        }
+
+        // Get real value from data attribute or current value
+        function getRealValue() {
+            const realValue = nationalIdInput.getAttribute('data-real-value');
+            if (realValue) {
+                return realValue;
+            }
+            // If no data attribute, use current value (fallback)
+            return nationalIdInput.value.replace(/•/g, '') || '';
+        }
+
+        // Mask value with dots
+        function maskValue(value) {
+            if (!value) return '';
+            return '•'.repeat(value.length);
+        }
+
+        // Check if value is currently masked
+        function isMasked(value) {
+            return /^•+$/.test(value);
+        }
+
+        // Initialize: ensure value is masked if it has a real value
+        function initializeMasking() {
+            const realValue = getRealValue();
+            const currentValue = nationalIdInput.value;
+
+            // If there's a real value stored
+            if (realValue) {
+                // If current value is not masked or different, mask it
+                if (!isMasked(currentValue) || currentValue !== maskValue(realValue)) {
+                    nationalIdInput.value = maskValue(realValue);
+                }
+                // Ensure real value is stored
+                nationalIdInput.setAttribute('data-real-value', realValue);
+            } else if (currentValue && !isMasked(currentValue)) {
+                // If there's a value but no stored real value, store and mask it
+                const digitsOnly = currentValue.replace(/\D/g, '');
+                if (digitsOnly) {
+                    nationalIdInput.setAttribute('data-real-value', digitsOnly);
+                    nationalIdInput.value = maskValue(digitsOnly);
+                }
+            }
+
+            // Ensure input type is text (not password) for proper masking
+            nationalIdInput.type = 'text';
+        }
+
+        // Toggle visibility function with animation
+        function toggleVisibility() {
+            const realValue = getRealValue();
+            const currentValue = nationalIdInput.value;
+            const currentlyMasked = isMasked(currentValue);
+
+            // Add animation class for icon transition
+            eyeIcon.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+            eyeIcon.style.transform = 'scale(0.8)';
+            eyeIcon.style.opacity = '0.5';
+
+            // Use requestAnimationFrame for smooth transition
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (currentlyMasked) {
+                        // Show real value
+                        if (realValue) {
+                            nationalIdInput.value = realValue;
+                        }
+                        // Switch to eye-off icon (hidden state)
+                        eyeIcon.setAttribute('data-lucide', 'eye-off');
+                        toggleBtn.classList.add('active');
+                        toggleBtn.setAttribute('aria-label', 'إخفاء الهوية الوطنية');
+                    } else {
+                        // Hide with dots
+                        if (realValue) {
+                            nationalIdInput.value = maskValue(realValue);
+                            nationalIdInput.setAttribute('data-real-value', realValue);
+                        }
+                        // Switch to eye icon (visible state)
+                        eyeIcon.setAttribute('data-lucide', 'eye');
+                        toggleBtn.classList.remove('active');
+                        toggleBtn.setAttribute('aria-label', 'إظهار الهوية الوطنية');
+                    }
+
+                    // Re-initialize Lucide icon after attribute change
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+
+                    // Animate icon back
+                    eyeIcon.style.transform = 'scale(1)';
+                    eyeIcon.style.opacity = '1';
+                }, 100);
+            });
+        }
+
+        // Prevent showing real value when typing (if user edits)
+        nationalIdInput.addEventListener('input', function () {
+            const currentValue = this.value;
+            const realValue = getRealValue();
+
+            // If user is typing and value contains actual digits (not just dots)
+            if (currentValue && !isMasked(currentValue) && /\d/.test(currentValue)) {
+                // Store as real value and mask it
+                const digitsOnly = currentValue.replace(/\D/g, '');
+                if (digitsOnly) {
+                    this.setAttribute('data-real-value', digitsOnly);
+                    // Only mask if toggle is in hidden state
+                    if (!toggleBtn.classList.contains('active')) {
+                        this.value = maskValue(digitsOnly);
+                    }
+                }
+            }
+        });
+
+        // Prevent paste from breaking masking
+        nationalIdInput.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const digitsOnly = pastedText.replace(/\D/g, '').substring(0, 10); // Max 10 digits
+
+            if (digitsOnly) {
+                this.setAttribute('data-real-value', digitsOnly);
+
+                // Show or mask based on current state
+                if (toggleBtn.classList.contains('active')) {
+                    this.value = digitsOnly;
+                } else {
+                    this.value = maskValue(digitsOnly);
+                }
+            }
+        });
+
+        // Initialize masking state
+        initializeMasking();
+
+        // Attach click event
+        toggleBtn.addEventListener('click', toggleVisibility);
+
+        // Set initial aria-label
+        toggleBtn.setAttribute('aria-label', 'إظهار الهوية الوطنية');
+    }
+
+    // Initialize when DOM is ready
+    function init() {
+        initProfileToggle();
+        loadUserData();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Export function to reload user data (optional, for future use)
+    window.reloadUserData = loadUserData;
+})();
+
+// Banner Slider Functionality
+(function () {
+    'use strict';
+
+    let currentSlide = 0;
+    const totalSlides = 3;
+    let slideInterval = null;
+
+    function initBannerSlider() {
+        const slides = document.querySelectorAll('.banner-slide');
+        const indicators = document.querySelectorAll('.indicator');
+
+        if (slides.length === 0 || indicators.length === 0) {
+            return;
+        }
+
+        // Function to show a specific slide
+        function showSlide(index) {
+            // Remove active class from all slides and indicators
+            slides.forEach(slide => slide.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+
+            // Add active class to current slide and indicator
+            if (slides[index]) {
+                slides[index].classList.add('active');
+            }
+            if (indicators[index]) {
+                indicators[index].classList.add('active');
+            }
+
+            currentSlide = index;
+        }
+
+        // Function to go to next slide
+        function nextSlide() {
+            const next = (currentSlide + 1) % totalSlides;
+            showSlide(next);
+        }
+
+        // Function to go to previous slide
+        function prevSlide() {
+            const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(prev);
+        }
+
+        // Add click handlers to indicators
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                showSlide(index);
+                resetAutoSlide();
+            });
+        });
+
+        // Auto-slide functionality
+        function startAutoSlide() {
+            slideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+        }
+
+        function resetAutoSlide() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+            }
+            startAutoSlide();
+        }
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        const slider = document.querySelector('.banner-slider');
+        if (slider) {
+            slider.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            slider.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe left (RTL: go to next)
+                        nextSlide();
+                    } else {
+                        // Swipe right (RTL: go to previous)
+                        prevSlide();
+                    }
+                    resetAutoSlide();
+                }
+            }
+        }
+
+        // Start auto-slide
+        startAutoSlide();
+
+        // Pause on hover
+        if (slider) {
+            slider.addEventListener('mouseenter', () => {
+                if (slideInterval) {
+                    clearInterval(slideInterval);
+                }
+            });
+
+            slider.addEventListener('mouseleave', () => {
+                startAutoSlide();
+            });
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initBannerSlider);
+    } else {
+        initBannerSlider();
+    }
+})();
+

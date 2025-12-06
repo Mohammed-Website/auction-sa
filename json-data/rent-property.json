@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "title": "شقة مفروشة للإيجار الشهري",
+      "price": "4,200 / شهرياً",
+      "location": "الرياض - الملقا",
+      "area": "110 م²",
+      "image": "https://images.unsplash.com/photo-1505691938895-1758d7feb511"
+    },
+    {
+      "id": 2,
+      "title": "استوديو عصري للإيجار",
+      "price": "2,300 / شهرياً",
+      "location": "جدة - الفيصلية",
+      "area": "70 م²",
+      "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267"
+    },
+    {
+      "id": 3,
+      "title": "دور علوي للإيجار السنوي",
+      "price": "38,000 / سنوياً",
+      "location": "الدمام - الشاطئ",
+      "area": "210 م²",
+      "image": "https://images.unsplash.com/photo-1600585152915-d208bec867a0"
+    }
+  ]
+  

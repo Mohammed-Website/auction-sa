@@ -1,0 +1,1419 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Font Awesome Icons - Solid Black */
+.fas,
+.fa,
+i[class*="fa-"] {
+    color: #000000;
+    font-weight: 900;
+}
+
+/* Ensure all icons are solid black */
+i.fas,
+i.fa {
+    color: #000000 !important;
+}
+
+/* Lucide Icons - Outlined Black */
+[data-lucide] {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+    color: #000000;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* Navigation Icons */
+.nav-icon,
+.top-nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+    color: #000000 !important;
+    stroke: currentColor;
+}
+
+/* Active state icons stay black */
+.nav-item.active .nav-icon,
+.top-nav-item.active .top-nav-icon {
+    color: #000000 !important;
+    stroke: #000000;
+}
+
+/* Hover state icons stay black but can have slight opacity change */
+.nav-item:hover .nav-icon,
+.top-nav-item:hover .top-nav-icon,
+.access-box:hover .access-icon {
+    color: #000000 !important;
+    opacity: 0.8;
+    stroke: #000000;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    padding-bottom: 80px;
+    /* Space for bottom navigation */
+    direction: rtl;
+}
+
+/* Top Header */
+.top-header {
+    background: linear-gradient(135deg, #2c5aa0 0%, #1e3d6f 100%);
+    color: white;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+    position: relative;
+}
+
+.header-profile-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.header-profile-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.header-profile-btn:active {
+    transform: scale(0.95);
+}
+
+.profile-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+    stroke: white;
+    stroke-width: 2;
+    fill: none;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+/* Banner Slider */
+.banner-section {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.banner-slider {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0;
+}
+
+.banner-slide {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.banner-slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+.banner-slide[data-slide="0"] {
+    background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop');
+}
+
+.banner-slide[data-slide="1"] {
+    background-image: url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&auto=format&fit=crop');
+}
+
+.banner-slide[data-slide="2"] {
+    background-image: url('https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=1200&auto=format&fit=crop');
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.banner-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 1rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.banner-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.banner-content p {
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+.banner-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: white;
+    position: relative;
+    z-index: 10;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: #2c5aa0;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.indicator:hover {
+    background: #1e3d6f;
+}
+
+
+.access-box {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem 0.75rem;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.access-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.access-box:active {
+    transform: translateY(-2px);
+}
+
+.access-icon {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: #000000 !important;
+}
+
+.access-box h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    color: #2c5aa0;
+}
+
+.access-box p {
+    font-size: 0.75rem;
+    color: #666;
+    margin: 0;
+}
+
+
+
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #2c5aa0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.properties-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.property-card {
+    background: #f9f9f9;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.property-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.property-image {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
+    position: relative;
+}
+
+.property-image::after {
+    content: '🖼️';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+.property-info {
+    padding: 1rem;
+}
+
+.property-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.property-location {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-location i,
+.auction-location i,
+.location-icon {
+    color: #000000 !important;
+    width: 16px;
+    height: 16px;
+    stroke: #000000;
+    stroke-width: 2;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 0.25rem;
+}
+
+.feature-icon {
+    width: 16px;
+    height: 16px;
+    stroke: #666;
+    stroke-width: 2;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 0.25rem;
+}
+
+.property-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c5aa0;
+    margin: 0;
+    margin-top: 0.5rem;
+}
+
+.property-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: #2c5aa0;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.property-image {
+    position: relative;
+}
+
+.property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.property-features span {
+    background: #f0f4f8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-features i {
+    color: #000000 !important;
+    font-size: 0.85rem;
+}
+
+.rental-price {
+    color: #28a745;
+}
+
+/* Tab Sections */
+#app-content {
+    padding: 0 1rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.tab-section {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    visibility: hidden;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    pointer-events: none;
+}
+
+.tab-section.active {
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.tab-section.slide-out-left {
+    transform: translateX(-100%);
+}
+
+.tab-section.slide-out-right {
+    transform: translateX(100%);
+}
+
+.tab-section.slide-in-left {
+    transform: translateX(-100%);
+}
+
+.tab-section.slide-in-right {
+    transform: translateX(100%);
+}
+
+.section-content {
+    max-width: 100%;
+}
+
+/* Rental Cards */
+.rental-card {
+    border-left: 4px solid #28a745;
+}
+
+/* Auctions Grid */
+.auctions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* New Auction Card Design */
+.auction-card-new {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.auction-card-new:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+.auction-banner {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.auction-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.live-badge {
+    background: #dc3545;
+    color: white;
+}
+
+.electronic-badge {
+    background: rgba(255, 255, 255, 0.95);
+    color: #2c5aa0;
+    border: 1px solid rgba(44, 90, 160, 0.2);
+}
+
+.badge-dot,
+.badge-icon {
+    width: 8px;
+    height: 8px;
+    fill: currentColor;
+}
+
+.auction-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auction-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e3d6f;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.auction-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.auction-date,
+.auction-timer-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.meta-icon {
+    width: 16px;
+    height: 16px;
+    color: #000000;
+    stroke-width: 2;
+}
+
+.timer-text {
+    font-weight: 500;
+}
+
+.timer-text strong {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.auction-bid-section {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%);
+    border-radius: 12px;
+    border-right: 4px solid #2c5aa0;
+    text-align: right;
+}
+
+.starting-bid-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.starting-bid-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2c5aa0;
+}
+
+.auction-cta-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.auction-cta-btn:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+}
+
+.auction-cta-btn:active {
+    transform: translateY(0);
+}
+
+/* Keep old auction-card class for compatibility but hide it */
+.auction-card {
+    display: none;
+}
+
+.auction-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: #dc3545;
+    color: white;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 1;
+    animation: pulse 2s infinite;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.auction-badge i {
+    color: white !important;
+    font-size: 0.7rem;
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.auction-info {
+    padding: 1.25rem;
+}
+
+.auction-info h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.auction-location {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.auction-status {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.current-bid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.bid-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.bid-amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #dc3545;
+}
+
+.bid-count {
+    font-size: 0.9rem;
+    color: #2c5aa0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.bid-count i {
+    color: #2c5aa0 !important;
+}
+
+.auction-timer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #fff3cd;
+    border-radius: 8px;
+    border-right: 4px solid #ffc107;
+}
+
+.auction-timer i {
+    color: #856404 !important;
+}
+
+.timer-label {
+    font-size: 0.9rem;
+    color: #856404;
+    font-weight: 600;
+}
+
+.timer-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #856404;
+}
+
+/* Profile Section */
+.profile-container {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Profile Header Card with Image */
+.profile-header-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.profile-image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+.profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border: 4px solid #f0f0f0;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.profile-image:hover {
+    border-color: #2c5aa0;
+    box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-placeholder {
+    font-size: 4rem;
+    color: #000000 !important;
+}
+
+.profile-image-upload {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #2c5aa0;
+    border: 3px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.profile-image-upload:hover {
+    background: #1e3d6f;
+    transform: translateX(-50%) scale(1.1);
+}
+
+.upload-icon {
+    font-size: 1.2rem;
+    color: #ffffff !important;
+    background-color: #000000;
+    padding: 0.3rem;
+    border-radius: 50%;
+}
+
+/* Profile Info Card */
+.profile-info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.profile-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c5aa0;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    /* Space between icon and input */
+    width: 100%;
+}
+
+.input-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: #000000 !important;
+    stroke: #000000;
+    stroke-width: 2;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* In RTL, icon appears on the right side naturally (first in DOM) */
+}
+
+.form-input {
+    flex: 1;
+    min-width: 0;
+    /* Allow input to shrink if needed */
+    padding: 0.875rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #333;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
+    text-align: left;
+    /* Default: all inputs align left */
+    /* In RTL, input appears on the left side naturally (second in DOM) */
+}
+
+.form-input:focus {
+    border-color: #2c5aa0;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+/* Only profile-fullname input aligns right for Arabic text */
+.profile-fullname-input {
+    text-align: right !important;
+}
+
+/* All other inputs with dir="ltr" stay left-aligned */
+.form-input[dir="ltr"] {
+    text-align: left;
+}
+
+/* National ID with Toggle Visibility - no extra padding needed since icon is outside */
+
+.toggle-visibility-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.3s ease;
+    z-index: 2;
+    border-radius: 8px;
+    min-width: 36px;
+    min-height: 36px;
+    /* Consistent sizing with other input elements */
+}
+
+.toggle-visibility-btn:hover {
+    background: #f0f0f0;
+    color: #2c5aa0;
+}
+
+.toggle-visibility-btn:active {
+    transform: scale(0.95);
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        filter 0.3s ease;
+    user-select: none;
+    pointer-events: none;
+    color: #000000 !important;
+    stroke: #000000;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.toggle-visibility-btn.active .eye-icon {
+    transform: scale(1.15);
+    filter: brightness(1.1);
+}
+
+.toggle-visibility-btn:hover .eye-icon {
+    transform: scale(1.1);
+}
+
+.toggle-visibility-btn.active:hover .eye-icon {
+    transform: scale(1.2);
+}
+
+/* Adjust input padding when toggle button is present */
+.input-wrapper.with-toggle {
+    gap: 0.75rem;
+    /* Keep consistent gap spacing */
+}
+
+.input-wrapper.with-toggle .input-icon {
+    order: 1;
+    /* Icon stays on the right in RTL */
+}
+
+.input-wrapper.with-toggle .form-input {
+    order: 2;
+    /* Input in the middle */
+    padding: 0.875rem 1rem;
+    /* Normal padding, no extra space needed since toggle is outside */
+}
+
+.input-wrapper.with-toggle .toggle-visibility-btn {
+    order: 3;
+    /* Toggle button on the left in RTL */
+    margin-right: 0;
+    /* No extra margin needed with gap */
+}
+
+/* Top Quick Access Navigation (Hidden on Mobile) */
+.top-nav {
+    display: none;
+}
+
+.top-nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 2rem;
+    position: relative;
+}
+
+.top-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #666;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.top-nav-item:hover {
+    background: #f0f4f8;
+    color: #2c5aa0;
+}
+
+.top-nav-item.active {
+    background: #e8f0f8;
+    color: #2c5aa0;
+}
+
+.top-nav-item.active .top-nav-icon {
+    color: #000000 !important;
+    stroke: #000000;
+}
+
+.top-nav-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+    color: #000000 !important;
+    stroke: currentColor;
+}
+
+/* Add Property Button */
+.add-property-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0b2c4a;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(11, 44, 74, 0.3);
+    transform: translateY(-12px);
+    z-index: 10;
+    position: relative;
+}
+
+.add-property-btn:hover {
+    background: #0a2338;
+    transform: translateY(-14px);
+    box-shadow: 0 6px 16px rgba(11, 44, 74, 0.4);
+}
+
+.add-property-btn:active {
+    transform: translateY(-10px);
+}
+
+.add-icon {
+    width: 28px;
+    height: 28px;
+    color: white;
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+}
+
+.top-nav-label {
+    font-size: 1rem;
+}
+
+/* Bottom Navigation Bar */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.75rem 0 1.5rem 0;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: #999;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    flex: 1;
+    max-width: 80px;
+}
+
+.nav-item:hover {
+    color: #2c5aa0;
+}
+
+.nav-item.active {
+    color: #2c5aa0;
+}
+
+.nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+    color: #000000 !important;
+    stroke: currentColor;
+}
+
+.nav-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.nav-item.active .nav-icon {
+    transform: scale(1.1);
+    color: #000000 !important;
+    stroke: #000000;
+}
+
+/* Tablet Styles */
+@media (min-width: 768px) {
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .banner-slider {
+        height: 280px;
+    }
+
+    .banner-content h2 {
+        font-size: 2rem;
+    }
+
+    .banner-content p {
+        font-size: 1.2rem;
+    }
+
+    .access-box {
+        padding: 1.5rem 1rem;
+    }
+
+    .access-icon {
+        font-size: 2.5rem;
+    }
+
+    .access-box h3 {
+        font-size: 1rem;
+    }
+
+    .access-box p {
+        font-size: 0.85rem;
+    }
+
+    .properties-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .auctions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .auction-banner {
+        height: 240px;
+    }
+
+    #app-content {
+        padding: 0 2rem;
+    }
+
+    .section-content {
+        max-width: 100%;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .profile-stats {
+        gap: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .nav-label {
+        font-size: 0.75rem;
+    }
+
+    .nav-icon {
+        font-size: 1.75rem;
+    }
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+    body {
+        padding-bottom: 0;
+    }
+
+    .top-header {
+        padding: 1.25rem 2rem;
+    }
+
+    .logo {
+        font-size: 1.75rem;
+    }
+
+    /* Show Top Navigation on Desktop */
+    .top-nav {
+        display: block;
+        background: white;
+        border-bottom: 1px solid #e8e8e8;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 70px;
+        z-index: 99;
+        padding: 1rem 0;
+        margin-top: 0;
+    }
+
+    .banner-slider {
+        height: 350px;
+    }
+
+    .banner-content h2 {
+        font-size: 2.5rem;
+    }
+
+    .banner-content p {
+        font-size: 1.4rem;
+    }
+
+    .access-box {
+        padding: 2rem 1.5rem;
+    }
+
+    .properties-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+
+    .auctions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    .property-image {
+        height: 200px;
+    }
+
+    .auction-banner {
+        height: 300px;
+    }
+
+    .auction-card-new {
+        max-width: 100%;
+    }
+
+    #app-content {
+        padding: 0 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .section-content {
+        max-width: 100%;
+    }
+
+    .profile-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .profile-header-card {
+        padding: 2.5rem 2rem;
+    }
+
+    .profile-info-card {
+        padding: 2.5rem 2rem;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+    }
+
+    .profile-image-upload {
+        width: 45px;
+        height: 45px;
+    }
+
+    /* Hide Bottom Navigation on Desktop */
+    .bottom-nav {
+        display: none;
+    }
+}
+
+/* Large Desktop Styles */
+@media (min-width: 1440px) {
+    .banner-slider {
+        height: 400px;
+    }
+
+    .top-nav-container {
+        max-width: 1400px;
+    }
+
+    #app-content {
+        max-width: 1400px;
+    }
+
+    .auctions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .properties-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .header-profile-btn {
+        width: 45px;
+        height: 45px;
+    }
+
+    .profile-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .add-property-btn {
+        width: 64px;
+        height: 64px;
+        transform: translateY(-16px);
+    }
+
+    .add-icon {
+        width: 32px;
+        height: 32px;
+    }
+}

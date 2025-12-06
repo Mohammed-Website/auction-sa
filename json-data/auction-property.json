@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "title": "أرض سكنية في مزاد مباشر",
+      "currentBid": "1,150,000",
+      "location": "مكة المكرمة",
+      "timer": "01:42:30",
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+    },
+    {
+      "id": 2,
+      "title": "فيلا نصف تشطيب بالمزاد",
+      "currentBid": "980,000",
+      "location": "الطائف",
+      "timer": "03:15:10",
+      "image": "https://images.unsplash.com/photo-1599423300746-b62533397364"
+    },
+    {
+      "id": 3,
+      "title": "عمارة تجارية بالمزاد",
+      "currentBid": "3,200,000",
+      "location": "الرياض - النسيم",
+      "timer": "00:58:45",
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858"
+    }
+  ]
+  
