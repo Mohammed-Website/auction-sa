@@ -164,7 +164,16 @@
             // Load data if needed
             if (typeof window.reloadSectionData === 'function') {
                 setTimeout(() => {
-                    window.reloadSectionData('home-section');
+                    window.reloadSectionData('home-section').then(() => {
+                        // Re-enable scrolling after data is loaded
+                        setTimeout(() => {
+                            reenableHorizontalScroll();
+                            // Additional check after a longer delay
+                            setTimeout(() => {
+                                reenableHorizontalScroll();
+                            }, 200);
+                        }, 100);
+                    });
                 }, 100);
             }
 
@@ -229,6 +238,16 @@
             profileSection.style.pointerEvents = 'none';
         }
 
+        // If switching back to home-section from profile, ensure it's fully restored
+        if (sectionId === 'home-section') {
+            const homeSection = document.getElementById('home-section');
+            if (homeSection) {
+                // Remove any styles that might block interaction
+                homeSection.style.removeProperty('pointer-events');
+                homeSection.style.pointerEvents = 'auto';
+            }
+        }
+
         // Show banner section smoothly when navigating to other sections (use only active class)
         const bannerSection = document.querySelector('.banner-section');
         if (bannerSection && (sectionId === 'home-section' || sectionId === 'sell-section' || sectionId === 'rent-section' || sectionId === 'auction-section')) {
@@ -252,6 +271,10 @@
 
         // Ensure target section is visible before animation
         targetSection.style.display = 'block';
+        // If switching to home-section, ensure pointer-events are enabled
+        if (sectionId === 'home-section') {
+            targetSection.style.pointerEvents = 'auto';
+        }
 
         // Prepare target section - position it off-screen in opposite direction
         if (direction === 'right') {
@@ -272,10 +295,26 @@
                 targetSection.classList.remove('slide-in-left', 'slide-in-right');
                 targetSection.classList.add('active');
 
+                // If switching to home-section, ensure scroll containers are enabled
+                if (sectionId === 'home-section') {
+                    targetSection.style.pointerEvents = 'auto';
+                    // Re-enable scrolling immediately
+                    setTimeout(() => {
+                        reenableHorizontalScroll();
+                    }, 50);
+                }
+
                 // Clean up current section after animation completes
                 setTimeout(() => {
                     currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
                     currentActiveSection.style.display = 'none';
+
+                    // If we just switched to home-section, ensure scrolling is fully enabled
+                    if (sectionId === 'home-section') {
+                        setTimeout(() => {
+                            reenableHorizontalScroll();
+                        }, 100);
+                    }
                 }, 350); // Match CSS transition duration
             });
         });
@@ -289,6 +328,41 @@
         // If switching to home-section, show all subsections
         if (sectionId === 'home-section') {
             toggleHomeSubsections('home-section');
+            // Ensure scrolling is enabled after switching to home section
+            // Use multiple timeouts to ensure it works after all animations
+            setTimeout(() => {
+                const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
+                scrollContainers.forEach(container => {
+                    // Remove any inline styles that might block scrolling
+                    container.style.removeProperty('overflow');
+                    container.style.removeProperty('overflow-x');
+                    container.style.removeProperty('overflow-y');
+                    container.style.removeProperty('pointer-events');
+                    // Explicitly set scroll properties
+                    container.style.overflowX = 'auto';
+                    container.style.overflowY = 'hidden';
+                    container.style.pointerEvents = 'auto';
+                    // Force browser to recalculate scroll
+                    const scrollLeft = container.scrollLeft;
+                    container.scrollLeft = scrollLeft;
+                });
+
+                // Also ensure subsections have pointer-events enabled
+                const subsections = document.querySelectorAll('.home-subsection');
+                subsections.forEach(subsection => {
+                    subsection.style.pointerEvents = 'auto';
+                });
+            }, 400); // Wait for animations to complete
+
+            // Additional check after a longer delay to ensure everything is working
+            setTimeout(() => {
+                const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
+                scrollContainers.forEach(container => {
+                    container.style.overflowX = 'auto';
+                    container.style.overflowY = 'hidden';
+                    container.style.pointerEvents = 'auto';
+                });
+            }, 600);
         }
 
         // Update active states on all navigation items
@@ -414,6 +488,67 @@
     }
 
     // Toggle visibility of home-section subsections with smooth animation
+    // Re-enable horizontal scrolling on scroll containers
+    function reenableHorizontalScroll() {
+        const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
+        scrollContainers.forEach(container => {
+            // Remove any inline styles that might block scrolling
+            container.style.removeProperty('overflow');
+            container.style.removeProperty('overflow-x');
+            container.style.removeProperty('overflow-y');
+            container.style.removeProperty('pointer-events');
+            // Explicitly set scroll properties
+            container.style.overflowX = 'auto';
+            container.style.overflowY = 'hidden';
+            container.style.pointerEvents = 'auto';
+            // Force browser to recalculate scroll by accessing scrollWidth
+            const scrollWidth = container.scrollWidth;
+            const clientWidth = container.clientWidth;
+            // If content is wider than container, ensure scrolling works
+            if (scrollWidth > clientWidth) {
+                // Force a reflow
+                container.offsetHeight;
+                // Try to scroll slightly to trigger scrollbar
+                const currentScroll = container.scrollLeft;
+                container.scrollLeft = currentScroll + 1;
+                container.scrollLeft = currentScroll;
+            }
+        });
+
+        // Also ensure parent subsections have pointer-events enabled
+        const subsections = document.querySelectorAll('.home-subsection');
+        subsections.forEach(subsection => {
+            subsection.style.pointerEvents = 'auto';
+            // Ensure subsection containers are visible
+            const subsectionContainers = subsection.querySelectorAll('.horizontal-scroll-container');
+            subsectionContainers.forEach(subContainer => {
+                subContainer.style.overflowX = 'auto';
+                subContainer.style.overflowY = 'hidden';
+                subContainer.style.pointerEvents = 'auto';
+            });
+        });
+
+        // Specifically target sell and rent grids to ensure they're scrollable
+        const sellGrid = document.getElementById('home-sell-grid');
+        const rentGrid = document.getElementById('home-rent-grid');
+        const sellContainer = sellGrid ? sellGrid.closest('.horizontal-scroll-container') : null;
+        const rentContainer = rentGrid ? rentGrid.closest('.horizontal-scroll-container') : null;
+
+        if (sellContainer) {
+            sellContainer.style.overflowX = 'auto';
+            sellContainer.style.overflowY = 'hidden';
+            sellContainer.style.pointerEvents = 'auto';
+            sellContainer.offsetHeight; // Force reflow
+        }
+
+        if (rentContainer) {
+            rentContainer.style.overflowX = 'auto';
+            rentContainer.style.overflowY = 'hidden';
+            rentContainer.style.pointerEvents = 'auto';
+            rentContainer.offsetHeight; // Force reflow
+        }
+    }
+
     function toggleHomeSubsections(activeSubsection) {
         const auctionsSubsection = document.getElementById('auctions-section');
         const sellSubsection = document.getElementById('sell-section');
@@ -446,6 +581,10 @@
                     auctionsSubsection.style.opacity = '1';
                     auctionsSubsection.style.transform = 'translateX(0)';
                     auctionsSubsection.style.visibility = 'visible';
+                    // Re-enable scrolling after subsection is visible
+                    setTimeout(() => {
+                        reenableHorizontalScroll();
+                    }, 50);
                 });
             } else if (activeSubsection === 'sell-section' && sellSubsection) {
                 sellSubsection.style.display = 'block';
@@ -453,6 +592,10 @@
                     sellSubsection.style.opacity = '1';
                     sellSubsection.style.transform = 'translateX(0)';
                     sellSubsection.style.visibility = 'visible';
+                    // Re-enable scrolling after subsection is visible
+                    setTimeout(() => {
+                        reenableHorizontalScroll();
+                    }, 50);
                 });
             } else if (activeSubsection === 'rent-section' && rentSubsection) {
                 rentSubsection.style.display = 'block';
@@ -460,18 +603,34 @@
                     rentSubsection.style.opacity = '1';
                     rentSubsection.style.transform = 'translateX(0)';
                     rentSubsection.style.visibility = 'visible';
+                    // Re-enable scrolling after subsection is visible
+                    setTimeout(() => {
+                        reenableHorizontalScroll();
+                    }, 50);
                 });
             } else if (activeSubsection === 'home-section') {
                 // Show all subsections for home-section
                 allSubsections.forEach((subsection, index) => {
                     if (subsection) {
                         subsection.style.display = 'block';
+                        subsection.style.pointerEvents = 'auto';
                         // Stagger the animations slightly for a nicer effect
                         setTimeout(() => {
                             requestAnimationFrame(() => {
                                 subsection.style.opacity = '1';
                                 subsection.style.transform = 'translateX(0)';
                                 subsection.style.visibility = 'visible';
+                                subsection.style.pointerEvents = 'auto';
+                                // Re-enable scrolling after all subsections are visible
+                                if (index === allSubsections.length - 1) {
+                                    setTimeout(() => {
+                                        reenableHorizontalScroll();
+                                        // Additional check to ensure all containers are scrollable
+                                        setTimeout(() => {
+                                            reenableHorizontalScroll();
+                                        }, 100);
+                                    }, 50);
+                                }
                             });
                         }, index * 50);
                     }
@@ -975,6 +1134,37 @@
             });
 
             await Promise.all(loadPromises);
+
+            // Re-enable horizontal scrolling after all grids are loaded
+            setTimeout(() => {
+                const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
+                scrollContainers.forEach(container => {
+                    // Remove any inline styles that might block scrolling
+                    container.style.removeProperty('overflow');
+                    container.style.removeProperty('overflow-x');
+                    container.style.removeProperty('overflow-y');
+                    container.style.removeProperty('pointer-events');
+                    // Explicitly set scroll properties
+                    container.style.overflowX = 'auto';
+                    container.style.overflowY = 'hidden';
+                    container.style.pointerEvents = 'auto';
+                    // Force browser to recalculate scroll properties
+                    const scrollLeft = container.scrollLeft;
+                    container.scrollLeft = scrollLeft;
+                });
+
+                // Ensure subsections have pointer-events enabled
+                const subsections = document.querySelectorAll('.home-subsection');
+                subsections.forEach(subsection => {
+                    subsection.style.pointerEvents = 'auto';
+                });
+            }, 100);
+
+            // Additional check after a longer delay
+            setTimeout(() => {
+                reenableHorizontalScroll();
+            }, 300);
+
             return;
         }
 

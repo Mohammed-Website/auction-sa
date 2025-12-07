@@ -1,7 +1,7 @@
 /* Horizontal Scroll Container */
 .horizontal-scroll-container {
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;
@@ -12,6 +12,7 @@
     padding-left: 1rem;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
+    pointer-events: auto !important;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar {
