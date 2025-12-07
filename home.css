@@ -42,6 +42,7 @@
     --font-size-base: 1rem;
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.25rem;
+    --font-size-xxl: 1.5rem;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
@@ -355,7 +356,7 @@ body {
 
 
 .section-title {
-    font-size: 1.25rem;
+    font-size: var(--spacing-md);
     font-weight: 700;
     margin-bottom: 1rem;
     color: #2c5aa0;
@@ -384,16 +385,16 @@ body {
     }
 
     .profile-name {
-        font-size: 1.25rem;
+        font-size: var(--font-size-base) !important;
     }
 
     .menu-section {
-        padding: 1.25rem;
+        padding: 1rem !important;
         margin-bottom: 0.75rem;
     }
 
     .menu-section-title {
-        font-size: 1rem;
+        font-size: var(--spacing-md);
         padding-bottom: 0.5rem;
     }
 
@@ -402,7 +403,7 @@ body {
     }
 
     .menu-item-text {
-        font-size: 0.95rem;
+        font-size: var(--spacing-md);
     }
 
     .menu-item-icon {
@@ -493,27 +494,7 @@ body {
         flex: 1;
     }
 
-    .account-card .form-group {
-        padding: var(--spacing-md) 0;
-        gap: var(--spacing-sm);
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .account-card .form-label {
-        font-size: var(--font-size-sm);
-        gap: var(--spacing-xs);
-    }
-
-    .account-card .form-label-icon {
-        width: 18px;
-        height: 18px;
-    }
-
-    .account-card .form-value {
-        font-size: var(--font-size-sm);
-        text-align: left;
-    }
+    /* Form-group in account-card now uses info-row classes, so no separate styles needed */
 
     .edit-btn,
     .add-address-btn {
@@ -1496,7 +1477,7 @@ body {
     left: 0;
     right: 0;
     width: 100vw;
-    max-width: 100%;
+    max-width: 100vw;
     z-index: 99;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-top: 0;
@@ -1741,9 +1722,7 @@ body {
     overflow: visible;
 }
 
-.card-body .form-group:not(:last-child) {
-    margin-bottom: var(--spacing-lg);
-}
+/* Form-group in card-body now uses info-row classes, so no separate styles needed */
 
 /* Info Row Component */
 .info-row {
@@ -1863,49 +1842,7 @@ body {
 }
 
 /* Form Groups in Card */
-.account-card .form-group {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-lg) 0;
-    border-bottom: 1px solid var(--border-light);
-    gap: var(--spacing-md);
-}
-
-.account-card .form-group:last-child {
-    border-bottom: none;
-    margin-bottom: var(--spacing-md);
-}
-
-.account-card .form-label {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    margin-bottom: 0;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.account-card .form-value {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    color: var(--text-secondary);
-    text-align: left;
-    flex: 1;
-    word-break: break-word;
-}
-
-.account-card .form-label-icon {
-    width: 20px;
-    height: 20px;
-    color: var(--primary-color);
-    stroke: var(--primary-color);
-    stroke-width: 2;
-    flex-shrink: 0;
-}
+/* Form-group in account-card now uses info-row classes, so no separate styles needed */
 
 /* Buttons */
 .edit-btn,
@@ -1984,7 +1921,10 @@ body {
 
 #profile-section-headers {
     position: relative;
-    width: 100%;
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
     z-index: 99;
 }
 
@@ -2002,7 +1942,7 @@ body {
     left: 0;
     right: 0;
     width: 100vw;
-    max-width: 100%;
+    max-width: 100vw;
     z-index: 99;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-top: 0;
@@ -2014,7 +1954,6 @@ body {
 
 .profile-name {
     font-size: 1.5rem;
-    margin: 1rem 0 0 0;
     font-weight: var(--font-weight-normal);
 }
 
@@ -2032,7 +1971,7 @@ body {
 }
 
 .menu-section-title {
-    font-size: 1.1rem;
+    font-size: var(--menu-section-title);
     font-weight: 700;
     color: #2c5aa0;
     margin: 0 0 1rem 0;
@@ -2087,7 +2026,7 @@ body {
 }
 
 .menu-item-text {
-    font-size: 1rem;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     color: #333;
 }
@@ -2323,7 +2262,7 @@ body {
     }
 
     .section-title {
-        font-size: 1.5rem;
+        font-size: var(--font-size-xxl);
     }
 
     .profile-stats {
@@ -2350,6 +2289,13 @@ body {
     }
 
     /* Reset sticky positioning on desktop - keep relative positioning */
+    #profile-section-headers {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
     .profile-page-title,
     .account-tabs-header,
     .card-header {
