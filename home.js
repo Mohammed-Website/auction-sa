@@ -71,12 +71,23 @@
             }
         });
 
+        // Hide banner section smoothly (use only active class)
+        const bannerSection = document.querySelector('.banner-section');
+        if (bannerSection) {
+            bannerSection.classList.remove('active');
+        }
+
         // Clear any visible property cards
         clearPropertyCards();
     }
 
     // Switch to a section with animation
     function switchToSection(sectionId) {
+        // Scroll to top immediately when navigating
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+
         // Prevent switching to the same section
         if (sectionId === currentSection) {
             // If clicking the same section, still update visibility of subsections
@@ -105,6 +116,12 @@
                 profileSection.style.opacity = '0';
                 profileSection.style.visibility = 'hidden';
                 profileSection.style.pointerEvents = 'none';
+            }
+
+            // Show banner section smoothly when navigating to these sections (use only active class)
+            const bannerSection = document.querySelector('.banner-section');
+            if (bannerSection) {
+                bannerSection.classList.add('active');
             }
 
             // Switch to home-section if not already active
@@ -154,20 +171,33 @@
         if (sectionId === 'profile-section') {
             ensureProfileOnlyVisible();
 
-            // Show profile section immediately
+            // Prepare profile section - position it off-screen from the left
             targetSection.style.display = 'block';
-            targetSection.style.opacity = '1';
+            targetSection.style.transform = 'translateX(-100%)';
+            targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
-            targetSection.style.pointerEvents = 'auto';
-            targetSection.style.transform = 'translateX(0)';
-            targetSection.classList.add('active');
+            targetSection.style.pointerEvents = 'none';
+            targetSection.classList.remove('active');
 
-            // Clean up current section
+            // Force reflow to ensure styles are applied
+            targetSection.offsetHeight;
+
+            // Clean up current section first
             currentActiveSection.classList.remove('active');
             currentActiveSection.style.display = 'none';
             currentActiveSection.style.opacity = '0';
             currentActiveSection.style.visibility = 'hidden';
             currentActiveSection.style.pointerEvents = 'none';
+
+            // Animate profile section in from the left
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    targetSection.style.transform = 'translateX(0)';
+                    targetSection.style.opacity = '1';
+                    targetSection.style.pointerEvents = 'auto';
+                    targetSection.classList.add('active');
+                });
+            });
 
             // Update current section
             currentSection = sectionId;
@@ -186,6 +216,12 @@
             profileSection.style.opacity = '0';
             profileSection.style.visibility = 'hidden';
             profileSection.style.pointerEvents = 'none';
+        }
+
+        // Show banner section smoothly when navigating to other sections (use only active class)
+        const bannerSection = document.querySelector('.banner-section');
+        if (bannerSection && (sectionId === 'home-section' || sectionId === 'sell-section' || sectionId === 'rent-section' || sectionId === 'auction-section')) {
+            bannerSection.classList.add('active');
         }
 
         // Get direction for animation
@@ -1451,5 +1487,568 @@
     } else {
         initBannerSlider();
     }
+})();
+
+// Profile Components and Navigation
+(function () {
+    'use strict';
+
+    // Profile Route Management
+    const ProfileRoutes = {
+        MENU: 'menu',
+        ACCOUNT_INFO: 'account-info'
+    };
+
+    let currentProfileRoute = ProfileRoutes.MENU;
+
+    // Profile Header Component
+    function createProfileHeader(userData) {
+        const name = userData?.fullName || userData?.name || 'المستخدم';
+        const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
+
+        const headerHTML = `
+            <h1 class="profile-page-title">حسابي</h1>
+            <div class="profile-header-card profile-menu-header">
+                <div class="profile-image-wrapper">
+                    <div class="profile-image" id="profile-menu-image">
+                        ${imageUrl
+                ? `<img src="${imageUrl}" alt="صورة الملف الشخصي" onerror="this.onerror=null; this.style.display='none'; const placeholder = this.nextElementSibling; if(placeholder) placeholder.style.display='block';">`
+                : ''}
+                        <i class="fas fa-user profile-image-placeholder" ${imageUrl ? 'style="display:none;"' : ''}></i>
+                    </div>
+                </div>
+                <h2 class="profile-name">${name}</h2>
+            </div>
+        `;
+
+        return headerHTML;
+    }
+
+    // Menu Item Component
+    function createMenuItem(item) {
+        const { icon, text, route, action } = item;
+        const hasAction = route || action;
+
+        const itemHTML = `
+            <div class="menu-item" ${hasAction ? `data-route="${route || ''}" data-action="${action || ''}"` : ''}>
+                <div class="menu-item-content">
+                    <i data-lucide="${icon}" class="menu-item-icon"></i>
+                    <span class="menu-item-text">${text}</span>
+                </div>
+                ${hasAction ? '<i data-lucide="chevron-left" class="menu-item-arrow"></i>' : ''}
+            </div>
+        `;
+
+        return itemHTML;
+    }
+
+    // Menu Section Component
+    function createMenuSection(section) {
+        const { title, items } = section;
+
+        const itemsHTML = items.map(item => createMenuItem(item)).join('');
+
+        const sectionHTML = `
+            <div class="menu-section">
+                <h3 class="menu-section-title">${title}</h3>
+                <div class="menu-items">
+                    ${itemsHTML}
+                </div>
+            </div>
+        `;
+
+        return sectionHTML;
+    }
+
+    // Menu Configuration
+    const menuConfig = [
+        {
+            title: 'النظام',
+            items: [
+                { icon: 'user', text: 'معلومات الحساب', route: ProfileRoutes.ACCOUNT_INFO },
+                { icon: 'heart', text: 'المفضلة', route: null, action: 'favorites' },
+                { icon: 'settings', text: 'الإعدادات', route: null, action: 'settings' }
+            ]
+        },
+        {
+            title: 'المحفظة',
+            items: [
+                { icon: 'wallet', text: 'المحافظ وحساب البنك', route: null, action: 'wallet' },
+                { icon: 'activity', text: 'العمليات', route: null, action: 'transactions' }
+            ]
+        },
+        {
+            title: 'التقارير',
+            items: [
+                { icon: 'file-text', text: 'تقارير موجز', route: null, action: 'reports' },
+                { icon: 'file-check', text: 'إقراراتي', route: null, action: 'statements' }
+            ]
+        },
+        {
+            title: 'المزيد',
+            items: [
+                { icon: 'file-text', text: 'الشروط والأحكام', route: null, action: 'terms' },
+                { icon: 'shield', text: 'سياسة الخصوصية', route: null, action: 'privacy' },
+                { icon: 'help-circle', text: 'المساعدة', route: null, action: 'help' },
+                { icon: 'log-out', text: 'تسجيل الخروج', route: null, action: 'logout' }
+            ]
+        }
+    ];
+
+    // Render Profile Menu
+    async function renderProfileMenu() {
+        const headerContainer = document.getElementById('profile-header-container');
+        const sectionsContainer = document.getElementById('profile-menu-sections');
+
+        if (!headerContainer || !sectionsContainer) {
+            console.error('Profile menu containers not found');
+            return;
+        }
+
+        // Load user data
+        let userData = null;
+        try {
+            const response = await fetch('json-data/user-data.json');
+            if (response.ok) {
+                userData = await response.json();
+            }
+        } catch (error) {
+            console.warn('Could not load user data:', error);
+        }
+
+        // Render header
+        headerContainer.innerHTML = createProfileHeader(userData);
+
+        // Render menu sections
+        const sectionsHTML = menuConfig.map(section => createMenuSection(section)).join('');
+        sectionsContainer.innerHTML = sectionsHTML;
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Attach event listeners to menu items
+        attachMenuListeners();
+    }
+
+    // Attach event listeners to menu items
+    function attachMenuListeners() {
+        const menuItems = document.querySelectorAll('.menu-item[data-route], .menu-item[data-action]');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', function () {
+                const route = this.getAttribute('data-route');
+                const action = this.getAttribute('data-action');
+
+                if (route) {
+                    navigateToProfileRoute(route);
+                } else if (action) {
+                    handleMenuAction(action);
+                }
+            });
+        });
+    }
+
+    // Handle menu actions
+    function handleMenuAction(action) {
+        console.log('Menu action:', action);
+        // Placeholder for future actions
+        switch (action) {
+            case 'favorites':
+                // TODO: Navigate to favorites
+                break;
+            case 'settings':
+                // TODO: Navigate to settings
+                break;
+            case 'wallet':
+                // TODO: Navigate to wallet
+                break;
+            case 'transactions':
+                // TODO: Navigate to transactions
+                break;
+            case 'reports':
+                // TODO: Navigate to reports
+                break;
+            case 'statements':
+                // TODO: Navigate to statements
+                break;
+            case 'terms':
+                // TODO: Show terms
+                break;
+            case 'privacy':
+                // TODO: Show privacy
+                break;
+            case 'help':
+                // TODO: Show help
+                break;
+            case 'logout':
+                // TODO: Handle logout
+                if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                    console.log('Logging out...');
+                }
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    }
+
+    // Navigate to profile route
+    function navigateToProfileRoute(route) {
+        const menuView = document.getElementById('profile-menu-view');
+        const accountInfoView = document.getElementById('profile-account-info-view');
+
+        if (!menuView || !accountInfoView) {
+            console.error('Profile views not found');
+            return;
+        }
+
+        if (route === ProfileRoutes.ACCOUNT_INFO) {
+            // Show account info view
+            menuView.classList.remove('active');
+            accountInfoView.classList.add('active');
+            currentProfileRoute = route;
+
+            // Update URL hash
+            window.location.hash = '#/profile/account-info';
+
+            // Hide all tab views and show tabs (use only active class)
+            const accountTabs = document.querySelector('.account-tabs');
+            const tabViews = document.querySelectorAll('.tab-view');
+
+            // Hide all tab views
+            tabViews.forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Show account tabs
+            if (accountTabs) {
+                accountTabs.classList.remove('hidden');
+                // Reset any active tab states
+                const tabs = accountTabs.querySelectorAll('.account-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+            }
+        } else if (route === ProfileRoutes.MENU) {
+            // Show menu view
+            accountInfoView.classList.remove('active');
+            menuView.classList.add('active');
+            currentProfileRoute = route;
+
+            // Reset account info tabs state (use only active class)
+            const accountTabs = document.querySelector('.account-tabs');
+            const tabViews = document.querySelectorAll('.tab-view');
+
+            if (accountTabs) {
+                accountTabs.classList.remove('hidden');
+            }
+
+            tabViews.forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Update URL hash
+            window.location.hash = '#/profile';
+        }
+    }
+
+    // Handle close button
+    function initCloseButton() {
+        const closeBtn = document.getElementById('profile-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                navigateToProfileRoute(ProfileRoutes.MENU);
+            });
+        }
+    }
+
+    // Handle browser back button and Android back button
+    function initBrowserNavigation() {
+        // Handle hash changes
+        window.addEventListener('hashchange', function () {
+            const hash = window.location.hash;
+            if (hash === '#/profile' || hash === '#/profile/') {
+                navigateToProfileRoute(ProfileRoutes.MENU);
+            } else if (hash === '#/profile/account-info') {
+                navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
+            }
+        });
+
+        // Handle initial hash
+        const hash = window.location.hash;
+        if (hash === '#/profile/account-info') {
+            // If directly accessing account info, show it
+            setTimeout(() => {
+                navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
+            }, 100);
+        }
+
+        // Handle Android back button (popstate event)
+        window.addEventListener('popstate', function (event) {
+            const hash = window.location.hash;
+            if (hash === '#/profile' || hash === '#/profile/' || !hash.includes('/profile')) {
+                navigateToProfileRoute(ProfileRoutes.MENU);
+            } else if (hash === '#/profile/account-info') {
+                navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
+            }
+        });
+
+        // Handle back button press (for mobile apps/Cordova)
+        if (typeof document.addEventListener !== 'undefined') {
+            document.addEventListener('backbutton', function (event) {
+                if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO) {
+                    // Go back to menu
+                    navigateToProfileRoute(ProfileRoutes.MENU);
+                    if (event && event.preventDefault) {
+                        event.preventDefault();
+                    }
+                }
+            }, false);
+        }
+    }
+
+    // Initialize profile system
+    function initProfileSystem() {
+        // Only initialize if we're in profile section
+        const profileSection = document.getElementById('profile-section');
+        if (!profileSection) {
+            return;
+        }
+
+        // Render menu on initialization
+        renderProfileMenu();
+
+        // Initialize close button
+        initCloseButton();
+
+        // Initialize browser navigation
+        initBrowserNavigation();
+
+        // Re-render menu when profile section becomes active
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const isActive = profileSection.classList.contains('active');
+                    if (isActive) {
+                        // Check if menu view is active and needs rendering
+                        const menuView = document.getElementById('profile-menu-view');
+                        if (menuView && menuView.classList.contains('active') && currentProfileRoute === ProfileRoutes.MENU) {
+                            // Re-render menu to ensure icons are initialized
+                            setTimeout(() => {
+                                renderProfileMenu();
+                            }, 100);
+                        }
+                    }
+                }
+            });
+        });
+
+        observer.observe(profileSection, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Also listen for profile button clicks to ensure menu is rendered
+        const profileBtn = document.querySelector('.header-profile-btn');
+        if (profileBtn) {
+            profileBtn.addEventListener('click', function () {
+                // Reset to menu view when opening profile
+                if (currentProfileRoute !== ProfileRoutes.MENU) {
+                    navigateToProfileRoute(ProfileRoutes.MENU);
+                }
+                // Render menu after a short delay to ensure section is visible
+                setTimeout(() => {
+                    renderProfileMenu();
+                }, 200);
+            });
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProfileSystem);
+    } else {
+        initProfileSystem();
+    }
+
+    // Export for external use
+    window.ProfileNavigation = {
+        navigateTo: navigateToProfileRoute,
+        routes: ProfileRoutes
+    };
+})();
+
+// Account Info Tabs Management
+(function () {
+    'use strict';
+
+    // Tab state
+    let currentTab = 'basic-data';
+    let isInDetailView = false;
+
+    // Initialize tabs
+    function initAccountTabs() {
+        const tabs = document.querySelectorAll('.account-tab');
+        const tabViews = document.querySelectorAll('.tab-view');
+
+        // Tab click handlers
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const tabId = this.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+
+        // Back to tabs button handlers
+        const backToTabsButtons = document.querySelectorAll('.back-to-tabs-btn[data-back="tabs"]');
+        backToTabsButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                goBackToTabs();
+            });
+        });
+
+        // Back to profile button handler
+        const backToProfileBtn = document.getElementById('back-to-profile-btn');
+        if (backToProfileBtn) {
+            backToProfileBtn.addEventListener('click', function () {
+                if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
+                    window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+                }
+            });
+        }
+
+        // Don't auto-open any tab - let user choose
+    }
+
+    // Switch to a specific tab
+    function switchTab(tabId) {
+        const accountTabs = document.querySelector('.account-tabs');
+        const tabViews = document.querySelectorAll('.tab-view');
+        const wrapper = document.querySelector('.account-tabs-wrapper');
+
+        // Hide account tabs with smooth transition (use only active class)
+        if (accountTabs) {
+            accountTabs.classList.add('hidden');
+        }
+
+        // Show the selected tab view (use only active class)
+        tabViews.forEach(view => {
+            if (view.id === `${tabId}-view`) {
+                view.classList.add('active');
+            } else {
+                view.classList.remove('active');
+            }
+        });
+
+        // Update wrapper height to match active tab view
+        if (wrapper) {
+            const activeView = document.getElementById(`${tabId}-view`);
+            if (activeView) {
+                // Wait for view to be visible, then adjust wrapper height
+                setTimeout(() => {
+                    const viewHeight = activeView.scrollHeight;
+                    wrapper.style.minHeight = viewHeight + 'px';
+                }, 50);
+            }
+        }
+
+        // Update tab buttons (for visual feedback)
+        const tabs = document.querySelectorAll('.account-tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+
+        currentTab = tabId;
+        isInDetailView = true;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        }
+    }
+
+    // Go back to tabs view (from detail view)
+    function goBackToTabs() {
+        const accountTabs = document.querySelector('.account-tabs');
+        const tabViews = document.querySelectorAll('.tab-view');
+        const wrapper = document.querySelector('.account-tabs-wrapper');
+
+        // Hide all tab views (use only active class)
+        tabViews.forEach(view => {
+            view.classList.remove('active');
+        });
+
+        // Show account tabs (use only active class)
+        if (accountTabs) {
+            accountTabs.classList.remove('hidden');
+        }
+
+        // Reset wrapper height to default
+        if (wrapper) {
+            wrapper.style.minHeight = '';
+        }
+
+        isInDetailView = false;
+
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        }
+    }
+
+    // Initialize when account info view becomes active
+    function initAccountInfoView() {
+        const accountInfoView = document.getElementById('profile-account-info-view');
+        if (!accountInfoView) {
+            return;
+        }
+
+        // Use MutationObserver to detect when view becomes active
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const isActive = accountInfoView.classList.contains('active');
+                    if (isActive) {
+                        // Initialize tabs when view becomes active
+                        setTimeout(() => {
+                            initAccountTabs();
+                        }, 100);
+                    }
+                }
+            });
+        });
+
+        observer.observe(accountInfoView, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Also initialize if already active
+        if (accountInfoView.classList.contains('active')) {
+            setTimeout(() => {
+                initAccountTabs();
+            }, 100);
+        }
+    }
+
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAccountInfoView);
+    } else {
+        initAccountInfoView();
+    }
+
+    // Export for external use
+    window.AccountInfoTabs = {
+        switchTab: switchTab,
+        goBack: goBackToTabs
+    };
 })();
 
