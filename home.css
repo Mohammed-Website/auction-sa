@@ -403,7 +403,7 @@ body {
     }
 
     .menu-item-text {
-        font-size: var(--spacing-md);
+        font-size: var(--font-size-xs) !important;
     }
 
     .menu-item-icon {
@@ -2026,7 +2026,7 @@ body {
 }
 
 .menu-item-text {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-base);
     font-weight: 600;
     color: #333;
 }
