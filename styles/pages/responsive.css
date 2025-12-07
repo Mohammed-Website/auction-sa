@@ -9,7 +9,7 @@
     }
 
     .menu-section {
-        padding: 1rem !important;
+        padding: 0.5rem 1rem;
         margin-bottom: 0.75rem;
     }
 
@@ -29,6 +29,11 @@
     .menu-item-icon {
         width: 22px;
         height: 22px;
+    }
+
+    /* Horizontal Scroll Container */
+    .horizontal-scroll-container {
+        margin-bottom: 3rem;
     }
 
     .profile-close-btn {
@@ -269,8 +274,16 @@
         padding: 1.25rem 2rem;
     }
 
+    .header-content {
+        justify-content: space-between;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
     .logo {
         font-size: var(--spacing-lg);
+        flex: 0 1 auto;
+        margin: 0 1.5rem;
     }
 
     /* Show Top Navigation on Desktop */
@@ -340,7 +353,7 @@
 
     #app-content {
         padding: 20px 2rem 0 2rem;
-        max-width: 800px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 

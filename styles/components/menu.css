@@ -86,11 +86,9 @@
 .menu-item:hover {
     background: #f0f0f0;
     border-color: #e0e0e0;
-    transform: translateX(-4px);
 }
 
 .menu-item:active {
-    transform: translateX(-2px);
     background: #e8f4f8;
 }
 
@@ -127,7 +125,6 @@
 }
 
 .menu-item:hover .menu-item-arrow {
-    transform: translateX(-4px);
     color: #2c5aa0;
     stroke: #2c5aa0;
 }
