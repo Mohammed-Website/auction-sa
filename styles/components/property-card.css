@@ -1,0 +1,131 @@
+/* Property Card */
+.property-card {
+    background: #f9f9f9;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    min-width: 280px;
+    flex-shrink: 0;
+}
+
+.property-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.property-image {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
+    position: relative;
+}
+
+.property-image::after {
+    content: '🖼️';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+.property-info {
+    padding: 1rem;
+}
+
+.property-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.property-location {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-location i,
+.auction-location i,
+.location-icon {
+    color: #000000 !important;
+    width: 16px;
+    height: 16px;
+    stroke: #000000;
+    stroke-width: 2;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 0.25rem;
+}
+
+.feature-icon {
+    width: 16px;
+    height: 16px;
+    stroke: #666;
+    stroke-width: 2;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 0.25rem;
+}
+
+.property-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2c5aa0;
+    margin: 0;
+    margin-top: 0.5rem;
+}
+
+.property-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: #2c5aa0;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.property-image {
+    position: relative;
+}
+
+.property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.property-features span {
+    background: #f0f4f8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-features i {
+    color: #000000 !important;
+    font-size: 0.85rem;
+}
+
+.rental-price {
+    color: #28a745;
+}
+
+/* Rental Cards */
+.rental-card {
+    border-left: 4px solid #28a745;
+}

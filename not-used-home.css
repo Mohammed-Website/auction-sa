@@ -196,6 +196,7 @@ body {
     height: auto;
     overflow: visible;
     transition: opacity var(--transition-base), transform var(--transition-base), visibility var(--transition-base), height var(--transition-base), margin-bottom var(--transition-base);
+    margin-top: 5rem;
 }
 
 .banner-section:not(.active) {
@@ -2405,13 +2406,17 @@ body {
     }
 
     #app-content {
-        padding: 60px 2rem 0 2rem;
         max-width: 1200px;
         margin: 0 auto;
     }
 
     .section-content {
         max-width: 100%;
+    }
+
+    /* Banner Slider */
+    .banner-section {
+        margin-top: 0;
     }
 
     .profile-container {
@@ -2455,7 +2460,6 @@ body {
 
     #app-content {
         max-width: 1400px;
-        padding: 60px 2rem 0 2rem;
     }
 
     .auctions-grid {

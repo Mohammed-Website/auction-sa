@@ -263,6 +263,7 @@
                 // Ensure it's visible and properly positioned
                 header.style.position = 'sticky';
                 header.style.zIndex = '99';
+                header.style.padding = 'var(--spacing-xs) var(--spacing-lg)';
             }
         });
     }
