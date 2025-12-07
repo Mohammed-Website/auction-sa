@@ -18,6 +18,10 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 
+    /* Layout */
+    --top-header-height: 60px;
+    /* Approximate height of top-header on mobile */
+
     /* Spacing */
     --spacing-xs: 0.5rem;
     --spacing-sm: 0.75rem;
@@ -62,7 +66,6 @@
 .fa,
 i[class*="fa-"] {
     color: #000000;
-    font-weight: 900;
 }
 
 /* Ensure all icons are solid black */
@@ -122,7 +125,7 @@ body {
 .top-header {
     background: linear-gradient(135deg, #2c5aa0 0%, #1e3d6f 100%);
     color: white;
-    padding: 0.5rem 1rem;
+    padding: 0.7rem 1rem;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -137,7 +140,8 @@ body {
     position: relative;
 }
 
-.header-profile-btn {
+.header-profile-btn,
+.header-search-btn {
     background: transparent;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
@@ -151,17 +155,20 @@ body {
     padding: 0;
 }
 
-.header-profile-btn:hover {
+.header-profile-btn:hover,
+.header-search-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.5);
     transform: scale(1.05);
 }
 
-.header-profile-btn:active {
+.header-profile-btn:active,
+.header-search-btn:active {
     transform: scale(0.95);
 }
 
-.profile-icon {
+.profile-icon,
+.search-icon {
     width: 20px;
     height: 20px;
     color: white;
@@ -423,7 +430,7 @@ body {
 
     .account-tab {
         padding: var(--spacing-sm) var(--spacing-md);
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-sm) !important;
     }
 
     .card-header {
@@ -468,7 +475,7 @@ body {
     }
 
     .info-label {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-sm) !important;
         gap: var(--spacing-xs);
         flex-shrink: 0;
     }
@@ -479,7 +486,7 @@ body {
     }
 
     .info-value {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-sm) !important;
         margin-top: 0;
         padding-right: 0;
         text-align: left;
@@ -510,8 +517,7 @@ body {
 
     .edit-btn,
     .add-address-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-xs) !important;
     }
 
     .empty-state {
@@ -1098,8 +1104,10 @@ body {
     position: relative;
 }
 
+/* Headers are now outside containers, no padding needed */
+
 #profile-account-info-view .profile-container {
-    padding-top: 3rem;
+    padding-top: 0;
 }
 
 /* Profile Header Card with Image */
@@ -1396,9 +1404,12 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding-top: 3.5rem;
+    padding-top: 0;
     padding-bottom: var(--spacing-xl);
+    margin-top: 0;
 }
+
+/* Headers are now outside containers, no padding needed */
 
 /* Wrapper for tabs and tab content to occupy same space */
 .account-tabs-wrapper {
@@ -1422,6 +1433,7 @@ body {
     border-radius: 0;
     box-shadow: none;
     margin-bottom: var(--spacing-lg);
+    margin-top: 0;
     width: 100%;
     opacity: 1;
     transform: translateX(0);
@@ -1442,17 +1454,19 @@ body {
 
 /* Back to Profile Button */
 .back-to-profile-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
+    width: 44px;
+    height: 44px;
+    border-radius: 0;
     border: none;
-    background: var(--bg-light);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all var(--transition-base);
     flex-shrink: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .back-to-profile-btn:hover {
@@ -1472,30 +1486,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: var(--spacing-md);
     gap: var(--spacing-md);
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 2px solid var(--border-light);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
     background: var(--bg-white);
-    border-radius: var(--radius-lg);
-    position: relative;
+    border-radius: 0;
+    position: sticky;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100%;
+    z-index: 99;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    display: none;
 }
 
 .account-tabs-header::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--primary-color);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    display: none;
 }
 
 .account-tabs-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--primary-color);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
+    color: #000000;
     margin: 0;
     flex: 1;
     text-align: center;
@@ -1503,6 +1521,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: auto;
+    pointer-events: none;
 }
 
 .account-tab {
@@ -1643,7 +1662,8 @@ body {
     background: var(--bg-white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 }
 
 .card-header {
@@ -1651,42 +1671,49 @@ body {
     align-items: center;
     justify-content: flex-start;
     gap: var(--spacing-md);
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-bottom: 2px solid var(--border-light);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
     background: var(--bg-white);
-    position: relative;
+    position: sticky;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100%;
+    z-index: 99;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    display: none;
 }
 
 .card-header::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--primary-color);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    display: none;
 }
 
 .back-btn,
 .back-to-tabs-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
+    width: 44px;
+    height: 44px;
+    border-radius: 0;
     border: none;
-    background: var(--bg-light);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all var(--transition-base);
     flex-shrink: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .back-btn:hover,
 .back-to-tabs-btn:hover {
-    background: var(--bg-hover);
-    transform: translateX(2px);
+    background: transparent;
+    opacity: 0.7;
 }
 
 .back-icon {
@@ -1698,9 +1725,8 @@ body {
 }
 
 .card-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--primary-color);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
     margin: 0;
     flex: 1;
 }
@@ -1765,6 +1791,77 @@ body {
     word-break: break-word;
 }
 
+/* Profile Image in Card Body */
+.profile-image-row {
+    padding-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.profile-image-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.profile-image-edit {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-image-edit .profile-image {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--border-light);
+    overflow: hidden;
+}
+
+.profile-image-edit .profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-edit .profile-image-placeholder {
+    font-size: 2rem;
+    color: #000000 !important;
+}
+
+.edit-image-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background: var(--primary-color);
+    border: 2px solid var(--bg-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.edit-image-btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+.edit-image-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--bg-white);
+    stroke: var(--bg-white);
+    stroke-width: 2.5;
+}
+
 /* Form Groups in Card */
 .account-card .form-group {
     display: flex;
@@ -1814,7 +1911,7 @@ body {
 .edit-btn,
 .add-address-btn {
     width: 100%;
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-lg);
     border: none;
     border-radius: var(--radius-md);
     background: var(--primary-color);
@@ -1885,19 +1982,40 @@ body {
     padding: 1rem;
 }
 
+#profile-section-headers {
+    position: relative;
+    width: 100%;
+    z-index: 99;
+}
+
 .profile-page-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-normal);
     color: #000000;
-    margin: var(--spacing-xs) 0 var(--spacing-lg) 0;
+    margin: 0;
     text-align: center;
-    padding: 0 var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100%;
+    z-index: 99;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    display: block;
 }
 
 .profile-name {
     font-size: 1.5rem;
-    font-weight: 700;
     margin: 1rem 0 0 0;
+    font-weight: var(--font-weight-normal);
 }
 
 #profile-menu-image {
@@ -2023,7 +2141,7 @@ body {
     align-items: center;
     gap: 1rem;
     padding: 0 2rem;
-    position: relative;
+    padding-top: 0.5rem;
 }
 
 .top-nav-item {
@@ -2073,7 +2191,6 @@ body {
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(11, 44, 74, 0.3);
     transform: translateY(0);
     z-index: 10;
     position: relative;
@@ -2232,6 +2349,47 @@ body {
         padding-bottom: 0;
     }
 
+    /* Reset sticky positioning on desktop - keep relative positioning */
+    .profile-page-title,
+    .account-tabs-header,
+    .card-header {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        width: auto;
+        max-width: none;
+        box-shadow: none;
+        z-index: auto;
+        border-radius: var(--radius-lg);
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .account-tabs-header {
+        border-radius: var(--radius-lg);
+    }
+
+    .card-header {
+        border-radius: var(--radius-lg);
+    }
+
+    /* Remove padding adjustments on desktop */
+    .account-info-container:has(.account-tabs-header),
+    .account-info-container:has(.profile-page-title),
+    .account-card:has(.card-header),
+    .profile-container:has(.profile-page-title),
+    .account-tabs {
+        padding-top: 0;
+        margin-top: 0;
+    }
+
+    /* Ensure top-nav doesn't hide content - add padding to account for fixed nav */
+    .profile-page-title {
+        margin-top: 0;
+        padding-top: var(--spacing-lg);
+    }
+
     .top-header {
         padding: 1.25rem 2rem;
     }
@@ -2246,8 +2404,11 @@ body {
         background: white;
         border-bottom: 1px solid #e8e8e8;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        position: sticky;
+        position: fixed;
         top: 70px;
+        right: 0;
+        left: 0;
+        width: 100%;
         z-index: 99;
         padding: 1rem 0;
         margin-top: 0;
@@ -2298,7 +2459,7 @@ body {
     }
 
     #app-content {
-        padding: 0 2rem;
+        padding: 60px 2rem 0 2rem;
         max-width: 1200px;
         margin: 0 auto;
     }
@@ -2348,6 +2509,7 @@ body {
 
     #app-content {
         max-width: 1400px;
+        padding: 60px 2rem 0 2rem;
     }
 
     .auctions-grid {
@@ -2368,12 +2530,14 @@ body {
         max-width: 420px;
     }
 
-    .header-profile-btn {
+    .header-profile-btn,
+    .header-search-btn {
         width: 45px;
         height: 45px;
     }
 
-    .profile-icon {
+    .profile-icon,
+    .search-icon {
         width: 22px;
         height: 22px;
     }

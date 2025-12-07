@@ -15,11 +15,13 @@
     <!-- Top Header -->
     <header class="top-header">
         <div class="header-content">
+            <button class="header-search-btn" data-section="profile-section" aria-label="بحث">
+                <i data-lucide="search" class="search-icon"></i>
+            </button>
+            <h1 class="logo">مزادنا للعقارات السعودية</h1>
             <button class="header-profile-btn" data-section="profile-section" aria-label="حسابي">
                 <i data-lucide="user" class="profile-icon"></i>
             </button>
-            <h1 class="logo">مزادنا للعقارات السعودية</h1>
-            <div></div>
         </div>
     </header>
 
@@ -121,6 +123,9 @@
 
         <!-- Profile Section: Menu and Account Info -->
         <section id="profile-section" class="tab-section">
+            <!-- Headers will be dynamically inserted here -->
+            <div id="profile-section-headers"></div>
+
             <div class="section-content">
                 <!-- Profile Menu View -->
                 <div id="profile-menu-view" class="profile-view active">
@@ -141,13 +146,6 @@
                         <div class="account-tabs-wrapper">
                             <!-- Tabs Navigation -->
                             <div class="account-tabs">
-                                <div class="account-tabs-header">
-                                    <button class="back-to-profile-btn" id="back-to-profile-btn"
-                                        aria-label="العودة إلى القائمة">
-                                        <i data-lucide="arrow-right" class="back-icon"></i>
-                                    </button>
-                                    <h2 class="account-tabs-title">معلومات الحساب</h2>
-                                </div>
                                 <button class="account-tab active" data-tab="basic-data">
                                     <i data-lucide="user" class="account-tab-icon"></i>
                                     <span class="tab-text">البيانات الأساسية</span>
@@ -170,14 +168,24 @@
                                 <!-- البيانات الأساسية View -->
                                 <div id="basic-data-view" class="tab-view">
                                     <div class="account-card">
-                                        <div class="card-header">
-                                            <button class="back-to-tabs-btn" data-back="tabs">
-                                                <i data-lucide="arrow-right" class="back-icon"></i>
-                                            </button>
-                                            <h2 class="card-title">البيانات الأساسية</h2>
-                                        </div>
-
                                         <div class="card-body">
+                                            <!-- Profile Image -->
+                                            <div class="info-row profile-image-row">
+                                                <div class="info-label">
+                                                    <i data-lucide="image" class="info-icon"></i>
+                                                    <span>صورة الملف الشخصي</span>
+                                                </div>
+                                                <div class="info-value profile-image-value">
+                                                    <div class="profile-image-edit">
+                                                        <div class="profile-image" id="basic-data-profile-image">
+                                                            <i class="fas fa-user profile-image-placeholder"></i>
+                                                        </div>
+                                                        <button class="edit-image-btn" type="button">
+                                                            <i data-lucide="camera" class="edit-image-icon"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <!-- Full Name -->
                                             <div class="info-row">
                                                 <div class="info-label">
@@ -235,13 +243,6 @@
                                 <!-- معلومات التواصل View -->
                                 <div id="contact-info-view" class="tab-view">
                                     <div class="account-card">
-                                        <div class="card-header">
-                                            <button class="back-to-tabs-btn" data-back="tabs">
-                                                <i data-lucide="arrow-right" class="back-icon"></i>
-                                            </button>
-                                            <h2 class="card-title">معلومات التواصل</h2>
-                                        </div>
-
                                         <div class="card-body">
                                             <!-- Email -->
                                             <div class="form-group">
@@ -273,13 +274,6 @@
                                 <!-- عناويني View -->
                                 <div id="addresses-view" class="tab-view">
                                     <div class="account-card">
-                                        <div class="card-header">
-                                            <button class="back-to-tabs-btn" data-back="tabs">
-                                                <i data-lucide="arrow-right" class="back-icon"></i>
-                                            </button>
-                                            <h2 class="card-title">عناويني</h2>
-                                        </div>
-
                                         <div class="card-body">
                                             <!-- Empty State -->
                                             <div class="empty-state">

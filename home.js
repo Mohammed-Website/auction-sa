@@ -1,3 +1,15 @@
+// Utility Functions
+(function () {
+    'use strict';
+
+    // Scroll to top function
+    window.scrollToTop = function () {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    };
+})();
+
 // Tab Switching Logic with Horizontal Sliding Animation
 (function () {
     'use strict';
@@ -83,10 +95,9 @@
 
     // Switch to a section with animation
     function switchToSection(sectionId) {
-        // Scroll to top immediately when navigating
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
+        /* Call a function to scroll to the top of the page */
+        window.scrollToTop();
+
 
         // Prevent switching to the same section
         if (sectionId === currentSection) {
@@ -323,7 +334,6 @@
                         // Switching to a new section - always reload
                         const config = window.dataConfig ? window.dataConfig[sectionId] : null;
                         const jsonFile = config ? config.url : 'unknown';
-                        console.log(`Switching to section: ${sectionId} (from ${previousSection}), loading data from: ${jsonFile}`);
                         window.reloadSectionData(sectionId).then(() => {
                             // Re-initialize Lucide icons after cards are rendered
                             if (typeof lucide !== 'undefined') {
@@ -349,7 +359,6 @@
                         const isEmpty = targetGrid.children.length === 0;
 
                         if (!hasCards || isEmpty) {
-                            console.log(`Section ${sectionId} has no cards, loading data...`);
                             window.reloadSectionData(sectionId).then(() => {
                                 if (typeof lucide !== 'undefined') {
                                     lucide.createIcons();
@@ -514,7 +523,6 @@
         addPropertyBtns.forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
-                console.log('Add new property');
             });
         });
 
@@ -886,23 +894,11 @@
             }, 100);
         }
 
-        // Log rendering completion
-        console.log(`Rendering completed. Grid now has ${gridElement.children.length} children.`);
 
         // Verify grid is visible
         const gridStyle = window.getComputedStyle(gridElement);
         const gridParent = gridElement.parentElement;
         const parentStyle = gridParent ? window.getComputedStyle(gridParent) : null;
-
-        console.log(`Grid visibility check:`, {
-            gridDisplay: gridStyle.display,
-            gridVisibility: gridStyle.visibility,
-            gridOpacity: gridStyle.opacity,
-            parentDisplay: parentStyle ? parentStyle.display : 'N/A',
-            parentVisibility: parentStyle ? parentStyle.visibility : 'N/A',
-            parentOpacity: parentStyle ? parentStyle.opacity : 'N/A',
-            hasActiveClass: gridParent ? gridParent.closest('.tab-section.active') !== null : false
-        });
     }
 
     // Fetch JSON data
@@ -972,7 +968,6 @@
                     }
 
                     await renderProperties(properties, gridElement, gridConfig.renderFunction);
-                    console.log(`Home section ${key} loaded: ${properties.length} items`);
                 } catch (error) {
                     console.error(`Error loading ${key} for home section:`, error);
                     gridElement.innerHTML = '<p style="text-align: center; padding: 2rem; color: #dc3545;">حدث خطأ في تحميل البيانات.</p>';
@@ -996,7 +991,6 @@
         try {
             // Fetch data
             const data = await fetchPropertyData(config.url);
-            console.log(`Data fetched for ${sectionId}:`, data);
 
             if (data === null) {
                 console.error(`Failed to fetch data for ${sectionId}`);
@@ -1006,7 +1000,6 @@
 
             // Handle array data
             const properties = Array.isArray(data) ? data : (data.properties || data.items || []);
-            console.log(`Properties extracted for ${sectionId}:`, properties.length, 'items');
 
             if (!properties || properties.length === 0) {
                 console.warn(`No properties found in data for ${sectionId}`);
@@ -1019,7 +1012,6 @@
 
             // Verify cards were rendered
             const renderedCards = gridElement.querySelectorAll('.property-card, .auction-card-new');
-            console.log(`Cards rendered for ${sectionId}:`, renderedCards.length, 'cards');
 
             if (renderedCards.length === 0) {
                 console.error(`No cards were rendered for ${sectionId}! Check render function: ${config.renderFunction}`);
@@ -1507,7 +1499,6 @@
         const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
 
         const headerHTML = `
-            <h1 class="profile-page-title">حسابي</h1>
             <div class="profile-header-card profile-menu-header">
                 <div class="profile-image-wrapper">
                     <div class="profile-image" id="profile-menu-image">
@@ -1522,6 +1513,36 @@
         `;
 
         return headerHTML;
+    }
+
+    // Create profile page title header
+    function createProfilePageTitle() {
+        return `<h1 class="profile-page-title">حسابي</h1>`;
+    }
+
+    // Create account tabs header
+    function createAccountTabsHeader() {
+        return `
+            <div class="account-tabs-header" id="account-tabs-header" style="display: none;">
+                <button class="back-to-profile-btn" id="back-to-profile-btn"
+                    aria-label="العودة إلى القائمة">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="account-tabs-title">معلومات الحساب</h2>
+            </div>
+        `;
+    }
+
+    // Create card header for tab views
+    function createCardHeader(title, tabId) {
+        return `
+            <div class="card-header" id="card-header-${tabId}" style="display: none;">
+                <button class="back-to-tabs-btn" data-back="tabs">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="card-title">${title}</h2>
+            </div>
+        `;
     }
 
     // Menu Item Component
@@ -1628,8 +1649,49 @@
             lucide.createIcons();
         }
 
+        // Update profile image in basic-data-view if it exists
+        updateBasicDataProfileImage(userData);
+
         // Attach event listeners to menu items
         attachMenuListeners();
+    }
+
+    // Update profile image in basic-data-view
+    function updateBasicDataProfileImage(userData) {
+        const basicDataImage = document.getElementById('basic-data-profile-image');
+        if (!basicDataImage) return;
+
+        const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
+        const placeholder = basicDataImage.querySelector('.profile-image-placeholder');
+
+        if (imageUrl) {
+            let img = basicDataImage.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                img.alt = 'صورة الملف الشخصي';
+                basicDataImage.appendChild(img);
+            }
+            img.src = imageUrl;
+            img.onerror = function () {
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                }
+                if (placeholder) {
+                    placeholder.style.display = 'block';
+                }
+            };
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        } else {
+            const img = basicDataImage.querySelector('img');
+            if (img) {
+                img.remove();
+            }
+            if (placeholder) {
+                placeholder.style.display = 'block';
+            }
+        }
     }
 
     // Attach event listeners to menu items
@@ -1652,7 +1714,6 @@
 
     // Handle menu actions
     function handleMenuAction(action) {
-        console.log('Menu action:', action);
         // Placeholder for future actions
         switch (action) {
             case 'favorites':
@@ -1685,7 +1746,6 @@
             case 'logout':
                 // TODO: Handle logout
                 if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                    console.log('Logging out...');
                 }
                 break;
             default:
@@ -1703,7 +1763,24 @@
             return;
         }
 
+        window.scrollToTop();
+
         if (route === ProfileRoutes.ACCOUNT_INFO) {
+            // Show account tabs header
+            const accountTabsHeader = document.getElementById('account-tabs-header');
+            if (accountTabsHeader) {
+                accountTabsHeader.style.display = 'flex';
+            }
+            // Hide profile page title
+            const profilePageTitle = document.querySelector('.profile-page-title');
+            if (profilePageTitle) {
+                profilePageTitle.style.display = 'none';
+            }
+            // Hide all card headers
+            document.querySelectorAll('.card-header').forEach(header => {
+                header.style.display = 'none';
+            });
+
             // Show account info view
             menuView.classList.remove('active');
             accountInfoView.classList.add('active');
@@ -1728,11 +1805,34 @@
                 const tabs = accountTabs.querySelectorAll('.account-tab');
                 tabs.forEach(tab => tab.classList.remove('active'));
             }
+
+            // Update sticky header positions
+            if (typeof updateStickyHeaderPositions === 'function') {
+                updateStickyHeaderPositions();
+            }
         } else if (route === ProfileRoutes.MENU) {
+            // Show profile page title
+            const profilePageTitle = document.querySelector('.profile-page-title');
+            if (profilePageTitle) {
+                profilePageTitle.style.display = 'block';
+            }
+            // Hide account tabs header
+            const accountTabsHeader = document.getElementById('account-tabs-header');
+            if (accountTabsHeader) {
+                accountTabsHeader.style.display = 'none';
+            }
+            // Hide all card headers
+            document.querySelectorAll('.card-header').forEach(header => {
+                header.style.display = 'none';
+            });
+
             // Show menu view
             accountInfoView.classList.remove('active');
             menuView.classList.add('active');
             currentProfileRoute = route;
+
+            // Update sticky header positions
+            updateStickyHeaderPositions();
 
             // Reset account info tabs state (use only active class)
             const accountTabs = document.querySelector('.account-tabs');
@@ -1865,9 +1965,17 @@
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initProfileSystem);
+        document.addEventListener('DOMContentLoaded', () => {
+            initProfileSystem();
+            if (typeof initProfileSectionHeaders === 'function') {
+                initProfileSectionHeaders();
+            }
+        });
     } else {
         initProfileSystem();
+        if (typeof initProfileSectionHeaders === 'function') {
+            initProfileSectionHeaders();
+        }
     }
 
     // Export for external use
@@ -1875,6 +1983,11 @@
         navigateTo: navigateToProfileRoute,
         routes: ProfileRoutes
     };
+
+    // Export header creation functions for use in other scopes
+    window.createProfilePageTitle = createProfilePageTitle;
+    window.createAccountTabsHeader = createAccountTabsHeader;
+    window.createCardHeader = createCardHeader;
 })();
 
 // Account Info Tabs Management
@@ -1910,6 +2023,10 @@
         const backToProfileBtn = document.getElementById('back-to-profile-btn');
         if (backToProfileBtn) {
             backToProfileBtn.addEventListener('click', function () {
+                // Scroll to top for better UX
+                if (typeof window.scrollToTop === 'function') {
+                    window.scrollToTop();
+                }
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
                     window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
                 }
@@ -1921,6 +2038,29 @@
 
     // Switch to a specific tab
     function switchTab(tabId) {
+        // Scroll to top for better UX
+        if (typeof window.scrollToTop === 'function') {
+            window.scrollToTop();
+        }
+
+        // Hide account tabs header
+        const accountTabsHeader = document.getElementById('account-tabs-header');
+        if (accountTabsHeader) {
+            accountTabsHeader.style.display = 'none';
+        }
+
+        // Show the appropriate card header for this tab
+        const cardHeader = document.getElementById(`card-header-${tabId}`);
+        if (cardHeader) {
+            cardHeader.style.display = 'flex';
+        }
+        // Hide all other card headers
+        document.querySelectorAll('.card-header').forEach(header => {
+            if (header.id !== `card-header-${tabId}`) {
+                header.style.display = 'none';
+            }
+        });
+
         const accountTabs = document.querySelector('.account-tabs');
         const tabViews = document.querySelectorAll('.tab-view');
         const wrapper = document.querySelector('.account-tabs-wrapper');
@@ -1964,6 +2104,9 @@
         currentTab = tabId;
         isInDetailView = true;
 
+        // Update sticky header positions
+        updateStickyHeaderPositions();
+
         // Reinitialize Lucide icons
         if (typeof lucide !== 'undefined') {
             setTimeout(() => {
@@ -1974,6 +2117,21 @@
 
     // Go back to tabs view (from detail view)
     function goBackToTabs() {
+        // Scroll to top for better UX
+        if (typeof window.scrollToTop === 'function') {
+            window.scrollToTop();
+        }
+
+        // Show account tabs header
+        const accountTabsHeader = document.getElementById('account-tabs-header');
+        if (accountTabsHeader) {
+            accountTabsHeader.style.display = 'flex';
+        }
+        // Hide all card headers
+        document.querySelectorAll('.card-header').forEach(header => {
+            header.style.display = 'none';
+        });
+
         const accountTabs = document.querySelector('.account-tabs');
         const tabViews = document.querySelectorAll('.tab-view');
         const wrapper = document.querySelector('.account-tabs-wrapper');
@@ -1995,12 +2153,107 @@
 
         isInDetailView = false;
 
+        // Update sticky header positions
+        updateStickyHeaderPositions();
+
         // Reinitialize Lucide icons
         if (typeof lucide !== 'undefined') {
             setTimeout(() => {
                 lucide.createIcons();
             }, 100);
         }
+    }
+
+    // Initialize profile section headers
+    function initProfileSectionHeaders() {
+        const profileSection = document.getElementById('profile-section');
+        if (!profileSection) return;
+
+        const headersContainer = document.getElementById('profile-section-headers');
+        if (!headersContainer) return;
+
+        // Check if headers already exist
+        if (headersContainer.children.length > 0) {
+            // Headers already exist, just update positions
+            updateStickyHeaderPositions();
+            return;
+        }
+
+        // Create all headers - use window functions if available, otherwise create inline
+        const profilePageTitle = typeof window.createProfilePageTitle === 'function'
+            ? window.createProfilePageTitle()
+            : `<h1 class="profile-page-title">حسابي</h1>`;
+
+        const accountTabsHeader = typeof window.createAccountTabsHeader === 'function'
+            ? window.createAccountTabsHeader()
+            : `<div class="account-tabs-header" id="account-tabs-header" style="display: none;">
+                <button class="back-to-profile-btn" id="back-to-profile-btn" aria-label="العودة إلى القائمة">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="account-tabs-title">معلومات الحساب</h2>
+            </div>`;
+
+        const basicDataHeader = typeof window.createCardHeader === 'function'
+            ? window.createCardHeader('البيانات الأساسية', 'basic-data')
+            : `<div class="card-header" id="card-header-basic-data" style="display: none;">
+                <button class="back-to-tabs-btn" data-back="tabs">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="card-title">البيانات الأساسية</h2>
+            </div>`;
+
+        const contactInfoHeader = typeof window.createCardHeader === 'function'
+            ? window.createCardHeader('معلومات التواصل', 'contact-info')
+            : `<div class="card-header" id="card-header-contact-info" style="display: none;">
+                <button class="back-to-tabs-btn" data-back="tabs">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="card-title">معلومات التواصل</h2>
+            </div>`;
+
+        const addressesHeader = typeof window.createCardHeader === 'function'
+            ? window.createCardHeader('عناويني', 'addresses')
+            : `<div class="card-header" id="card-header-addresses" style="display: none;">
+                <button class="back-to-tabs-btn" data-back="tabs">
+                    <i data-lucide="arrow-right" class="back-icon"></i>
+                </button>
+                <h2 class="card-title">عناويني</h2>
+            </div>`;
+
+        headersContainer.innerHTML = profilePageTitle + accountTabsHeader + basicDataHeader + contactInfoHeader + addressesHeader;
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Show profile page title by default (when on menu view)
+        const profilePageTitleEl = document.querySelector('.profile-page-title');
+        if (profilePageTitleEl) {
+            profilePageTitleEl.style.display = 'block';
+        }
+
+        // Update sticky header positions
+        updateStickyHeaderPositions();
+    }
+
+    // Update sticky header positions based on top-header height
+    function updateStickyHeaderPositions() {
+        const topHeader = document.querySelector('.top-header');
+        if (!topHeader) return;
+
+        const topHeaderHeight = topHeader.offsetHeight;
+        const stickyHeaders = document.querySelectorAll('.profile-page-title, .account-tabs-header, .card-header');
+
+        stickyHeaders.forEach(header => {
+            if (header) {
+                // Set top position to match top-header height so it sticks right below it
+                header.style.top = `${topHeaderHeight}px`;
+                // Ensure it's visible and properly positioned
+                header.style.position = 'sticky';
+                header.style.zIndex = '99';
+            }
+        });
     }
 
     // Initialize when account info view becomes active
@@ -2010,14 +2263,18 @@
             return;
         }
 
+        // Update sticky header positions
+        updateStickyHeaderPositions();
+
         // Use MutationObserver to detect when view becomes active
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = accountInfoView.classList.contains('active');
                     if (isActive) {
-                        // Initialize tabs when view becomes active
+                        // Update sticky header positions and initialize tabs when view becomes active
                         setTimeout(() => {
+                            updateStickyHeaderPositions();
                             initAccountTabs();
                         }, 100);
                     }
@@ -2033,22 +2290,35 @@
         // Also initialize if already active
         if (accountInfoView.classList.contains('active')) {
             setTimeout(() => {
+                updateStickyHeaderPositions();
                 initAccountTabs();
             }, 100);
         }
     }
 
+    // Update sticky positions on window resize
+    window.addEventListener('resize', () => {
+        updateStickyHeaderPositions();
+    });
+
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAccountInfoView);
+        document.addEventListener('DOMContentLoaded', () => {
+            initProfileSectionHeaders();
+            updateStickyHeaderPositions();
+            initAccountInfoView();
+        });
     } else {
+        initProfileSectionHeaders();
+        updateStickyHeaderPositions();
         initAccountInfoView();
     }
 
     // Export for external use
     window.AccountInfoTabs = {
         switchTab: switchTab,
-        goBack: goBackToTabs
+        goBack: goBackToTabs,
+        updateStickyPositions: updateStickyHeaderPositions
     };
 })();
 
