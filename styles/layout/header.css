@@ -55,8 +55,8 @@
 }
 
 .logo {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--spacing-md);
+    font-weight: 400;
     margin: 0;
     flex: 1;
     text-align: center;

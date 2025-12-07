@@ -336,4 +336,3 @@
         initAccountInfoView: initAccountInfoView
     };
 })();
-

@@ -73,7 +73,7 @@
 
 /* Home Section Horizontal Scroll Sections */
 .home-subsection {
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     opacity: 1;
     transform: translateX(0);
     transition: opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
@@ -89,7 +89,7 @@
 .section-title {
     font-size: var(--spacing-md);
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.2rem;
     color: #2c5aa0;
     padding-bottom: 0.75rem;
     border-bottom: 2px solid #f0f0f0;

@@ -99,6 +99,74 @@
         window.scrollToTop();
 
 
+        // Handle case: switching from subsection (sell-section, rent-section, auction-section) to home-section
+        const isSubsection = currentSection === 'sell-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
+        if (isSubsection && sectionId === 'home-section') {
+            // When coming from a subsection to home-section, use fade-in animation (like profile-to-home)
+            const homeSection = document.getElementById('home-section');
+            const currentActiveSection = document.querySelector('.tab-section.active');
+
+            if (homeSection && currentActiveSection) {
+                // Hide profile if it's active
+                const profileSection = document.getElementById('profile-section');
+                if (profileSection && profileSection.classList.contains('active')) {
+                    profileSection.classList.remove('active');
+                    profileSection.style.display = 'none';
+                    profileSection.style.opacity = '0';
+                    profileSection.style.visibility = 'hidden';
+                    profileSection.style.pointerEvents = 'none';
+                }
+
+                // Show banner section
+                const bannerSection = document.querySelector('.banner-section');
+                if (bannerSection) {
+                    bannerSection.classList.add('active');
+                }
+
+                // Ensure home-section is visible
+                homeSection.style.display = 'block';
+                homeSection.style.visibility = 'visible';
+                homeSection.style.opacity = '1';
+                homeSection.style.pointerEvents = 'auto';
+                homeSection.style.transform = 'translateX(0)';
+                homeSection.classList.add('active');
+
+                // Hide content initially for fade-in animation
+                const sectionContent = homeSection.querySelector('.section-content');
+                if (sectionContent) {
+                    sectionContent.style.opacity = '0';
+                    sectionContent.style.transform = 'translateX(20px)';
+                    sectionContent.style.visibility = 'hidden';
+                    sectionContent.style.transition = 'none';
+                }
+
+                // Fade in content after brief delay (like profile-to-home)
+                setTimeout(() => {
+                    if (sectionContent) {
+                        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                sectionContent.style.opacity = '1';
+                                sectionContent.style.transform = 'translateX(0)';
+                                sectionContent.style.visibility = 'visible';
+                            });
+                        });
+                    }
+                }, 100);
+
+                // Show all subsections with animation
+                toggleHomeSubsections('home-section');
+
+                // Update current section
+                currentSection = sectionId;
+
+                // Update active states on all navigation items
+                updateActiveNavItems(sectionId);
+
+                return;
+            }
+        }
+
         // Prevent switching to the same section
         if (sectionId === currentSection) {
             // If clicking the same section, still update visibility of subsections
@@ -135,8 +203,11 @@
                 bannerSection.classList.add('active');
             }
 
-            // Switch to home-section if not already active
-            if (currentActiveSection && currentActiveSection.id !== 'home-section') {
+            // Check if we need to switch sections (coming from a different section)
+            const needsSectionSwitch = currentActiveSection && currentActiveSection.id !== 'home-section';
+            const isComingFromProfile = currentActiveSection && currentActiveSection.id === 'profile-section';
+
+            if (needsSectionSwitch) {
                 currentActiveSection.classList.remove('active');
                 currentActiveSection.style.display = 'none';
                 currentActiveSection.style.opacity = '0';
@@ -151,6 +222,30 @@
             homeSection.style.pointerEvents = 'auto';
             homeSection.style.transform = 'translateX(0)';
             homeSection.classList.add('active');
+
+            // Hide content initially for fade-in animation (same as home-section)
+            const sectionContent = homeSection.querySelector('.section-content');
+            if (sectionContent) {
+                sectionContent.style.opacity = '0';
+                sectionContent.style.transform = 'translateX(20px)';
+                sectionContent.style.visibility = 'hidden';
+                sectionContent.style.transition = 'none';
+            }
+
+            // Fade in content after brief delay (same timing as home-section)
+            const fadeInDelay = isComingFromProfile ? 100 : 150;
+            setTimeout(() => {
+                if (sectionContent) {
+                    sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            sectionContent.style.opacity = '1';
+                            sectionContent.style.transform = 'translateX(0)';
+                            sectionContent.style.visibility = 'visible';
+                        });
+                    });
+                }
+            }, fadeInDelay);
 
             // Toggle visibility of subsections
             toggleHomeSubsections(sectionId);
@@ -228,6 +323,10 @@
             return;
         }
 
+        // Check if we're coming from profile section or a subsection
+        const isComingFromProfile = currentSection === 'profile-section';
+        const isComingFromSubsection = currentSection === 'sell-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
+
         // For non-profile sections, ensure profile is hidden
         const profileSection = document.getElementById('profile-section');
         if (profileSection && profileSection.classList.contains('active')) {
@@ -276,6 +375,17 @@
             targetSection.style.pointerEvents = 'auto';
         }
 
+        // For home-section, hide content initially so it can fade in smoothly
+        if (sectionId === 'home-section') {
+            const sectionContent = targetSection.querySelector('.section-content');
+            if (sectionContent) {
+                sectionContent.style.opacity = '0';
+                sectionContent.style.transform = 'translateX(20px)';
+                sectionContent.style.visibility = 'hidden';
+                sectionContent.style.transition = 'none'; // Disable transition initially
+            }
+        }
+
         // Prepare target section - position it off-screen in opposite direction
         if (direction === 'right') {
             targetSection.classList.remove('slide-in-left');
@@ -294,6 +404,42 @@
                 // Remove slide-in class and add active to trigger enter animation
                 targetSection.classList.remove('slide-in-left', 'slide-in-right');
                 targetSection.classList.add('active');
+
+                // For home-section, apply fade-in animation to section content after slide completes
+                // Use the same smooth animation pattern regardless of source section
+                if (sectionId === 'home-section') {
+                    // When coming from profile or subsection, use immediate fade-in (like profile-to-home)
+                    // When coming from other sections, wait for slide animation to complete
+                    const animationDelay = (isComingFromProfile || isComingFromSubsection) ? 100 : 400;
+
+                    setTimeout(() => {
+                        const sectionContent = targetSection.querySelector('.section-content');
+                        if (sectionContent) {
+                            // Ensure content is hidden before fade-in (only if not already hidden)
+                            const currentOpacity = window.getComputedStyle(sectionContent).opacity;
+                            if (parseFloat(currentOpacity) > 0) {
+                                sectionContent.style.opacity = '0';
+                                sectionContent.style.transform = 'translateX(20px)';
+                                sectionContent.style.visibility = 'hidden';
+                            }
+                            // Enable transition and animate in
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    sectionContent.style.opacity = '1';
+                                    sectionContent.style.transform = 'translateX(0)';
+                                    sectionContent.style.visibility = 'visible';
+                                });
+                            });
+                        }
+                    }, animationDelay);
+                } else {
+                    // For other sections, apply fade-in animation
+                    const animationDelay = isComingFromProfile ? 100 : 200;
+                    setTimeout(() => {
+                        animateSectionContentFadeIn(targetSection);
+                    }, animationDelay);
+                }
 
                 // If switching to home-section, ensure scroll containers are enabled
                 if (sectionId === 'home-section') {
@@ -485,6 +631,32 @@
         if (sectionId) {
             switchToSection(sectionId);
         }
+    }
+
+    // Animate section content with fade-in effect (similar to home subsections)
+    function animateSectionContentFadeIn(sectionElement) {
+        if (!sectionElement) return;
+
+        // Find the section-content element within the section
+        const sectionContent = sectionElement.querySelector('.section-content');
+        if (!sectionContent) {
+            return; // Skip if no section-content found (profile section has different structure)
+        }
+
+        // Start with fade-out state
+        sectionContent.style.opacity = '0';
+        sectionContent.style.transform = 'translateX(20px)';
+        sectionContent.style.visibility = 'hidden';
+        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+
+        // After a brief delay, fade in (stagger for smoother effect)
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                sectionContent.style.opacity = '1';
+                sectionContent.style.transform = 'translateX(0)';
+                sectionContent.style.visibility = 'visible';
+            });
+        }, 50);
     }
 
     // Toggle visibility of home-section subsections with smooth animation

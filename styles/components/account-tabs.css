@@ -129,11 +129,6 @@
     flex-shrink: 0;
 }
 
-.account-tab.active .account-tab-icon {
-    color: var(--bg-white);
-    stroke: var(--bg-white);
-}
-
 .account-tab-arrow {
     width: 20px;
     height: 20px;
@@ -144,20 +139,10 @@
     transition: transform var(--transition-base), color var(--transition-base);
 }
 
-.account-tab.active .account-tab-arrow {
-    color: var(--bg-white);
-    stroke: var(--bg-white);
-}
-
 .account-tab:hover .account-tab-arrow {
     transform: translateX(-4px);
     color: var(--primary-color);
     stroke: var(--primary-color);
-}
-
-.account-tab.active:hover .account-tab-arrow {
-    color: var(--bg-white);
-    stroke: var(--bg-white);
 }
 
 .account-tab:hover {
@@ -165,21 +150,6 @@
     color: var(--text-primary);
     transform: translateX(-4px);
     box-shadow: var(--shadow-md);
-}
-
-.account-tab.active {
-    background: var(--primary-color);
-    color: var(--bg-white);
-    box-shadow: var(--shadow-md);
-}
-
-.account-tab.active .tab-text {
-    color: var(--bg-white);
-}
-
-.account-tab:not(.active) {
-    background: var(--bg-white);
-    color: var(--text-secondary);
 }
 
 .tab-text {

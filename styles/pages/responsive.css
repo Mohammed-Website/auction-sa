@@ -138,10 +138,6 @@
 
 /* Tablet Styles */
 @media (min-width: 768px) {
-    .logo {
-        font-size: 1.5rem;
-    }
-
     .banner-slider {
         height: 280px;
     }
@@ -241,6 +237,7 @@
         border-radius: var(--radius-lg);
         margin-left: 0;
         margin-right: 0;
+        margin-bottom: 0.5rem;
         padding: var(--spacing-md) var(--spacing-lg);
     }
 
@@ -273,7 +270,7 @@
     }
 
     .logo {
-        font-size: 1.75rem;
+        font-size: var(--spacing-lg);
     }
 
     /* Show Top Navigation on Desktop */
