@@ -7,8 +7,16 @@
     let currentTab = 'basic-data';
     let isInDetailView = false;
 
+    // Track if event listeners are already attached to prevent duplicates
+    let eventListenersAttached = false;
+
     // Initialize tabs
     function initAccountTabs() {
+        // Prevent duplicate event listeners
+        if (eventListenersAttached) {
+            return;
+        }
+
         const tabs = document.querySelectorAll('.account-tab');
         const tabViews = document.querySelectorAll('.tab-view');
 
@@ -23,30 +31,48 @@
         // Back to tabs button handlers
         const backToTabsButtons = document.querySelectorAll('.back-to-tabs-btn[data-back="tabs"]');
         backToTabsButtons.forEach(btn => {
-            btn.addEventListener('click', function () {
-                goBackToTabs();
-            });
+            // Check if listener already attached
+            if (!btn.hasAttribute('data-listener-attached')) {
+                btn.addEventListener('click', function () {
+                    goBackToTabs();
+                });
+                btn.setAttribute('data-listener-attached', 'true');
+            }
         });
 
         // Back to profile button handler
         const backToProfileBtn = document.getElementById('back-to-profile-btn');
-        if (backToProfileBtn) {
-            backToProfileBtn.addEventListener('click', function () {
+        if (backToProfileBtn && !backToProfileBtn.hasAttribute('data-listener-attached')) {
+            backToProfileBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
                 // Scroll to top for better UX
                 if (typeof window.scrollToTop === 'function') {
                     window.scrollToTop();
                 }
+
+                // Navigate to profile menu (not home-section)
+                console.log('[Navigation] Back button clicked - Navigating to profile menu');
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
                     window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+                } else {
+                    // Fallback: navigate to profile section
+                    if (typeof window.switchToSection === 'function') {
+                        window.switchToSection('profile-section');
+                    }
                 }
             });
+            backToProfileBtn.setAttribute('data-listener-attached', 'true');
         }
 
+        eventListenersAttached = true;
         // Don't auto-open any tab - let user choose
     }
 
     // Switch to a specific tab
     function switchTab(tabId) {
+        console.log(`[Navigation] Switching to account tab: ${tabId}`);
         // Scroll to top for better UX
         if (typeof window.scrollToTop === 'function') {
             window.scrollToTop();
@@ -113,6 +139,13 @@
         currentTab = tabId;
         isInDetailView = true;
 
+        // Push navigation state to history
+        setTimeout(() => {
+            if (typeof window.pushNavigationState === 'function') {
+                window.pushNavigationState(false);
+            }
+        }, 100);
+
         // Update sticky header positions
         setTimeout(() => {
             updateStickyHeaderPositions();
@@ -128,6 +161,7 @@
 
     // Go back to tabs view (from detail view)
     function goBackToTabs() {
+        console.log('[Navigation] Going back to account tabs view');
         // Scroll to top for better UX
         if (typeof window.scrollToTop === 'function') {
             window.scrollToTop();
@@ -163,6 +197,13 @@
         }
 
         isInDetailView = false;
+
+        // Push navigation state to history
+        setTimeout(() => {
+            if (typeof window.pushNavigationState === 'function') {
+                window.pushNavigationState(false);
+            }
+        }, 100);
 
         // Update sticky header positions
         updateStickyHeaderPositions();

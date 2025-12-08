@@ -1,9 +1,5 @@
 /* Responsive Styles - Mobile First */
 @media (max-width: 767px) {
-    .property-card {
-        min-width: 240px;
-    }
-
     .profile-name {
         font-size: var(--font-size-base) !important;
     }
@@ -143,10 +139,6 @@
 
 /* Tablet Styles */
 @media (min-width: 768px) {
-    .banner-slider {
-        height: 280px;
-    }
-
     .banner-content h2 {
         font-size: 2rem;
     }
@@ -183,6 +175,10 @@
 
     .auction-banner {
         height: 240px;
+    }
+
+    .auction-title {
+        font-size: var(--spacing-md);
     }
 
     #app-content {
@@ -307,10 +303,6 @@
         margin-top: var(--top-nav-height);
     }
 
-    .banner-slider {
-        height: 350px;
-    }
-
     .banner-content h2 {
         font-size: 2.5rem;
     }
@@ -338,7 +330,7 @@
     }
 
     .auction-banner {
-        height: 300px;
+        height: 200px;
     }
 
     .auction-card-new {
@@ -393,7 +385,7 @@
 /* Large Desktop Styles */
 @media (min-width: 1440px) {
     .banner-slider {
-        height: 400px;
+        height: 300px;
     }
 
     .top-nav-container {

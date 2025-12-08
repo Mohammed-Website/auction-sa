@@ -1,7 +1,7 @@
 /* Profile Header Card with Image */
 .profile-header-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 5px;
     padding: 2rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     text-align: center;
@@ -78,7 +78,7 @@
 /* Profile Info Card */
 .profile-info-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 5px;
     padding: 2rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

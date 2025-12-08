@@ -49,9 +49,8 @@
 /* Menu Section */
 .menu-section {
     background: white;
-    border-radius: 16px;
+    border-radius: 5px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-bottom: 1rem;
 }
 
@@ -76,7 +75,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: 5px;
     background: #fafafa;
     cursor: pointer;
     transition: all 0.3s ease;

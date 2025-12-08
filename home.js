@@ -10,6 +10,275 @@
     };
 })();
 
+// Track if we're handling a back navigation (to prevent infinite loops)
+let isHandlingBackNavigation = false;
+// Track if we're navigating within profile (to prevent unwanted section switches)
+let isNavigatingWithinProfile = false;
+
+// Browser History Management for Mobile Back Button Support
+(function () {
+    'use strict';
+
+
+
+    // Get current navigation state
+    function getCurrentState() {
+        const activeSection = document.querySelector('.tab-section.active');
+        const sectionId = activeSection ? activeSection.id : 'home-section';
+
+        // Check profile route
+        const accountInfoView = document.getElementById('profile-account-info-view');
+        const menuView = document.getElementById('profile-menu-view');
+        let profileRoute = null;
+        if (sectionId === 'profile-section') {
+            if (accountInfoView && accountInfoView.classList.contains('active')) {
+                profileRoute = 'account-info';
+
+                // Check if we're in a tab detail view
+                const activeTabView = document.querySelector('.tab-view.active');
+                if (activeTabView) {
+                    const tabId = activeTabView.id.replace('-view', '');
+                    return {
+                        section: sectionId,
+                        profileRoute: profileRoute,
+                        accountTab: tabId
+                    };
+                }
+            } else if (menuView && menuView.classList.contains('active')) {
+                profileRoute = 'menu';
+            }
+        }
+
+        // Check if we're in a subsection (auction-section, sell-section, rent-section)
+        if (sectionId === 'home-section') {
+            const auctionsSubsection = document.getElementById('auctions-section');
+            const sellSubsection = document.getElementById('sell-section');
+            const rentSubsection = document.getElementById('rent-section');
+
+            // Check which subsection is visible
+            if (auctionsSubsection) {
+                const style = window.getComputedStyle(auctionsSubsection);
+                if (style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0) {
+                    return { section: 'auction-section', subsection: true };
+                }
+            }
+            if (sellSubsection) {
+                const style = window.getComputedStyle(sellSubsection);
+                if (style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0) {
+                    return { section: 'sell-section', subsection: true };
+                }
+            }
+            if (rentSubsection) {
+                const style = window.getComputedStyle(rentSubsection);
+                if (style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0) {
+                    return { section: 'rent-section', subsection: true };
+                }
+            }
+        }
+
+        return {
+            section: sectionId,
+            profileRoute: profileRoute
+        };
+    }
+
+    // Push state to history
+    function pushHistoryState(state, skipPush = false) {
+        if (isHandlingBackNavigation || skipPush || isNavigatingWithinProfile) {
+            return;
+        }
+
+        const currentState = getCurrentState();
+        console.log('[Navigation] Pushing state to history:', currentState);
+        const stateString = JSON.stringify(currentState);
+        const url = getUrlFromState(currentState);
+
+        // Only push if state actually changed
+        const previousState = history.state ? JSON.stringify(history.state) : null;
+        if (previousState === stateString) {
+            console.log('[Navigation] State unchanged, skipping push');
+            return;
+        }
+
+        console.log('[Navigation] Pushing new state:', currentState, 'URL:', url);
+        history.pushState(currentState, '', url);
+    }
+
+    // Get URL from state
+    function getUrlFromState(state) {
+        if (state.section === 'profile-section') {
+            if (state.accountTab) {
+                return `#/profile/account-info/${state.accountTab}`;
+            } else if (state.profileRoute === 'account-info') {
+                return '#/profile/account-info';
+            } else {
+                return '#/profile';
+            }
+        } else if (state.section === 'auction-section' || state.section === 'sell-section' || state.section === 'rent-section') {
+            return `#/${state.section}`;
+        }
+        return '#/';
+    }
+
+    // Navigate back based on current state
+    function handleBackNavigation() {
+        if (isNavigatingWithinProfile) {
+            console.log('[Navigation] Skipping handleBackNavigation - navigating within profile');
+            return;
+        }
+
+        isHandlingBackNavigation = true;
+
+        const currentState = getCurrentState();
+
+        // If we're in an account tab detail view, go back to account info tabs
+        if (currentState.accountTab) {
+            if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.goBack === 'function') {
+                window.AccountInfoTabs.goBack();
+                setTimeout(() => {
+                    pushHistoryState(null, false);
+                    isHandlingBackNavigation = false;
+                }, 100);
+                return;
+            }
+        }
+
+        // If we're in profile account info view, go back to profile menu
+        if (currentState.section === 'profile-section' && currentState.profileRoute === 'account-info') {
+            if (typeof window.ProfileNavigation !== 'undefined' && typeof window.ProfileNavigation.navigateTo !== 'undefined') {
+                window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+                setTimeout(() => {
+                    pushHistoryState(null, false);
+                    isHandlingBackNavigation = false;
+                }, 100);
+                return;
+            }
+        }
+
+        // If we're in profile section, go back to home
+        if (currentState.section === 'profile-section') {
+            if (typeof window.switchToSection === 'function') {
+                window.switchToSection('home-section');
+            } else {
+                // Fallback: trigger navigation click
+                const homeNavItem = document.querySelector('[data-section="home-section"]');
+                if (homeNavItem) {
+                    homeNavItem.click();
+                }
+            }
+            setTimeout(() => {
+                pushHistoryState(null, false);
+                isHandlingBackNavigation = false;
+            }, 100);
+            return;
+        }
+
+        // If we're in auction-section (or other subsections), go back to home
+        if (currentState.section === 'auction-section' || currentState.section === 'sell-section' || currentState.section === 'rent-section') {
+            if (typeof window.switchToSection === 'function') {
+                window.switchToSection('home-section');
+            } else {
+                // Fallback: trigger navigation click
+                const homeNavItem = document.querySelector('[data-section="home-section"]');
+                if (homeNavItem) {
+                    homeNavItem.click();
+                }
+            }
+            setTimeout(() => {
+                pushHistoryState(null, false);
+                isHandlingBackNavigation = false;
+            }, 100);
+            return;
+        }
+
+        // Default: go to home
+        if (currentState.section !== 'home-section') {
+            if (typeof window.switchToSection === 'function') {
+                window.switchToSection('home-section');
+            }
+        }
+
+        isHandlingBackNavigation = false;
+    }
+
+    // Handle popstate event (browser back button)
+    window.addEventListener('popstate', function (event) {
+        if (isHandlingBackNavigation || isNavigatingWithinProfile) {
+            console.log('[Navigation] Skipping popstate - handling back navigation or navigating within profile');
+            return;
+        }
+
+        if (event.state) {
+            // Restore state from history
+            isHandlingBackNavigation = true;
+            restoreState(event.state);
+            setTimeout(() => {
+                isHandlingBackNavigation = false;
+            }, 100);
+        } else {
+            // No state, handle as back navigation
+            handleBackNavigation();
+        }
+    });
+
+    // Restore state from history
+    function restoreState(state) {
+        console.log('[Navigation] Restoring state:', state);
+
+        // Don't restore if we're currently navigating within profile
+        if (isNavigatingWithinProfile) {
+            console.log('[Navigation] Currently navigating within profile - skipping restore');
+            return;
+        }
+
+        // If we're already in profile-section and the state is also profile-section, don't switch sections
+        const currentActiveSection = document.querySelector('.tab-section.active');
+        const currentSectionId = currentActiveSection ? currentActiveSection.id : null;
+
+        // Restore section only if it's different from current section
+        if (state.section && state.section !== currentSectionId && typeof window.switchToSection === 'function') {
+            // Special case: if we're in profile-section and state is also profile-section, just restore the route
+            if (state.section === 'profile-section' && currentSectionId === 'profile-section') {
+                console.log('[Navigation] Already in profile-section, restoring route only');
+            } else {
+                window.switchToSection(state.section);
+            }
+        }
+
+        // Restore profile route
+        if (state.section === 'profile-section') {
+            setTimeout(() => {
+                if (state.accountTab && typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.switchTab === 'function') {
+                    window.AccountInfoTabs.switchTab(state.accountTab);
+                } else if (state.profileRoute === 'account-info' && typeof window.ProfileNavigation !== 'undefined') {
+                    window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.ACCOUNT_INFO);
+                } else if (state.profileRoute === 'menu' && typeof window.ProfileNavigation !== 'undefined') {
+                    window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+                }
+            }, 200);
+        }
+    }
+
+    // Initialize history state on page load
+    function initHistory() {
+        const initialState = getCurrentState();
+        const url = getUrlFromState(initialState);
+        history.replaceState(initialState, '', url);
+    }
+
+    // Export function to push history state (to be called from other modules)
+    window.pushNavigationState = function (skipPush) {
+        pushHistoryState(null, skipPush);
+    };
+
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHistory);
+    } else {
+        initHistory();
+    }
+})();
+
 // Tab Switching Logic with Horizontal Sliding Animation
 (function () {
     'use strict';
@@ -95,6 +364,8 @@
 
     // Switch to a section with animation
     function switchToSection(sectionId) {
+        console.log(`[Navigation] Switching to section: ${sectionId}`);
+
         /* Call a function to scroll to the top of the page */
         window.scrollToTop();
 
@@ -162,6 +433,13 @@
 
                 // Update active states on all navigation items
                 updateActiveNavItems(sectionId);
+
+                // Push navigation state to history
+                setTimeout(() => {
+                    if (typeof window.pushNavigationState === 'function') {
+                        window.pushNavigationState(false);
+                    }
+                }, 100);
 
                 return;
             }
@@ -264,6 +542,13 @@
                 }, 100);
             }
 
+            // Push navigation state to history
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 200);
+
             return;
         }
 
@@ -308,9 +593,17 @@
 
             // Update current section
             currentSection = sectionId;
+            console.log(`[Navigation] Current page: ${sectionId}`);
 
             // Update active states on all navigation items
             updateActiveNavItems(sectionId);
+
+            // Push navigation state to history
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 100);
 
             return;
         }
@@ -451,6 +744,7 @@
 
         // Update current section
         currentSection = sectionId;
+        console.log(`[Navigation] Current page: ${sectionId}`);
 
         // If switching to home-section, show all subsections
         if (sectionId === 'home-section') {
@@ -591,6 +885,13 @@
                 }
             }, 450); // Wait for animation to complete (slightly longer to ensure visibility)
         }
+
+        // Push navigation state to history after section switch completes
+        setTimeout(() => {
+            if (typeof window.pushNavigationState === 'function') {
+                window.pushNavigationState(false);
+            }
+        }, 500);
     }
 
     // Update active class on navigation items
@@ -849,6 +1150,9 @@
         ensureInitialState();
         init();
     }
+
+    // Export switchToSection for use by history manager
+    window.switchToSection = switchToSection;
 })();
 
 // Property Data Loading and Rendering
@@ -1066,7 +1370,7 @@
                         <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
                     </div>
                     <button class="auction-cta-btn">
-                        شوف التفاصيل وشارك بالمزاد
+                        شارك بالمزاد
                     </button>
                 </div>
             </div>
@@ -1762,6 +2066,7 @@
     };
 
     let currentProfileRoute = ProfileRoutes.MENU;
+    let isNavigatingProfileRoute = false; // Flag to prevent recursive calls
 
     // Profile Header Component
     function createProfileHeader(userData) {
@@ -2034,11 +2339,28 @@
 
     // Navigate to profile route
     function navigateToProfileRoute(route) {
+        // Prevent recursive calls
+        if (isNavigatingProfileRoute) {
+            console.log(`[Navigation] Already navigating to profile route: ${route} - skipping`);
+            return;
+        }
+
+        // If already on the same route, don't navigate again
+        if (currentProfileRoute === route) {
+            console.log(`[Navigation] Already on profile route: ${route} - skipping`);
+            return;
+        }
+
+        console.log(`[Navigation] Navigating to profile route: ${route} (from ${currentProfileRoute})`);
+        isNavigatingProfileRoute = true;
+        isNavigatingWithinProfile = true; // Set flag to prevent unwanted section switches
+
         const menuView = document.getElementById('profile-menu-view');
         const accountInfoView = document.getElementById('profile-account-info-view');
 
         if (!menuView || !accountInfoView) {
             console.error('Profile views not found');
+            isNavigatingProfileRoute = false;
             return;
         }
 
@@ -2064,6 +2386,7 @@
             menuView.classList.remove('active');
             accountInfoView.classList.add('active');
             currentProfileRoute = route;
+            console.log('[Navigation] Current page: profile-section -> account-info view');
 
             // Update URL hash
             window.location.hash = '#/profile/account-info';
@@ -2089,6 +2412,22 @@
             if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.updateStickyPositions === 'function') {
                 window.AccountInfoTabs.updateStickyPositions();
             }
+
+            // Initialize account tabs if not already initialized
+            if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.initAccountTabs === 'function') {
+                setTimeout(() => {
+                    window.AccountInfoTabs.initAccountTabs();
+                }, 100);
+            }
+
+            // Push navigation state to history after navigation completes
+            // Use a longer delay to ensure the view is fully updated before pushing state
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+                isNavigatingProfileRoute = false;
+            }, 300);
         } else if (route === ProfileRoutes.MENU) {
             // Show profile page title
             const profilePageTitle = document.querySelector('.profile-page-title');
@@ -2109,6 +2448,18 @@
             accountInfoView.classList.remove('active');
             menuView.classList.add('active');
             currentProfileRoute = route;
+            console.log('[Navigation] Current page: profile-section -> menu view');
+
+            // Ensure profile section is active
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection) {
+                profileSection.classList.add('active');
+                profileSection.style.display = 'block';
+                profileSection.style.visibility = 'visible';
+                profileSection.style.opacity = '1';
+                profileSection.style.pointerEvents = 'auto';
+                profileSection.style.transform = 'translateX(0)';
+            }
 
             // Update sticky header positions
             if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.updateStickyPositions === 'function') {
@@ -2127,8 +2478,30 @@
                 view.classList.remove('active');
             });
 
-            // Update URL hash
+            // Update URL hash (this will trigger hashchange, but we have the flag to prevent recursion)
             window.location.hash = '#/profile';
+
+            // Push navigation state to history after navigation completes
+            // Use a longer delay to ensure the view is fully updated before pushing state
+            setTimeout(() => {
+                // Double-check profile section is active before pushing state
+                const profileSectionCheck = document.getElementById('profile-section');
+                if (profileSectionCheck && !profileSectionCheck.classList.contains('active')) {
+                    profileSectionCheck.classList.add('active');
+                }
+
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+                isNavigatingProfileRoute = false;
+                // Clear the flag after a bit more delay to ensure navigation is complete
+                setTimeout(() => {
+                    isNavigatingWithinProfile = false;
+                }, 100);
+            }, 300);
+        } else {
+            isNavigatingProfileRoute = false;
+            isNavigatingWithinProfile = false;
         }
     }
 
@@ -2146,6 +2519,11 @@
     function initBrowserNavigation() {
         // Handle hash changes
         window.addEventListener('hashchange', function () {
+            // Only handle hashchange if we're not already navigating (to prevent recursion)
+            if (isNavigatingProfileRoute) {
+                return;
+            }
+
             const hash = window.location.hash;
             if (hash === '#/profile' || hash === '#/profile/') {
                 navigateToProfileRoute(ProfileRoutes.MENU);
