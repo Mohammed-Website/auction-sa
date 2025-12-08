@@ -260,14 +260,6 @@
             if (typeof window.reloadSectionData === 'function') {
                 setTimeout(() => {
                     window.reloadSectionData('home-section').then(() => {
-                        // Re-enable scrolling after data is loaded
-                        setTimeout(() => {
-                            reenableHorizontalScroll();
-                            // Additional check after a longer delay
-                            setTimeout(() => {
-                                reenableHorizontalScroll();
-                            }, 200);
-                        }, 100);
                     });
                 }, 100);
             }
@@ -444,23 +436,12 @@
                 // If switching to home-section, ensure scroll containers are enabled
                 if (sectionId === 'home-section') {
                     targetSection.style.pointerEvents = 'auto';
-                    // Re-enable scrolling immediately
-                    setTimeout(() => {
-                        reenableHorizontalScroll();
-                    }, 50);
                 }
 
                 // Clean up current section after animation completes
                 setTimeout(() => {
                     currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
                     currentActiveSection.style.display = 'none';
-
-                    // If we just switched to home-section, ensure scrolling is fully enabled
-                    if (sectionId === 'home-section') {
-                        setTimeout(() => {
-                            reenableHorizontalScroll();
-                        }, 100);
-                    }
                 }, 350); // Match CSS transition duration
             });
         });
@@ -589,14 +570,23 @@
                         }
                     }
                 } else {
-                    // Grid not found, try to load anyway
-                    console.warn(`Grid not found for ${sectionId} (gridId: ${gridId}), attempting to load data...`);
+                    // Grid not found - check if section exists in DOM
+                    const sectionElement = document.getElementById(sectionId);
+                    if (!sectionElement) {
+                        // Section doesn't exist in DOM, skip silently
+                        return;
+                    }
+                    // Grid not found but section exists, try to load anyway
                     window.reloadSectionData(sectionId).then(() => {
                         if (typeof lucide !== 'undefined') {
                             lucide.createIcons();
                         }
                     }).catch(err => {
-                        console.error(`Error loading data for ${sectionId}:`, err);
+                        // Only log error if section exists
+                        const sectionElement = document.getElementById(sectionId);
+                        if (sectionElement) {
+                            console.error(`Error loading data for ${sectionId}:`, err);
+                        }
                     });
                 }
             }, 450); // Wait for animation to complete (slightly longer to ensure visibility)
@@ -659,67 +649,6 @@
         }, 50);
     }
 
-    // Toggle visibility of home-section subsections with smooth animation
-    // Re-enable horizontal scrolling on scroll containers
-    function reenableHorizontalScroll() {
-        const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
-        scrollContainers.forEach(container => {
-            // Remove any inline styles that might block scrolling
-            container.style.removeProperty('overflow');
-            container.style.removeProperty('overflow-x');
-            container.style.removeProperty('overflow-y');
-            container.style.removeProperty('pointer-events');
-            // Explicitly set scroll properties
-            container.style.overflowX = 'auto';
-            container.style.overflowY = 'hidden';
-            container.style.pointerEvents = 'auto';
-            // Force browser to recalculate scroll by accessing scrollWidth
-            const scrollWidth = container.scrollWidth;
-            const clientWidth = container.clientWidth;
-            // If content is wider than container, ensure scrolling works
-            if (scrollWidth > clientWidth) {
-                // Force a reflow
-                container.offsetHeight;
-                // Try to scroll slightly to trigger scrollbar
-                const currentScroll = container.scrollLeft;
-                container.scrollLeft = currentScroll + 1;
-                container.scrollLeft = currentScroll;
-            }
-        });
-
-        // Also ensure parent subsections have pointer-events enabled
-        const subsections = document.querySelectorAll('.home-subsection');
-        subsections.forEach(subsection => {
-            subsection.style.pointerEvents = 'auto';
-            // Ensure subsection containers are visible
-            const subsectionContainers = subsection.querySelectorAll('.horizontal-scroll-container');
-            subsectionContainers.forEach(subContainer => {
-                subContainer.style.overflowX = 'auto';
-                subContainer.style.overflowY = 'hidden';
-                subContainer.style.pointerEvents = 'auto';
-            });
-        });
-
-        // Specifically target sell and rent grids to ensure they're scrollable
-        const sellGrid = document.getElementById('home-sell-grid');
-        const rentGrid = document.getElementById('home-rent-grid');
-        const sellContainer = sellGrid ? sellGrid.closest('.horizontal-scroll-container') : null;
-        const rentContainer = rentGrid ? rentGrid.closest('.horizontal-scroll-container') : null;
-
-        if (sellContainer) {
-            sellContainer.style.overflowX = 'auto';
-            sellContainer.style.overflowY = 'hidden';
-            sellContainer.style.pointerEvents = 'auto';
-            sellContainer.offsetHeight; // Force reflow
-        }
-
-        if (rentContainer) {
-            rentContainer.style.overflowX = 'auto';
-            rentContainer.style.overflowY = 'hidden';
-            rentContainer.style.pointerEvents = 'auto';
-            rentContainer.offsetHeight; // Force reflow
-        }
-    }
 
     function toggleHomeSubsections(activeSubsection) {
         const auctionsSubsection = document.getElementById('auctions-section');
@@ -753,10 +682,6 @@
                     auctionsSubsection.style.opacity = '1';
                     auctionsSubsection.style.transform = 'translateX(0)';
                     auctionsSubsection.style.visibility = 'visible';
-                    // Re-enable scrolling after subsection is visible
-                    setTimeout(() => {
-                        reenableHorizontalScroll();
-                    }, 50);
                 });
             } else if (activeSubsection === 'sell-section' && sellSubsection) {
                 sellSubsection.style.display = 'block';
@@ -764,10 +689,6 @@
                     sellSubsection.style.opacity = '1';
                     sellSubsection.style.transform = 'translateX(0)';
                     sellSubsection.style.visibility = 'visible';
-                    // Re-enable scrolling after subsection is visible
-                    setTimeout(() => {
-                        reenableHorizontalScroll();
-                    }, 50);
                 });
             } else if (activeSubsection === 'rent-section' && rentSubsection) {
                 rentSubsection.style.display = 'block';
@@ -775,10 +696,6 @@
                     rentSubsection.style.opacity = '1';
                     rentSubsection.style.transform = 'translateX(0)';
                     rentSubsection.style.visibility = 'visible';
-                    // Re-enable scrolling after subsection is visible
-                    setTimeout(() => {
-                        reenableHorizontalScroll();
-                    }, 50);
                 });
             } else if (activeSubsection === 'home-section') {
                 // Show all subsections for home-section
@@ -793,16 +710,6 @@
                                 subsection.style.transform = 'translateX(0)';
                                 subsection.style.visibility = 'visible';
                                 subsection.style.pointerEvents = 'auto';
-                                // Re-enable scrolling after all subsections are visible
-                                if (index === allSubsections.length - 1) {
-                                    setTimeout(() => {
-                                        reenableHorizontalScroll();
-                                        // Additional check to ensure all containers are scrollable
-                                        setTimeout(() => {
-                                            reenableHorizontalScroll();
-                                        }, 100);
-                                    }, 50);
-                                }
                             });
                         }, index * 50);
                     }
@@ -1258,8 +1165,14 @@
             return;
         }
 
-        // Ensure section is visible before loading
+        // Check if section exists in DOM before proceeding
         const sectionElement = document.getElementById(sectionId);
+        if (!sectionElement) {
+            // Section doesn't exist in DOM, skip silently
+            return;
+        }
+
+        // Ensure section is visible before loading
         if (sectionElement) {
             // Force section to be visible
             sectionElement.style.display = 'block';
@@ -1332,18 +1245,13 @@
                 });
             }, 100);
 
-            // Additional check after a longer delay
-            setTimeout(() => {
-                reenableHorizontalScroll();
-            }, 300);
-
             return;
         }
 
         // Handle other sections (single grid)
         const gridElement = document.getElementById(config.gridId);
         if (!gridElement) {
-            console.error(`Grid element not found: ${config.gridId}`);
+            // Grid element doesn't exist, skip silently (section may not be in DOM)
             return;
         }
 
@@ -1954,6 +1862,14 @@
             ]
         },
         {
+            title: 'الأصول',
+            items: [
+                { icon: 'plus', text: 'بدأ مزاد جديد', route: ProfileRoutes.ACCOUNT_INFO },
+                { icon: 'plus', text: 'إضافة عقار جديد', route: null, action: 'favorites' },
+                { icon: 'key', text: 'إدارة ممتلكاتي', route: null, action: 'settings' }
+            ]
+        },
+        {
             title: 'المحفظة',
             items: [
                 { icon: 'wallet', text: 'المحافظ وحساب البنك', route: null, action: 'wallet' },
@@ -1970,6 +1886,7 @@
         {
             title: 'المزيد',
             items: [
+                { icon: 'download', text: 'تنزيل البرنامج', route: null, action: 'terms' },
                 { icon: 'file-text', text: 'الشروط والأحكام', route: null, action: 'terms' },
                 { icon: 'shield', text: 'سياسة الخصوصية', route: null, action: 'privacy' },
                 { icon: 'help-circle', text: 'المساعدة', route: null, action: 'help' },

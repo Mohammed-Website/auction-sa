@@ -40,24 +40,6 @@
     flex-shrink: 0;
 }
 
-/* Add Property Button */
-.add-property-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #0b2c4a;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    transform: translateY(0);
-    z-index: 10;
-    position: relative;
-    flex-shrink: 0;
-}
-
 .add-icon {
     width: 24px;
     height: 24px;
