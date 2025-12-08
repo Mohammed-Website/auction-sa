@@ -116,6 +116,8 @@ let isNavigatingWithinProfile = false;
             }
         } else if (state.section === 'auction-section' || state.section === 'sell-section' || state.section === 'rent-section') {
             return `#/${state.section}`;
+        } else if (state.section === 'my-actions-section') {
+            return '#/my-actions';
         }
         return '#/';
     }
@@ -289,6 +291,7 @@ let isNavigatingWithinProfile = false;
         'sell-section',
         'rent-section',
         'auction-section',
+        'my-actions-section',
         'profile-section'
     ];
 
@@ -338,7 +341,7 @@ let isNavigatingWithinProfile = false;
     // Ensure only profile section content is visible
     function ensureProfileOnlyVisible() {
         // Hide all property sections
-        const propertySections = ['home-section', 'sell-section', 'rent-section', 'auction-section'];
+        const propertySections = ['home-section', 'sell-section', 'rent-section', 'auction-section', 'my-actions-section'];
 
         propertySections.forEach(sectionId => {
             const section = document.getElementById(sectionId);
@@ -451,6 +454,148 @@ let isNavigatingWithinProfile = false;
             if (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
                 toggleHomeSubsections(sectionId);
             }
+            return;
+        }
+
+        // Special handling for transitions between home-section and my-actions-section
+        // Also handles transitions between subsections (auction-section, sell-section, rent-section) and my-actions-section
+        // This creates a smooth transition similar to profile-section
+        const isFromHomeToMyActions = currentSection === 'home-section' && sectionId === 'my-actions-section';
+        const isFromMyActionsToHome = currentSection === 'my-actions-section' && sectionId === 'home-section';
+        const isFromSubsectionToMyActions = (currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section') && sectionId === 'my-actions-section';
+        const isFromMyActionsToSubsection = currentSection === 'my-actions-section' && (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section');
+
+        if (isFromHomeToMyActions || isFromMyActionsToHome || isFromSubsectionToMyActions || isFromMyActionsToSubsection) {
+            const homeSection = document.getElementById('home-section');
+            const myActionsSection = document.getElementById('my-actions-section');
+            const currentActiveSection = document.querySelector('.tab-section.active');
+
+            if (!homeSection || !myActionsSection || !currentActiveSection) {
+                return;
+            }
+
+            // Hide profile if it's active
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection && profileSection.classList.contains('active')) {
+                profileSection.classList.remove('active');
+                profileSection.style.display = 'none';
+                profileSection.style.opacity = '0';
+                profileSection.style.visibility = 'hidden';
+                profileSection.style.pointerEvents = 'none';
+            }
+
+            // Handle banner section
+            const bannerSection = document.querySelector('.banner-section');
+            if (bannerSection) {
+                // Show banner for home-section and subsections, hide for my-actions-section
+                if (sectionId === 'home-section' || sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+                    bannerSection.classList.add('active');
+                } else {
+                    bannerSection.classList.remove('active');
+                }
+            }
+
+            // Determine target section
+            // For subsections, we're actually showing home-section, but will toggle the specific subsection
+            const isTargetingSubsection = sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section';
+            const targetSection = isTargetingSubsection ? homeSection : (sectionId === 'home-section' ? homeSection : myActionsSection);
+
+            // Determine if we're coming from a subsection (current section is a subsection)
+            const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section';
+
+            // Prepare target section - position it off-screen
+            targetSection.style.display = 'block';
+
+            // Determine slide direction based on transition type
+            if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
+                // Coming from home/subsection, my-actions slides in from right
+                targetSection.style.transform = 'translateX(100%)';
+            } else {
+                // Coming from my-actions, home/subsection slides in from left
+                targetSection.style.transform = 'translateX(-100%)';
+            }
+
+            targetSection.style.opacity = '0';
+            targetSection.style.visibility = 'visible';
+            targetSection.style.pointerEvents = 'none';
+            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.classList.remove('active');
+
+            // Clean up current section with fade-out animation (synchronized)
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+
+            if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
+                // Home/subsection slides out to the left
+                currentActiveSection.style.transform = 'translateX(-100%)';
+            } else {
+                // My-actions slides out to the right
+                currentActiveSection.style.transform = 'translateX(100%)';
+            }
+
+            currentActiveSection.style.opacity = '0';
+
+            // Force reflow to ensure styles are applied
+            targetSection.offsetHeight;
+            currentActiveSection.offsetHeight;
+
+            // Animate both sections simultaneously for smooth synchronized transition
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    // Animate target section in
+                    targetSection.style.transform = 'translateX(0)';
+                    targetSection.style.opacity = '1';
+                    targetSection.style.pointerEvents = 'auto';
+                    targetSection.classList.add('active');
+
+                    // Hide current section after fade-out completes
+                    setTimeout(() => {
+                        currentActiveSection.style.display = 'none';
+                        currentActiveSection.style.visibility = 'hidden';
+                        currentActiveSection.style.pointerEvents = 'none';
+                    }, 400);
+
+                    // If switching to home-section or a subsection, show appropriate subsections
+                    if (sectionId === 'home-section' || isTargetingSubsection) {
+                        toggleHomeSubsections(sectionId);
+                    }
+
+                    // Apply fade-in animation to content
+                    const sectionContent = targetSection.querySelector('.section-content');
+                    if (sectionContent) {
+                        sectionContent.style.opacity = '0';
+                        sectionContent.style.transform = 'translateX(20px)';
+                        sectionContent.style.visibility = 'hidden';
+                        sectionContent.style.transition = 'none';
+
+                        setTimeout(() => {
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    sectionContent.style.opacity = '1';
+                                    sectionContent.style.transform = 'translateX(0)';
+                                    sectionContent.style.visibility = 'visible';
+                                });
+                            });
+                        }, 100);
+                    }
+                });
+            });
+
+            // Update current section
+            currentSection = sectionId;
+            console.log(`[Navigation] Current page: ${sectionId}`);
+
+            // Update active states on all navigation items
+            updateActiveNavItems(sectionId);
+
+            // Push navigation state to history
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 100);
+
             return;
         }
 
@@ -636,6 +781,9 @@ let isNavigatingWithinProfile = false;
         const bannerSection = document.querySelector('.banner-section');
         if (bannerSection && (sectionId === 'home-section' || sectionId === 'sell-section' || sectionId === 'rent-section' || sectionId === 'auction-section')) {
             bannerSection.classList.add('active');
+        } else if (bannerSection && sectionId === 'my-actions-section') {
+            // Hide banner for my-actions-section
+            bannerSection.classList.remove('active');
         }
 
         // Get direction for animation
@@ -660,6 +808,17 @@ let isNavigatingWithinProfile = false;
             targetSection.style.pointerEvents = 'auto';
         }
 
+        // For my-actions-section, ensure proper initial state for animation
+        if (sectionId === 'my-actions-section') {
+            // Remove any conflicting inline styles to let CSS transitions work
+            targetSection.style.removeProperty('opacity');
+            targetSection.style.removeProperty('transform');
+            targetSection.style.removeProperty('visibility');
+            // Set initial state for animation
+            targetSection.style.visibility = 'visible';
+            targetSection.style.pointerEvents = 'none';
+        }
+
         // For home-section, hide content initially so it can fade in smoothly
         if (sectionId === 'home-section') {
             const sectionContent = targetSection.querySelector('.section-content');
@@ -680,6 +839,14 @@ let isNavigatingWithinProfile = false;
             targetSection.classList.add('slide-in-left');
         }
 
+        // For my-actions-section, ensure it's visible and ready for animation
+        if (sectionId === 'my-actions-section') {
+            // Clear any conflicting inline styles to let CSS handle animation
+            targetSection.style.removeProperty('opacity');
+            targetSection.style.removeProperty('transform');
+            targetSection.style.visibility = 'visible';
+        }
+
         // Force reflow to ensure classes are applied
         targetSection.offsetHeight;
 
@@ -689,6 +856,18 @@ let isNavigatingWithinProfile = false;
                 // Remove slide-in class and add active to trigger enter animation
                 targetSection.classList.remove('slide-in-left', 'slide-in-right');
                 targetSection.classList.add('active');
+
+                // For my-actions-section, ensure CSS transitions work properly
+                if (sectionId === 'my-actions-section') {
+                    // Clear any remaining inline styles that might override CSS
+                    // The .active class in CSS will handle the animation
+                    requestAnimationFrame(() => {
+                        targetSection.style.removeProperty('opacity');
+                        targetSection.style.removeProperty('transform');
+                        // Force reflow to ensure CSS classes take effect
+                        targetSection.offsetHeight;
+                    });
+                }
 
                 // For home-section, apply fade-in animation to section content after slide completes
                 // Use the same smooth animation pattern regardless of source section
@@ -735,6 +914,12 @@ let isNavigatingWithinProfile = false;
                 setTimeout(() => {
                     currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
                     currentActiveSection.style.display = 'none';
+
+                    // For my-actions-section, ensure it's properly positioned when active
+                    if (sectionId === 'my-actions-section') {
+                        // Ensure the section is fully visible and interactive
+                        targetSection.style.pointerEvents = 'auto';
+                    }
                 }, 350); // Match CSS transition duration
             });
         });
@@ -1137,6 +1322,17 @@ let isNavigatingWithinProfile = false;
             activeSection.style.visibility = 'visible';
             activeSection.style.pointerEvents = 'auto';
             activeSection.style.transform = 'translateX(0)';
+        }
+
+        // Ensure my-actions-section is properly initialized
+        const myActionsSection = document.getElementById('my-actions-section');
+        if (myActionsSection && !myActionsSection.classList.contains('active')) {
+            // Ensure it starts in the correct hidden state
+            myActionsSection.style.display = 'none';
+            myActionsSection.style.opacity = '0';
+            myActionsSection.style.visibility = 'hidden';
+            myActionsSection.style.pointerEvents = 'none';
+            myActionsSection.style.transform = 'translateX(100%)';
         }
     }
 

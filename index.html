@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="home.js" defer></script>
     <script src="user-acc-data.js" defer></script>
+    <script src="my-actions-section.js" defer></script>
 </head>
 
 <body>
@@ -295,6 +296,43 @@
                 </div>
             </div>
         </section>
+
+        <!-- My Actions Section: User Participations -->
+        <section id="my-actions-section" class="tab-section">
+            <div class="section-content">
+                <!-- Page Title -->
+                <div class="my-actions-header">
+                    <h1 class="my-actions-title">مشاركاتي</h1>
+                </div>
+
+                <!-- Tab Switching Section -->
+                <div class="my-actions-tabs">
+                    <button class="my-actions-tab active" data-tab="pending" id="pending-tab">
+                        <span>المزادات قيد الانتظار</span>
+                    </button>
+                    <button class="my-actions-tab" data-tab="finished" id="finished-tab">
+                        <span>المزادات المنتهية</span>
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div class="my-actions-content">
+                    <!-- Pending Auctions Content -->
+                    <div class="my-actions-tab-content active" id="pending-content">
+                        <div class="my-actions-empty-state">
+                            <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
+                        </div>
+                    </div>
+
+                    <!-- Finished Auctions Content -->
+                    <div class="my-actions-tab-content" id="finished-content">
+                        <div class="my-actions-empty-state">
+                            <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
 
@@ -343,6 +381,26 @@
 
         // Export for use in other scripts
         window.initLucideIcons = initLucideIcons;
+
+
+
+
+        // Disable Right Click and Certain Keyboard Shortcuts
+        /* document.addEventListener("contextmenu", e => e.preventDefault());
+        document.addEventListener("keydown", e => {
+            const key = e.key.toUpperCase();
+
+            // Block F12, Ctrl+U, Ctrl+S
+            if (key === "F12" || (e.ctrlKey && ["U", "S"].includes(key))) {
+                e.preventDefault();
+            }
+
+            // Block Ctrl+Shift+I/J/C
+            if (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(key)) {
+                e.preventDefault();
+            }
+        }); */
+
     </script>
 
 
