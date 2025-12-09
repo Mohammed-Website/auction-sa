@@ -1,27 +1,35 @@
 [
-    {
-      "id": 1,
-      "title": "فيلا للبيع جديدة بالكامل",
-      "price": "1,850,000",
-      "location": "الرياض - النرجس",
-      "area": "380 م²",
-      "image": "https://images.unsplash.com/photo-1568605114967-8130f3a36994"
-    },
-    {
-      "id": 2,
-      "title": "شقة تمليك قريبة من الخدمات",
-      "price": "720,000",
-      "location": "جدة - الصفا",
-      "area": "140 م²",
-      "image": "https://images.unsplash.com/photo-1493809842364-78817add7ffb"
-    },
-    {
-      "id": 3,
-      "title": "عمارة استثمارية",
-      "price": "4,500,000",
-      "location": "المدينة المنورة - قباء",
-      "area": "900 م²",
-      "image": "https://images.unsplash.com/photo-1605276373954-0c4a0dac5b12"
-    }
-  ]
-  
+  {
+    "id": 1,
+    "title": "فيلا للبيع جديدة بالكامل",
+    "price": "1,850,000",
+    "location": "الرياض - النرجس",
+    "area": "380 م²",
+    "totalBed": "4",
+    "totalBathroom": "5",
+    "image": "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
+    "compLogo": "https://cryptologos.cc/logos/compound-comp-logo.png?v=040",
+    "compName": "ماما الحلوا للمزاد",
+    "specialWord": "Hot"
+  },
+  {
+    "id": 2,
+    "title": "شقة تمليك قريبة من الخدمات",
+    "price": "720,000",
+    "location": "جدة - الصفا",
+    "area": "140 م²",
+    "totalBed": "6",
+    "totalBathroom": "7",
+    "image": "https://images.unsplash.com/photo-1493809842364-78817add7ffb"
+  },
+  {
+    "id": 3,
+    "title": "عمارة استثمارية",
+    "price": "4,500,000",
+    "location": "المدينة المنورة - قباء",
+    "area": "900 م²",
+    "totalBed": "3",
+    "totalBathroom": "3",
+    "image": "https://images.unsplash.com/photo-1605276373954-0c4a0dac5b12"
+  }
+]

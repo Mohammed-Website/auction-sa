@@ -1,0 +1,99 @@
+/* Card Components */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Special Word Badge */
+.special-word-badge {
+    background: #ff4757;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+
+.company-details {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.company-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-left: 6px;
+    object-fit: cover;
+}
+
+.company-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Auction Bid Section Updates */
+.auction-bid-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.2rem 0;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.bid-section-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.bid-section-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.bid-section-right .location-icon {
+    color: #666 !important;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .company-name {
+        font-size: 0.75rem;
+    }
+
+    .special-word-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+    }
+}
+
+/* Ensure proper positioning for property cards */
+.property-card {
+    position: relative;
+}
+
+.auction-card-new {
+    position: relative;
+}

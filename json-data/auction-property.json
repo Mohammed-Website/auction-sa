@@ -7,8 +7,9 @@
       "timer": "01:42:30",
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
       "compLogo": "https://cryptologos.cc/logos/compound-comp-logo.png?v=040",
-      "compName": "Bandar For Renting",
-      "specialWord": "Hot"
+      "compName": "بندر لإجار البيوت",
+      "specialWord": "جديد",
+      "viewCount": 1250
     },
     {
       "id": 2,
@@ -16,7 +17,11 @@
       "currentBid": "980,000",
       "location": "الطائف",
       "timer": "03:15:10",
-      "image": "https://images.unsplash.com/photo-1599423300746-b62533397364"
+      "image": "https://images.unsplash.com/photo-1599423300746-b62533397364",
+      "compLogo": "https://static.vecteezy.com/system/resources/thumbnails/047/656/219/small/abstract-logo-design-for-any-corporate-brand-business-company-vector.jpg",
+      "compName": "نسرين للأراضي الزراعية",
+      "specialWord": "مميز",
+      "viewCount": 180
     },
     {
       "id": 3,
@@ -24,7 +29,10 @@
       "currentBid": "3,200,000",
       "location": "الرياض - النسيم",
       "timer": "00:58:45",
-      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858"
+      "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858",
+      "compLogo": "https://marketplace.canva.com/EAGaybKnslM/1/0/800w/canva-blue-simple-modern-minimalist-building-company-logo-uVmgkHNBmPs.jpg",
+      "compName": "ابو عبد الله للمزاد",
+      "viewCount": 50
     }
   ]
   

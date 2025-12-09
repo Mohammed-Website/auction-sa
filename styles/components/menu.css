@@ -36,9 +36,7 @@
     font-size: var(--menu-section-title);
     font-weight: 400;
     color: #2c5aa0;
-    margin: 0 0 1rem 0;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid #f0f0f0;
 }
 
 .menu-items {

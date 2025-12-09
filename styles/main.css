@@ -28,6 +28,7 @@
 @import url('components/navigation.css');
 @import url('components/my-actions.css');
 @import url('components/settings.css');
+@import url('components/card-components.css');
 
 /* Page Styles */
 @import url('pages/responsive.css');

@@ -85,14 +85,22 @@
     function renderFeatures(property) {
         const features = [];
 
-        // Add bedrooms if available
-        if (property.bedrooms) {
-            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.bedrooms} ${property.bedrooms === 1 ? 'غرفة' : 'غرف'}`);
+        // Add totalBed if available (preferred over bedrooms if both exist)
+        if (property.totalBed !== undefined) {
+            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.totalBed}`);
+        }
+        // Fallback to bedrooms if totalBed doesn't exist
+        else if (property.bedrooms) {
+            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.bedrooms}`);
         }
         
-        // Add bathrooms if available
-        if (property.bathrooms) {
-            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.bathrooms} ${property.bathrooms === 1 ? 'حمام' : 'حمامات'}`);
+        // Add totalBathroom if available (preferred over bathrooms if both exist)
+        if (property.totalBathroom !== undefined) {
+            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.totalBathroom}`);
+        }
+        // Fallback to bathrooms if totalBathroom doesn't exist
+        else if (property.bathrooms) {
+            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.bathrooms}`);
         }
         
         // Add area if available
@@ -182,9 +190,19 @@
 
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+        const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = property.specialWord ? 
+            `<div class="special-word-badge">${property.specialWord}</div>` : '';
 
         return `
             <div class="property-card">
+                <div class="card-header">
+                    <div class="company-details">
+                        ${companyLogo}
+                        <span class="company-name">${property.compName || ''}</span>
+                    </div>
+                    ${specialWordBadge}
+                </div>
                 <div class="property-image" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
                 <div class="property-info">
@@ -206,6 +224,9 @@
 
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+        const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = property.specialWord ? 
+            `<div class="special-word-badge">${property.specialWord}</div>` : '';
 
         // Handle price - check if it already includes "/ شهرياً" or "/ سنوياً"
         let priceText = property.price || '';
@@ -215,6 +236,13 @@
 
         return `
             <div class="property-card rental-card">
+                <div class="card-header">
+                    <div class="company-details">
+                        ${companyLogo}
+                        <span class="company-name">${property.compName || ''}</span>
+                    </div>
+                    ${specialWordBadge}
+                </div>
                 <div class="property-image" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
                 <div class="property-info">
@@ -236,6 +264,9 @@
 
         const imageUrl = getImageUrl(auction);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
+        const companyLogo = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = auction.specialWord ? 
+            `<div class="special-word-badge">${auction.specialWord}</div>` : '';
 
         // Handle timer - use 'timer' from JSON or fallback to 'timeRemaining'
         const timeRemaining = auction.timer || auction.timeRemaining || 'غير محدد';
@@ -251,6 +282,13 @@
 
         return `
             <div class="auction-card-new">
+                <div class="card-header">
+                    <div class="company-details">
+                        ${companyLogo}
+                        <span class="company-name">${auction.compName || ''}</span>
+                    </div>
+                    ${specialWordBadge}
+                </div>
                 <div class="auction-banner" ${imageStyle}>
                     <div class="auction-badges">
                         <span class="status-badge live-badge">
@@ -273,12 +311,24 @@
                         </div>
                     </div>
                     <div class="auction-bid-section">
-                        <div class="starting-bid-label">المزايدة الابتدائية</div>
-                        <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
+                        <div class="bid-section-left">
+                            <div class="starting-bid-label">المزايدة الابتدائية</div>
+                            <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
+                        </div>
+                        <div class="bid-section-right">
+                            <i data-lucide="map-pin" class="location-icon"></i>
+                            <span>${auction.location || 'غير محدد'}</span>
+                        </div>
                     </div>
-                    <button class="auction-cta-btn">
-                        شارك بالمزاد
-                    </button>
+                    <div class="auction-cta-container">
+                        <div class="view-count">
+                            <i data-lucide="eye" class="view-icon"></i>
+                            <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
+                        </div>
+                        <button class="auction-cta-btn">
+                            شارك بالمزاد
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
