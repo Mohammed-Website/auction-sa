@@ -23,7 +23,7 @@
 
     // Track which profile route is currently active
     let currentProfileRoute = ProfileRoutes.MENU;
-    
+
     // Flag to prevent recursive navigation calls
     let isNavigatingProfileRoute = false;
 
@@ -373,7 +373,7 @@
         }
 
         isNavigatingProfileRoute = true;
-        
+
         // Set flag to prevent unwanted section switches
         if (typeof window.setNavigatingWithinProfile === 'function') {
             window.setNavigatingWithinProfile(true);
@@ -454,7 +454,7 @@
                 }
                 isNavigatingProfileRoute = false;
             }, 300);
-        } 
+        }
         // Handle navigation to settings route
         else if (route === ProfileRoutes.SETTINGS) {
             // Ensure profile section is active and visible
@@ -528,7 +528,7 @@
                 }
                 isNavigatingProfileRoute = false;
             }, 400);
-        } 
+        }
         // Handle navigation to menu route
         else if (route === ProfileRoutes.MENU) {
             // Show profile page title
