@@ -26,10 +26,6 @@
     pointer-events: none;
 }
 
-/* Profile section enters from the left */
-#profile-section {
-    transform: translateX(-100%);
-}
 
 .tab-section.active {
     position: relative;

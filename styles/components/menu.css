@@ -1,9 +1,3 @@
-/* Profile Menu Header */
-.profile-menu-header {
-    text-align: center;
-    padding: 1rem;
-}
-
 #profile-section-headers {
     position: relative;
     width: 100vw;
@@ -20,7 +14,6 @@
     margin: 0;
     text-align: center;
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--bg-white);
     border-bottom: 1px solid var(--border-light);
     position: sticky;
     top: 60px;
@@ -40,10 +33,6 @@
 .profile-name {
     font-size: 1.5rem;
     font-weight: var(--font-weight-normal);
-}
-
-#profile-menu-image {
-    margin: 0 auto 1rem;
 }
 
 /* Menu Section */

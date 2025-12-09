@@ -29,7 +29,7 @@
         });
 
         // Back to tabs button handlers
-        const backToTabsButtons = document.querySelectorAll('.back-to-tabs-btn[data-back="tabs"]');
+        const backToTabsButtons = document.querySelectorAll('.back-btn[data-back="tabs"]');
         backToTabsButtons.forEach(btn => {
             // Check if listener already attached
             if (!btn.hasAttribute('data-listener-attached')) {
@@ -90,7 +90,7 @@
             cardHeader.style.display = 'flex';
         }
         // Hide all other card headers
-        document.querySelectorAll('.card-header').forEach(header => {
+        document.querySelectorAll('.account-tabs-header').forEach(header => {
             if (header.id !== `card-header-${tabId}`) {
                 header.style.display = 'none';
             }
@@ -172,9 +172,11 @@
         if (accountTabsHeader) {
             accountTabsHeader.style.display = 'flex';
         }
-        // Hide all card headers
-        document.querySelectorAll('.card-header').forEach(header => {
-            header.style.display = 'none';
+        // Hide only card headers (keep main account tabs header visible)
+        document.querySelectorAll('.account-tabs-header').forEach(header => {
+            if (header.id && header.id.startsWith('card-header-')) {
+                header.style.display = 'none';
+            }
         });
 
         const accountTabs = document.querySelector('.account-tabs');
@@ -247,29 +249,29 @@
 
         const basicDataHeader = typeof window.createCardHeader === 'function'
             ? window.createCardHeader('البيانات الأساسية', 'basic-data')
-            : `<div class="card-header" id="card-header-basic-data" style="display: none;">
-                <button class="back-to-tabs-btn" data-back="tabs">
+            : `<div class="account-tabs-header" id="card-header-basic-data" style="display: none;">
+                <button class="back-btn" data-back="tabs">
                     <i data-lucide="arrow-right" class="back-icon"></i>
                 </button>
-                <h2 class="card-title">البيانات الأساسية</h2>
+                <h2 class="account-tabs-title">البيانات الأساسية</h2>
             </div>`;
 
         const contactInfoHeader = typeof window.createCardHeader === 'function'
             ? window.createCardHeader('معلومات التواصل', 'contact-info')
-            : `<div class="card-header" id="card-header-contact-info" style="display: none;">
-                <button class="back-to-tabs-btn" data-back="tabs">
+            : `<div class="account-tabs-header" id="card-header-contact-info" style="display: none;">
+                <button class="back-btn" data-back="tabs">
                     <i data-lucide="arrow-right" class="back-icon"></i>
                 </button>
-                <h2 class="card-title">معلومات التواصل</h2>
+                <h2 class="account-tabs-title">معلومات التواصل</h2>
             </div>`;
 
         const addressesHeader = typeof window.createCardHeader === 'function'
             ? window.createCardHeader('عناويني', 'addresses')
-            : `<div class="card-header" id="card-header-addresses" style="display: none;">
-                <button class="back-to-tabs-btn" data-back="tabs">
+            : `<div class="account-tabs-header" id="card-header-addresses" style="display: none;">
+                <button class="back-btn" data-back="tabs">
                     <i data-lucide="arrow-right" class="back-icon"></i>
                 </button>
-                <h2 class="card-title">عناويني</h2>
+                <h2 class="account-tabs-title">عناويني</h2>
             </div>`;
 
         headersContainer.innerHTML = profilePageTitle + accountTabsHeader + basicDataHeader + contactInfoHeader + addressesHeader;
@@ -295,7 +297,7 @@
         if (!topHeader) return;
 
         const topHeaderHeight = topHeader.offsetHeight;
-        const stickyHeaders = document.querySelectorAll('.profile-page-title, .account-tabs-header, .card-header');
+        const stickyHeaders = document.querySelectorAll('.profile-page-title, .account-tabs-header');
 
         stickyHeaders.forEach(header => {
             if (header) {

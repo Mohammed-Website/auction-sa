@@ -55,7 +55,7 @@
         font-size: var(--font-size-sm) !important;
     }
 
-    .card-header {
+    .account-tabs-header {
         padding: var(--spacing-md) var(--spacing-lg);
         gap: var(--spacing-sm);
     }
@@ -70,7 +70,7 @@
         height: 18px;
     }
 
-    .card-title {
+    .account-tabs-title {
         font-size: var(--font-size-lg);
     }
 
@@ -222,16 +222,18 @@
         max-width: 100%;
         margin-left: 0;
         margin-right: 0;
+        display: flex;
+        justify-content: flex-start;
     }
 
     .profile-page-title,
     .account-tabs-header,
-    .card-header {
+    .account-tabs-header {
+        background: transparent;
         position: relative;
         top: auto;
         left: auto;
         right: auto;
-        width: auto;
         max-width: none;
         box-shadow: none;
         z-index: auto;
@@ -246,14 +248,14 @@
         border-radius: var(--radius-lg);
     }
 
-    .card-header {
+    .account-tabs-header {
         border-radius: var(--radius-lg);
     }
 
     /* Remove padding adjustments on desktop */
     .account-info-container:has(.account-tabs-header),
     .account-info-container:has(.profile-page-title),
-    .account-card:has(.card-header),
+    .account-card:has(.account-tabs-header),
     .profile-container:has(.profile-page-title),
     .account-tabs {
         padding-top: 0;

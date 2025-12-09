@@ -29,9 +29,12 @@ let isNavigatingWithinProfile = false;
         // Check profile route
         const accountInfoView = document.getElementById('profile-account-info-view');
         const menuView = document.getElementById('profile-menu-view');
+        const settingsView = document.getElementById('profile-settings-view');
         let profileRoute = null;
         if (sectionId === 'profile-section') {
-            if (accountInfoView && accountInfoView.classList.contains('active')) {
+            if (settingsView && settingsView.classList.contains('active')) {
+                profileRoute = 'settings';
+            } else if (accountInfoView && accountInfoView.classList.contains('active')) {
                 profileRoute = 'account-info';
 
                 // Check if we're in a tab detail view
@@ -118,6 +121,8 @@ let isNavigatingWithinProfile = false;
             return `#/${state.section}`;
         } else if (state.section === 'my-actions-section') {
             return '#/my-actions';
+        } else if (state.section === 'profile-section' && state.profileRoute === 'settings') {
+            return '#/profile/settings';
         }
         return '#/';
     }
@@ -137,6 +142,18 @@ let isNavigatingWithinProfile = false;
         if (currentState.accountTab) {
             if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.goBack === 'function') {
                 window.AccountInfoTabs.goBack();
+                setTimeout(() => {
+                    pushHistoryState(null, false);
+                    isHandlingBackNavigation = false;
+                }, 100);
+                return;
+            }
+        }
+
+        // If we're in profile settings view, go back to profile menu
+        if (currentState.section === 'profile-section' && currentState.profileRoute === 'settings') {
+            if (typeof window.ProfileNavigation !== 'undefined' && typeof window.ProfileNavigation.navigateTo !== 'undefined') {
+                window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
                 setTimeout(() => {
                     pushHistoryState(null, false);
                     isHandlingBackNavigation = false;
@@ -459,35 +476,40 @@ let isNavigatingWithinProfile = false;
 
         // Special handling for transitions between home-section and my-actions-section
         // Also handles transitions between subsections (auction-section, sell-section, rent-section) and my-actions-section
+        // Also handles transitions between profile-section and my-actions-section
         // This creates a smooth transition similar to profile-section
         const isFromHomeToMyActions = currentSection === 'home-section' && sectionId === 'my-actions-section';
         const isFromMyActionsToHome = currentSection === 'my-actions-section' && sectionId === 'home-section';
         const isFromSubsectionToMyActions = (currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section') && sectionId === 'my-actions-section';
         const isFromMyActionsToSubsection = currentSection === 'my-actions-section' && (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section');
+        const isFromProfileToMyActions = currentSection === 'profile-section' && sectionId === 'my-actions-section';
+        const isFromMyActionsToProfile = currentSection === 'my-actions-section' && sectionId === 'profile-section';
 
-        if (isFromHomeToMyActions || isFromMyActionsToHome || isFromSubsectionToMyActions || isFromMyActionsToSubsection) {
+        if (isFromHomeToMyActions || isFromMyActionsToHome || isFromSubsectionToMyActions || isFromMyActionsToSubsection || isFromProfileToMyActions || isFromMyActionsToProfile) {
             const homeSection = document.getElementById('home-section');
             const myActionsSection = document.getElementById('my-actions-section');
+            const profileSection = document.getElementById('profile-section');
             const currentActiveSection = document.querySelector('.tab-section.active');
 
             if (!homeSection || !myActionsSection || !currentActiveSection) {
                 return;
             }
 
-            // Hide profile if it's active
-            const profileSection = document.getElementById('profile-section');
-            if (profileSection && profileSection.classList.contains('active')) {
-                profileSection.classList.remove('active');
-                profileSection.style.display = 'none';
-                profileSection.style.opacity = '0';
-                profileSection.style.visibility = 'hidden';
-                profileSection.style.pointerEvents = 'none';
+            // Hide profile if it's active (unless we're transitioning to/from profile)
+            if (!isFromProfileToMyActions && !isFromMyActionsToProfile) {
+                if (profileSection && profileSection.classList.contains('active')) {
+                    profileSection.classList.remove('active');
+                    profileSection.style.display = 'none';
+                    profileSection.style.opacity = '0';
+                    profileSection.style.visibility = 'hidden';
+                    profileSection.style.pointerEvents = 'none';
+                }
             }
 
             // Handle banner section
             const bannerSection = document.querySelector('.banner-section');
             if (bannerSection) {
-                // Show banner for home-section and subsections, hide for my-actions-section
+                // Show banner for home-section and subsections, hide for my-actions-section and profile-section
                 if (sectionId === 'home-section' || sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
                     bannerSection.classList.add('active');
                 } else {
@@ -498,7 +520,16 @@ let isNavigatingWithinProfile = false;
             // Determine target section
             // For subsections, we're actually showing home-section, but will toggle the specific subsection
             const isTargetingSubsection = sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section';
-            const targetSection = isTargetingSubsection ? homeSection : (sectionId === 'home-section' ? homeSection : myActionsSection);
+            let targetSection;
+            if (isFromMyActionsToProfile) {
+                targetSection = profileSection;
+            } else if (isTargetingSubsection) {
+                targetSection = homeSection;
+            } else if (sectionId === 'home-section') {
+                targetSection = homeSection;
+            } else {
+                targetSection = myActionsSection;
+            }
 
             // Determine if we're coming from a subsection (current section is a subsection)
             const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section';
@@ -508,10 +539,16 @@ let isNavigatingWithinProfile = false;
 
             // Determine slide direction based on transition type
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
-                // Coming from home/subsection, my-actions slides in from right
+                // Coming from home/subsection, my-actions slides in from LEFT
+                targetSection.style.transform = 'translateX(-100%)';
+            } else if (isFromProfileToMyActions) {
+                // Coming from profile, my-actions slides in from RIGHT
                 targetSection.style.transform = 'translateX(100%)';
-            } else {
-                // Coming from my-actions, home/subsection slides in from left
+            } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
+                // Coming from my-actions to home/subsection, home slides in from right
+                targetSection.style.transform = 'translateX(100%)';
+            } else if (isFromMyActionsToProfile) {
+                // Coming from my-actions to profile, profile slides in from left
                 targetSection.style.transform = 'translateX(-100%)';
             }
 
@@ -526,10 +563,16 @@ let isNavigatingWithinProfile = false;
             currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
 
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
-                // Home/subsection slides out to the left
+                // Home/subsection slides out to the right (my-actions comes from left)
+                currentActiveSection.style.transform = 'translateX(100%)';
+            } else if (isFromProfileToMyActions) {
+                // Profile slides out to the left (my-actions comes from right)
                 currentActiveSection.style.transform = 'translateX(-100%)';
-            } else {
-                // My-actions slides out to the right
+            } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
+                // My-actions slides out to the left (home comes from right)
+                currentActiveSection.style.transform = 'translateX(-100%)';
+            } else if (isFromMyActionsToProfile) {
+                // My-actions slides out to the right (profile comes from left)
                 currentActiveSection.style.transform = 'translateX(100%)';
             }
 
@@ -2258,7 +2301,8 @@ let isNavigatingWithinProfile = false;
     // Profile Route Management
     const ProfileRoutes = {
         MENU: 'menu',
-        ACCOUNT_INFO: 'account-info'
+        ACCOUNT_INFO: 'account-info',
+        SETTINGS: 'settings'
     };
 
     let currentProfileRoute = ProfileRoutes.MENU;
@@ -2270,7 +2314,8 @@ let isNavigatingWithinProfile = false;
         const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
 
         const headerHTML = `
-            <div class="profile-header-card profile-menu-header">
+            <div class="profile-header-card">
+                <h2 class="profile-name">${name}</h2>
                 <div class="profile-image-wrapper">
                     <div class="profile-image" id="profile-menu-image">
                         ${imageUrl
@@ -2279,7 +2324,6 @@ let isNavigatingWithinProfile = false;
                         <i class="fas fa-user profile-image-placeholder" ${imageUrl ? 'style="display:none;"' : ''}></i>
                     </div>
                 </div>
-                <h2 class="profile-name">${name}</h2>
             </div>
         `;
 
@@ -2307,11 +2351,11 @@ let isNavigatingWithinProfile = false;
     // Create card header for tab views
     function createCardHeader(title, tabId) {
         return `
-            <div class="card-header" id="card-header-${tabId}" style="display: none;">
-                <button class="back-to-tabs-btn" data-back="tabs">
+            <div class="account-tabs-header" id="card-header-${tabId}" style="display: none;">
+                <button class="back-btn" data-back="tabs">
                     <i data-lucide="arrow-right" class="back-icon"></i>
                 </button>
-                <h2 class="card-title">${title}</h2>
+                <h2 class="account-tabs-title">${title}</h2>
             </div>
         `;
     }
@@ -2365,9 +2409,9 @@ let isNavigatingWithinProfile = false;
         {
             title: 'الأصول',
             items: [
-                { icon: 'plus', text: 'بدأ مزاد جديد', route: ProfileRoutes.ACCOUNT_INFO },
-                { icon: 'plus', text: 'إضافة عقار جديد', route: null, action: 'favorites' },
-                { icon: 'key', text: 'إدارة ممتلكاتي', route: null, action: 'settings' }
+                { icon: 'plus', text: 'بدأ مزاد جديد', route: null, action: 'start-auction' },
+                { icon: 'plus', text: 'إضافة عقار جديد', route: null, action: 'add-property' },
+                { icon: 'key', text: 'إدارة ممتلكاتي', route: null, action: 'mannage-properties' }
             ]
         },
         {
@@ -2500,7 +2544,22 @@ let isNavigatingWithinProfile = false;
                 // TODO: Navigate to favorites
                 break;
             case 'settings':
-                // TODO: Navigate to settings
+                // Ensure we're in profile section first
+                const profileSection = document.getElementById('profile-section');
+                if (profileSection && !profileSection.classList.contains('active')) {
+                    // Switch to profile section first
+                    if (typeof window.switchToSection === 'function') {
+                        window.switchToSection('profile-section');
+                        // Wait for section to be visible, then navigate to settings
+                        setTimeout(() => {
+                            navigateToProfileRoute(ProfileRoutes.SETTINGS);
+                        }, 300);
+                    } else {
+                        navigateToProfileRoute(ProfileRoutes.SETTINGS);
+                    }
+                } else {
+                    navigateToProfileRoute(ProfileRoutes.SETTINGS);
+                }
                 break;
             case 'wallet':
                 // TODO: Navigate to wallet
@@ -2573,9 +2632,11 @@ let isNavigatingWithinProfile = false;
             if (profilePageTitle) {
                 profilePageTitle.style.display = 'none';
             }
-            // Hide all card headers
-            document.querySelectorAll('.card-header').forEach(header => {
-                header.style.display = 'none';
+            // Hide all card headers (but not the main account-tabs-header)
+            document.querySelectorAll('.account-tabs-header').forEach(header => {
+                if (header.id && header.id.startsWith('card-header-')) {
+                    header.style.display = 'none';
+                }
             });
 
             // Show account info view
@@ -2624,6 +2685,79 @@ let isNavigatingWithinProfile = false;
                 }
                 isNavigatingProfileRoute = false;
             }, 300);
+        } else if (route === ProfileRoutes.SETTINGS) {
+            // Ensure profile section is active and visible (same as account-info)
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection) {
+                profileSection.classList.add('active');
+                profileSection.style.display = 'block';
+                profileSection.style.visibility = 'visible';
+                profileSection.style.opacity = '1';
+                profileSection.style.pointerEvents = 'auto';
+                profileSection.style.transform = 'translateX(0)';
+            }
+
+            // Hide profile page title
+            const profilePageTitle = document.querySelector('.profile-page-title');
+            if (profilePageTitle) {
+                profilePageTitle.style.display = 'none';
+            }
+            // Hide account tabs header
+            const accountTabsHeader = document.getElementById('account-tabs-header');
+            if (accountTabsHeader) {
+                accountTabsHeader.style.display = 'none';
+            }
+            // Hide all card headers (but not account-tabs-header or settings-header)
+            document.querySelectorAll('.account-tabs-header').forEach(header => {
+                if (header.id && header.id.startsWith('card-header-')) {
+                    header.style.display = 'none';
+                }
+            });
+
+            // Show settings header
+            const settingsHeader = document.getElementById('settings-header');
+            if (settingsHeader) {
+                settingsHeader.style.display = 'flex';
+            }
+
+            // Hide menu view and account info view
+            menuView.classList.remove('active');
+            accountInfoView.classList.remove('active');
+
+            // Show settings view (exact same pattern as account-info)
+            const settingsView = document.getElementById('profile-settings-view');
+            if (settingsView) {
+                settingsView.classList.add('active');
+                currentProfileRoute = route;
+                console.log('[Navigation] Current page: profile-section -> settings view');
+
+                // Update URL hash
+                window.location.hash = '#/profile/settings';
+
+                // Initialize settings page
+                if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.init === 'function') {
+                    setTimeout(() => {
+                        window.SettingsPage.init();
+                    }, 100);
+                }
+
+                // Initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    setTimeout(() => {
+                        lucide.createIcons();
+                    }, 100);
+                }
+            } else {
+                console.error('[Navigation] Settings view not found');
+            }
+
+            // Push navigation state to history after navigation completes
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+                isNavigatingProfileRoute = false;
+            }, 400);
         } else if (route === ProfileRoutes.MENU) {
             // Show profile page title
             const profilePageTitle = document.querySelector('.profile-page-title');
@@ -2635,12 +2769,22 @@ let isNavigatingWithinProfile = false;
             if (accountTabsHeader) {
                 accountTabsHeader.style.display = 'none';
             }
-            // Hide all card headers
-            document.querySelectorAll('.card-header').forEach(header => {
-                header.style.display = 'none';
+            // Hide all card headers and settings header
+            document.querySelectorAll('.account-tabs-header').forEach(header => {
+                if (header.id && header.id.startsWith('card-header-')) {
+                    header.style.display = 'none';
+                }
             });
+            const settingsHeader = document.getElementById('settings-header');
+            if (settingsHeader) {
+                settingsHeader.style.display = 'none';
+            }
 
             // Show menu view
+            const settingsView = document.getElementById('profile-settings-view');
+            if (settingsView) {
+                settingsView.classList.remove('active');
+            }
             accountInfoView.classList.remove('active');
             menuView.classList.add('active');
             currentProfileRoute = route;
@@ -2725,6 +2869,8 @@ let isNavigatingWithinProfile = false;
                 navigateToProfileRoute(ProfileRoutes.MENU);
             } else if (hash === '#/profile/account-info') {
                 navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
+            } else if (hash === '#/profile/settings') {
+                navigateToProfileRoute(ProfileRoutes.SETTINGS);
             }
         });
 
@@ -2744,6 +2890,8 @@ let isNavigatingWithinProfile = false;
                 navigateToProfileRoute(ProfileRoutes.MENU);
             } else if (hash === '#/profile/account-info') {
                 navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
+            } else if (hash === '#/profile/settings') {
+                navigateToProfileRoute(ProfileRoutes.SETTINGS);
             }
         });
 
