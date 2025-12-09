@@ -2,9 +2,67 @@
 (function () {
     'use strict';
 
+    // Create and append filter buttons to finished content
+    function createFilterButtons() {
+        const finishedContent = document.getElementById('finished-content');
+        if (!finishedContent || document.querySelector('.finished-filters')) return;
+
+        // Create filter buttons container
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'finished-filters';
+        filterContainer.style.display = 'flex';
+        filterContainer.style.justifyContent = 'flex-start';
+        filterContainer.style.gap = '8px';
+        filterContainer.style.marginBottom = '16px';
+        filterContainer.style.width = '100%';
+
+        // Create buttons
+        const buttons = [
+            { id: 'won-auctions', text: 'الرابحة' },
+            { id: 'lost-auctions', text: 'الخاسرة' }
+        ];
+
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.className = 'my-actions-tab';
+            button.id = btn.id;
+            button.textContent = btn.text;
+            button.style.margin = '0';
+            button.style.padding = '8px 16px';
+            filterContainer.appendChild(button);
+        });
+
+        // Insert filter buttons at the beginning of finished content
+        if (finishedContent.firstChild) {
+            finishedContent.insertBefore(filterContainer, finishedContent.firstChild);
+        } else {
+            finishedContent.appendChild(filterContainer);
+        }
+
+        // Add click handlers for filter buttons
+        const filterButtons = filterContainer.querySelectorAll('.my-actions-tab');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Check if the clicked button is already active
+                const isActive = this.classList.contains('active');
+                
+                // Remove active class from all filter buttons
+                filterButtons.forEach(b => b.classList.remove('active'));
+                
+                // Toggle active state only if it wasn't active before
+                if (!isActive) {
+                    this.classList.add('active');
+                    console.log(`Filtering by: ${this.textContent}`);
+                } else {
+                    console.log('Clearing filter');
+                }
+            });
+        });
+    }
+
     // Initialize tab switching
     function initMyActionsTabs() {
-        const tabs = document.querySelectorAll('.my-actions-tab');
+        const tabs = document.querySelectorAll('.my-actions-tab:not(.finished-filters .my-actions-tab)');
         const tabContents = document.querySelectorAll('.my-actions-tab-content');
 
         // Add click event listeners to tabs
@@ -27,6 +85,12 @@
                 const targetContent = document.getElementById(`${targetTab}-content`);
                 if (targetContent) {
                     targetContent.classList.add('active');
+                    
+                    // If it's the finished tab, ensure filter buttons are created
+                    if (targetTab === 'finished') {
+                        // Use setTimeout to ensure the content is visible before creating buttons
+                        setTimeout(createFilterButtons, 10);
+                    }
                 }
             });
         });

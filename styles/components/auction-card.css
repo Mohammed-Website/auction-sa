@@ -19,7 +19,7 @@
     background-size: cover;
     background-position: center;
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: flex-end;
 }
 
@@ -43,7 +43,7 @@
 .live-badge {
     background: #dc3545;
     color: white;
-    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
@@ -51,8 +51,10 @@
     background: rgba(255, 255, 255, 0.95);
     color: #2c5aa0;
     border: 1px solid rgba(44, 90, 160, 0.2);
-    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     border-top-right-radius: 0;
+    border-top-left-radius: 0;
 }
 
 .badge-dot,
