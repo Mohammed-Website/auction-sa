@@ -28,8 +28,6 @@
                 if (targetContent) {
                     targetContent.classList.add('active');
                 }
-
-                console.log(`[My Actions] Switched to tab: ${targetTab}`);
             });
         });
     }

@@ -130,7 +130,7 @@
 .starting-bid-amount {
     font-size: var(--spacing-sm);
     font-weight: 700;
-    color: #2c5aa0;
+    color: black;
 }
 
 .auction-cta-btn {

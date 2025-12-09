@@ -26,7 +26,6 @@
                 }
 
                 // Navigate back to profile menu
-                console.log('[Navigation] Settings back button clicked - Navigating to profile menu');
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
                     window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
                 } else {
@@ -39,24 +38,7 @@
             settingsBackBtn.setAttribute('data-listener-attached', 'true');
         }
 
-        // Radio button handlers for auction display options
-        const radioOptions = document.querySelectorAll('input[name="auction-display"]');
-        radioOptions.forEach(radio => {
-            radio.addEventListener('change', function () {
-                console.log('[Settings] Auction display option changed to:', this.value);
-                // TODO: Save preference to backend/localStorage
-            });
-        });
 
-        // Toggle switch handlers for notifications
-        const toggleSwitches = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
-        toggleSwitches.forEach(toggle => {
-            toggle.addEventListener('change', function () {
-                const label = this.closest('.toggle-option').querySelector('.toggle-label').textContent;
-                console.log('[Settings] Notification toggle changed:', label, this.checked);
-                // TODO: Save preference to backend/localStorage
-            });
-        });
 
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') {

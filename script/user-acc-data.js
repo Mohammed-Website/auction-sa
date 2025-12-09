@@ -53,7 +53,6 @@
                 }
 
                 // Navigate to profile menu (not home-section)
-                console.log('[Navigation] Back button clicked - Navigating to profile menu');
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
                     window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
                 } else {
@@ -72,7 +71,6 @@
 
     // Switch to a specific tab
     function switchTab(tabId) {
-        console.log(`[Navigation] Switching to account tab: ${tabId}`);
         // Scroll to top for better UX
         if (typeof window.scrollToTop === 'function') {
             window.scrollToTop();
@@ -161,7 +159,6 @@
 
     // Go back to tabs view (from detail view)
     function goBackToTabs() {
-        console.log('[Navigation] Going back to account tabs view');
         // Scroll to top for better UX
         if (typeof window.scrollToTop === 'function') {
             window.scrollToTop();
