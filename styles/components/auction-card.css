@@ -1,7 +1,7 @@
 /* New Auction Card Design */
 .auction-card-new {
     background: white;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     transition: all 0.3s ease;
     display: flex;
@@ -34,7 +34,7 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.2rem 0.5rem;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     font-size: 0.7rem;
     white-space: nowrap;
     min-width: 5rem;

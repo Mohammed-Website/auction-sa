@@ -8,13 +8,20 @@
     display: block;
     visibility: visible;
     opacity: 1;
+    padding-top: 60px; /* Add padding to account for fixed header */
+    min-height: 100vh;
+    box-sizing: border-box;
+    position: relative;
 }
 
-/* Settings header now uses account-tabs-header styling - see account-tabs.css */
-
-/* Settings Content */
-.settings-content {
-    padding: var(--spacing-lg) 0;
+/* Ensure settings header is fixed at the top */
+#settings-header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    display: flex !important;
 }
 
 /* Description Text */
@@ -22,7 +29,7 @@
     font-size: var(--font-size-base);
     color: var(--text-secondary);
     line-height: 1.6;
-    margin: 0 0 var(--spacing-xl) 0;
+    margin: 0 0 var(--spacing-lg) 0;
     text-align: right;
 }
 

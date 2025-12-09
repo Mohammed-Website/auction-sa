@@ -60,12 +60,17 @@
         gap: var(--spacing-sm);
     }
 
-    .back-btn {
+    .back-to-profile-btn,
+    .back-btn,
+    .back-to-tabs-btn {
         width: 36px;
         height: 36px;
+        right: var(--spacing-md);
     }
 
-    .back-icon {
+    .back-to-profile-btn .back-icon,
+    .back-btn .back-icon,
+    .back-to-tabs-btn .back-icon {
         width: 18px;
         height: 18px;
     }
@@ -216,18 +221,7 @@
         padding-bottom: 0;
     }
 
-    /* Reset sticky positioning on desktop - keep relative positioning */
-    #profile-section-headers {
-        width: 100%;
-        max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        display: flex;
-        justify-content: flex-start;
-    }
-
     .profile-page-title,
-    .account-tabs-header,
     .account-tabs-header {
         background: transparent;
         position: relative;
@@ -242,10 +236,6 @@
         margin-right: 0;
         margin-bottom: 0.5rem;
         padding: var(--spacing-md) var(--spacing-lg);
-    }
-
-    .account-tabs-header {
-        border-radius: var(--radius-lg);
     }
 
     .account-tabs-header {
