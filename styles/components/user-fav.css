@@ -1,0 +1,93 @@
+/* Favorites Page Styles */
+
+.favorites-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    padding-top: 60px;
+    /* Add padding to account for fixed header */
+    min-height: 100vh;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Ensure favorites header is fixed at the top */
+#favorites-header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    display: flex !important;
+}
+
+/* Favorites Content */
+.favorites-content {
+    width: 100%;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    box-sizing: border-box;
+}
+
+/* Favorites Empty State */
+.favorites-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 200px);
+    text-align: center;
+    gap: var(--spacing-lg);
+}
+
+/* Favorites Icon */
+.favorites-icon {
+    width: 80px;
+    height: 80px;
+    color: var(--text-primary);
+    opacity: 0.3;
+    stroke-width: 1.5;
+}
+
+/* Favorites Empty Text */
+.favorites-empty-text {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    margin: 0;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .favorites-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .favorites-empty-text {
+        font-size: var(--font-size-base);
+    }
+
+    .favorites-content {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .favorites-icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .favorites-empty-text {
+        font-size: var(--font-size-sm);
+    }
+
+    .favorites-content {
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+}

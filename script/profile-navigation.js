@@ -18,7 +18,8 @@
     const ProfileRoutes = {
         MENU: 'menu',              // Main profile menu
         ACCOUNT_INFO: 'account-info',  // Account information tabs
-        SETTINGS: 'settings'       // Settings page
+        SETTINGS: 'settings',       // Settings page
+        FAVORITES: 'favorites'    // Favorites page
     };
 
     // Track which profile route is currently active
@@ -302,13 +303,29 @@
      * @param {string} action - The action name
      */
     function handleMenuAction(action) {
+        // Get profile section element once for reuse
+        const profileSection = document.getElementById('profile-section');
+
         switch (action) {
             case 'favorites':
-                // TODO: Navigate to favorites
+                // Navigate to favorites view
+                if (profileSection && !profileSection.classList.contains('active')) {
+                    // Switch to profile section first
+                    if (typeof window.switchToSection === 'function') {
+                        window.switchToSection('profile-section');
+                        // Wait for section to be visible, then navigate to favorites
+                        setTimeout(() => {
+                            navigateToProfileRoute(ProfileRoutes.FAVORITES);
+                        }, 300);
+                    } else {
+                        navigateToProfileRoute(ProfileRoutes.FAVORITES);
+                    }
+                } else {
+                    navigateToProfileRoute(ProfileRoutes.FAVORITES);
+                }
                 break;
             case 'settings':
                 // Navigate to settings view
-                const profileSection = document.getElementById('profile-section');
                 if (profileSection && !profileSection.classList.contains('active')) {
                     // Switch to profile section first
                     if (typeof window.switchToSection === 'function') {
@@ -391,6 +408,9 @@
         // Scroll to top when navigating
         window.scrollToTop();
 
+        // Get profile section element once for reuse
+        const profileSection = document.getElementById('profile-section');
+
         // Handle navigation to account-info route
         if (route === ProfileRoutes.ACCOUNT_INFO) {
             // Show account tabs header
@@ -455,10 +475,90 @@
                 isNavigatingProfileRoute = false;
             }, 300);
         }
+        // Handle navigation to favorites route
+        else if (route === ProfileRoutes.FAVORITES) {
+            // Ensure profile section is active and visible
+            if (profileSection) {
+                profileSection.classList.add('active');
+                profileSection.style.display = 'block';
+                profileSection.style.visibility = 'visible';
+                profileSection.style.opacity = '1';
+                profileSection.style.pointerEvents = 'auto';
+                profileSection.style.transform = 'translateX(0)';
+            }
+
+            // Hide profile page title
+            const profilePageTitle = document.querySelector('.profile-page-title');
+            if (profilePageTitle) {
+                profilePageTitle.style.display = 'none';
+            }
+            // Hide account tabs header
+            const accountTabsHeader = document.getElementById('account-tabs-header');
+            if (accountTabsHeader) {
+                accountTabsHeader.style.display = 'none';
+            }
+            // Hide all card headers
+            document.querySelectorAll('.account-tabs-header').forEach(header => {
+                if (header.id && header.id.startsWith('card-header-')) {
+                    header.style.display = 'none';
+                }
+            });
+
+            // Show favorites header
+            const favoritesHeader = document.getElementById('favorites-header');
+            if (favoritesHeader) {
+                favoritesHeader.style.display = 'flex';
+            }
+
+            // Hide menu view, account info view, and settings view
+            menuView.classList.remove('active');
+            accountInfoView.classList.remove('active');
+            const settingsView = document.getElementById('profile-settings-view');
+            if (settingsView) {
+                settingsView.classList.remove('active');
+            }
+
+            // Show favorites view
+            const favoritesView = document.getElementById('profile-favorites-view');
+            if (favoritesView) {
+                favoritesView.classList.add('active');
+                currentProfileRoute = route;
+
+                // Update URL hash
+                window.location.hash = '#/profile/favorites';
+
+                // Initialize favorites page
+                if (typeof window.FavoritesPage !== 'undefined' && typeof window.FavoritesPage.init === 'function') {
+                    setTimeout(() => {
+                        window.FavoritesPage.init();
+                        // Update header position after initialization
+                        if (typeof window.FavoritesPage.updateHeaderPosition === 'function') {
+                            window.FavoritesPage.updateHeaderPosition();
+                        }
+                    }, 100);
+                }
+
+                // Initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    setTimeout(() => {
+                        lucide.createIcons();
+                    }, 100);
+                }
+            } else {
+                console.error('[Navigation] Favorites view not found');
+            }
+
+            // Push navigation state to history after navigation completes
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+                isNavigatingProfileRoute = false;
+            }, 400);
+        }
         // Handle navigation to settings route
         else if (route === ProfileRoutes.SETTINGS) {
             // Ensure profile section is active and visible
-            const profileSection = document.getElementById('profile-section');
             if (profileSection) {
                 profileSection.classList.add('active');
                 profileSection.style.display = 'block';
@@ -541,7 +641,7 @@
             if (accountTabsHeader) {
                 accountTabsHeader.style.display = 'none';
             }
-            // Hide all card headers and settings header
+            // Hide all card headers, settings header, and favorites header
             document.querySelectorAll('.account-tabs-header').forEach(header => {
                 if (header.id && header.id.startsWith('card-header-')) {
                     header.style.display = 'none';
@@ -551,18 +651,25 @@
             if (settingsHeader) {
                 settingsHeader.style.display = 'none';
             }
+            const favoritesHeader = document.getElementById('favorites-header');
+            if (favoritesHeader) {
+                favoritesHeader.style.display = 'none';
+            }
 
             // Show menu view
             const settingsView = document.getElementById('profile-settings-view');
             if (settingsView) {
                 settingsView.classList.remove('active');
             }
+            const favoritesView = document.getElementById('profile-favorites-view');
+            if (favoritesView) {
+                favoritesView.classList.remove('active');
+            }
             accountInfoView.classList.remove('active');
             menuView.classList.add('active');
             currentProfileRoute = route;
 
             // Ensure profile section is active
-            const profileSection = document.getElementById('profile-section');
             if (profileSection) {
                 profileSection.classList.add('active');
                 profileSection.style.display = 'block';
@@ -644,12 +751,14 @@
             }
 
             const hash = window.location.hash;
-            if (hash === '#/profile' || hash === '#/profile/') {
+            if (hash === '#/profile' || hash === '#/profile/' || !hash.includes('/profile')) {
                 navigateToProfileRoute(ProfileRoutes.MENU);
             } else if (hash === '#/profile/account-info') {
                 navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
             } else if (hash === '#/profile/settings') {
                 navigateToProfileRoute(ProfileRoutes.SETTINGS);
+            } else if (hash === '#/profile/favorites') {
+                navigateToProfileRoute(ProfileRoutes.FAVORITES);
             }
         });
 
@@ -671,13 +780,17 @@
                 navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
             } else if (hash === '#/profile/settings') {
                 navigateToProfileRoute(ProfileRoutes.SETTINGS);
+            } else if (hash === '#/profile/favorites') {
+                navigateToProfileRoute(ProfileRoutes.FAVORITES);
             }
         });
 
         // Handle back button press (for mobile apps/Cordova)
         if (typeof document.addEventListener !== 'undefined') {
             document.addEventListener('backbutton', function (event) {
-                if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO) {
+                if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO ||
+                    currentProfileRoute === ProfileRoutes.SETTINGS ||
+                    currentProfileRoute === ProfileRoutes.FAVORITES) {
                     // Go back to menu
                     navigateToProfileRoute(ProfileRoutes.MENU);
                     if (event && event.preventDefault) {

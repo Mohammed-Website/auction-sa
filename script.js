@@ -61,10 +61,11 @@
             'script/section-navigation.js',      // Section switching
             'script/property-data.js',           // Property data loading
             'script/banner-slider.js',           // Banner slider
-            'script/profile-data.js',            // Profile data loading
             'script/profile-navigation.js',     // Profile navigation
             'script/user-acc-data.js',           // Account info tabs
             'script/my-actions-section.js',      // My actions section
+            'script/user-fav.js', 
+            
             'script/user-settings.js'            // User settings
         ];
 
