@@ -88,12 +88,3 @@
         padding: 2px 8px;
     }
 }
-
-/* Ensure proper positioning for property cards */
-.property-card {
-    position: relative;
-}
-
-.auction-card-new {
-    position: relative;
-}

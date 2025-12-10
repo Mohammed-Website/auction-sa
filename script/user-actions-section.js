@@ -46,9 +46,6 @@
                 filterButtons.forEach(b => b.classList.remove('active'));
                 if (!isActive) {
                     this.classList.add('active');
-                    console.log(`Filtering by: ${this.textContent}`);
-                } else {
-                    console.log('Clearing filter');
                 }
             });
         });

@@ -325,6 +325,10 @@
                             <i data-lucide="eye" class="view-icon"></i>
                             <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
                         </div>
+                        <div class="property-count">
+                            <span class="view-number">عدد الأصول</span>
+                            <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '1'}</span>
+                        </div>
                         <button class="auction-cta-btn">
                             شارك الآن
                         </button>

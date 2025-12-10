@@ -6,9 +6,10 @@
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    min-width: 280px;
+    min-width: 290px;
     max-width: 480px;
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .auction-banner {
@@ -130,10 +131,18 @@
 
 .auction-cta-container {
     display: flex;
-    align-items: center;
-    margin-top: 0.5rem;
-    display: flex;
     justify-content: space-between;
+    align-items: center;
+}
+
+.auction-cta-container > * {
+    padding: 0 10px;
+    border-right: 1px solid #ccc; /* divider */
+}
+
+/* remove line after the last item */
+.auction-cta-container > *:last-child {
+    border-right: none;
 }
 
 .auction-cta-btn {
@@ -153,7 +162,18 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    background: #f5f5f5;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #666;
+    min-width: 50px;
+    justify-content: center;
+}
+
+.property-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     padding: 0.4rem 0.75rem;
     border-radius: 8px;
     font-size: 0.75rem;
