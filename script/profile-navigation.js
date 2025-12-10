@@ -3,41 +3,207 @@
  * 
  * This file handles:
  * - Profile menu rendering and navigation
- * - Switching between profile views (Menu, Account Info, Settings)
+ * - Switching between profile views (Menu, Account Info, Settings, Favorites)
  * - Creating profile menu items and sections
  * - Handling profile-related user interactions
+ * 
+ * HOW IT WORKS:
+ * 1. When you click a menu item, it triggers either a route or an action
+ * 2. Routes directly navigate to a view (like account-info)
+ * 3. Actions are handled by handleMenuAction() which then navigates
+ * 4. The navigateToProfileRoute() function shows/hides the correct views
  */
 
 (function () {
     'use strict';
 
+    // ============================================================================
+    // STEP 1: DEFINE THE ROUTES (like pages in the profile section)
+    // ============================================================================
     /**
-     * Profile Route Management
-     * Defines the different views within the profile section
+     * These are the different "pages" you can navigate to within the profile section
+     * Think of them like different screens in a mobile app
      */
     const ProfileRoutes = {
-        MENU: 'menu',              // Main profile menu
+        MENU: 'menu',              // The main menu with all options
         ACCOUNT_INFO: 'account-info',  // Account information tabs
         SETTINGS: 'settings',       // Settings page
         FAVORITES: 'favorites'    // Favorites page
     };
 
-    // Track which profile route is currently active
+    // ============================================================================
+    // STEP 2: TRACK THE CURRENT STATE
+    // ============================================================================
+    // Remember which page we're currently on
     let currentProfileRoute = ProfileRoutes.MENU;
 
-    // Flag to prevent recursive navigation calls
+    // Prevent navigation loops (if we're already navigating, don't navigate again)
     let isNavigatingProfileRoute = false;
 
+    // ============================================================================
+    // STEP 3: REUSABLE PAGE CONFIGS (for single-view pages)
+    // ============================================================================
     /**
-     * Create profile header component
-     * Shows user name and profile image
-     * @param {Object} userData - User data object
-     * @returns {string} HTML string for the header
+     * These configs describe simple single-view pages inside the profile section.
+     * Each entry defines:
+     *  - headerId: the header element to show
+     *  - viewId: the view container to activate
+     *  - hash: the URL hash to set
+     *  - init: optional initializer for that page
+     */
+    const profileSinglePages = {
+        [ProfileRoutes.FAVORITES]: {
+            headerId: 'favorites-header',
+            viewId: 'profile-favorites-view',
+            hash: '#/profile/favorites',
+            historyDelay: 400,
+            init: () => {
+                if (typeof window.FavoritesPage !== 'undefined' && typeof window.FavoritesPage.init === 'function') {
+                    setTimeout(() => {
+                        window.FavoritesPage.init();
+                        if (typeof window.FavoritesPage.updateHeaderPosition === 'function') {
+                            window.FavoritesPage.updateHeaderPosition();
+                        }
+                    }, 100);
+                }
+            }
+        },
+        [ProfileRoutes.SETTINGS]: {
+            headerId: 'settings-header',
+            viewId: 'profile-settings-view',
+            hash: '#/profile/settings',
+            historyDelay: 400,
+            init: () => {
+                if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.init === 'function') {
+                    setTimeout(() => {
+                        window.SettingsPage.init();
+                    }, 100);
+                }
+            }
+        }
+        // Future pages (start-auction, add-property, manage-properties) can be added here
+    };
+
+    // ============================================================================
+    // STEP 4: SMALL HELPERS TO REDUCE DUPLICATION
+    // ============================================================================
+    function setProfileSectionVisible(profileSection) {
+        if (!profileSection) return;
+        profileSection.classList.add('active');
+        profileSection.style.display = 'block';
+        profileSection.style.visibility = 'visible';
+        profileSection.style.opacity = '1';
+        profileSection.style.pointerEvents = 'auto';
+        profileSection.style.transform = 'translateX(0)';
+    }
+
+    function hideAllHeaders(keepIds = []) {
+        const keepSet = new Set(keepIds);
+        const accountTabsHeader = document.getElementById('account-tabs-header');
+        if (accountTabsHeader && !keepSet.has(accountTabsHeader.id)) {
+            accountTabsHeader.style.display = 'none';
+        }
+
+        // Hide all card headers
+        document.querySelectorAll('.account-tabs-header').forEach(header => {
+            if (header.id && header.id.startsWith('card-header-') && !keepSet.has(header.id)) {
+                header.style.display = 'none';
+            }
+        });
+
+        // Hide settings and favorites headers if not kept
+        const settingsHeader = document.getElementById('settings-header');
+        if (settingsHeader && !keepSet.has(settingsHeader.id)) {
+            settingsHeader.style.display = 'none';
+        }
+        const favoritesHeader = document.getElementById('favorites-header');
+        if (favoritesHeader && !keepSet.has(favoritesHeader.id)) {
+            favoritesHeader.style.display = 'none';
+        }
+    }
+
+    function hideSecondaryViews(exceptViewId) {
+        const settingsView = document.getElementById('profile-settings-view');
+        const favoritesView = document.getElementById('profile-favorites-view');
+
+        if (settingsView && settingsView.id !== exceptViewId) {
+            settingsView.classList.remove('active');
+        }
+        if (favoritesView && favoritesView.id !== exceptViewId) {
+            favoritesView.classList.remove('active');
+        }
+    }
+
+    function showSingleProfilePage(route, config, { menuView, accountInfoView, profileSection }) {
+        // Ensure the profile section is visible
+        setProfileSectionVisible(profileSection);
+
+        // Hide the main profile title
+        const profilePageTitle = document.querySelector('.profile-page-title');
+        if (profilePageTitle) {
+            profilePageTitle.style.display = 'none';
+        }
+
+        // Hide other headers and show only the target header
+        hideAllHeaders([config.headerId]);
+        const header = document.getElementById(config.headerId);
+        if (header) {
+            header.style.display = 'flex';
+        }
+
+        // Hide other views
+        if (menuView) menuView.classList.remove('active');
+        if (accountInfoView) accountInfoView.classList.remove('active');
+        hideSecondaryViews(config.viewId);
+
+        // Show the target view
+        const targetView = document.getElementById(config.viewId);
+        if (targetView) {
+            targetView.classList.add('active');
+            currentProfileRoute = route;
+            window.location.hash = config.hash;
+
+            // Run page initializer if provided
+            if (typeof config.init === 'function') {
+                config.init();
+            }
+
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                setTimeout(() => {
+                    lucide.createIcons();
+                }, 100);
+            }
+        } else {
+            console.error('[Navigation] View not found for route:', route);
+        }
+
+        // Push navigation state to history
+        setTimeout(() => {
+            if (typeof window.pushNavigationState === 'function') {
+                window.pushNavigationState(false);
+            }
+            isNavigatingProfileRoute = false;
+        }, config.historyDelay || 400);
+    }
+
+    // ============================================================================
+    // STEP 5: FUNCTIONS TO CREATE HTML ELEMENTS
+    // ============================================================================
+
+    /**
+     * Creates the profile header (shows user name and profile picture)
+     * @param {Object} userData - User information from JSON file
+     * @returns {string} HTML code for the header
      */
     function createProfileHeader(userData) {
+        // Get the user's name, or use default if not found
         const name = userData?.fullName || userData?.name || 'المستخدم';
+
+        // Get the profile image URL, or null if not found
         const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
 
+        // Build the HTML string
         const headerHTML = `
             <div class="profile-header-card">
                 <h2 class="profile-name">${name}</h2>
@@ -56,17 +222,17 @@
     }
 
     /**
-     * Create profile page title header
-     * @returns {string} HTML string for the title
+     * Creates the "حسابي" title that appears at the top of the profile menu
+     * @returns {string} HTML code for the title
      */
     function createProfilePageTitle() {
         return `<h1 class="profile-page-title">حسابي</h1>`;
     }
 
     /**
-     * Create account tabs header
-     * Header shown when viewing account information
-     * @returns {string} HTML string for the header
+     * Creates the header for the account info page
+     * This header has a back button and "معلومات الحساب" title
+     * @returns {string} HTML code for the header
      */
     function createAccountTabsHeader() {
         return `
@@ -81,11 +247,10 @@
     }
 
     /**
-     * Create card header for tab views
-     * Header shown when viewing a specific account tab
-     * @param {string} title - The title to display
-     * @param {string} tabId - The ID of the tab
-     * @returns {string} HTML string for the header
+     * Creates a header for a specific tab (like "البيانات الأساسية")
+     * @param {string} title - The title to show (e.g., "البيانات الأساسية")
+     * @param {string} tabId - Unique ID for this tab (e.g., "basic-data")
+     * @returns {string} HTML code for the header
      */
     function createCardHeader(title, tabId) {
         return `
@@ -99,14 +264,18 @@
     }
 
     /**
-     * Create a menu item component
-     * @param {Object} item - Menu item data (icon, text, route, action)
-     * @returns {string} HTML string for the menu item
+     * Creates a single menu item (like "معلومات الحساب" or "الإعدادات")
+     * @param {Object} item - Menu item data with icon, text, route, and action
+     * @returns {string} HTML code for one menu item
      */
     function createMenuItem(item) {
+        // Extract the properties from the item object
         const { icon, text, route, action } = item;
+
+        // Check if this item does something when clicked
         const hasAction = route || action;
 
+        // Build the HTML for this menu item
         const itemHTML = `
             <div class="menu-item" ${hasAction ? `data-route="${route || ''}" data-action="${action || ''}"` : ''}>
                 <div class="menu-item-content">
@@ -121,16 +290,18 @@
     }
 
     /**
-     * Create a menu section component
-     * Groups related menu items together
-     * @param {Object} section - Section data (title, items)
-     * @returns {string} HTML string for the menu section
+     * Creates a menu section (groups related menu items together)
+     * For example, all "النظام" items are in one section
+     * @param {Object} section - Section data with title and items array
+     * @returns {string} HTML code for a menu section
      */
     function createMenuSection(section) {
         const { title, items } = section;
 
+        // Create HTML for all items in this section
         const itemsHTML = items.map(item => createMenuItem(item)).join('');
 
+        // Build the complete section HTML
         const sectionHTML = `
             <div class="menu-section">
                 <h3 class="menu-section-title">${title}</h3>
@@ -143,9 +314,13 @@
         return sectionHTML;
     }
 
+    // ============================================================================
+    // STEP 4: MENU CONFIGURATION (What menu items to show)
+    // ============================================================================
     /**
-     * Menu Configuration
-     * Defines all menu items and their organization
+     * This is the menu structure - all the items that appear in the profile menu
+     * Each section has a title and a list of items
+     * Each item has: icon (Lucide icon name), text (Arabic text), route (if it navigates), action (if it does something)
      */
     const menuConfig = [
         {
@@ -181,7 +356,7 @@
         {
             title: 'المزيد',
             items: [
-                { icon: 'download', text: 'تنزيل البرنامج', route: null, action: 'terms' },
+                { icon: 'download', text: 'تنزيل البرنامج', route: null, action: 'install-app' },
                 { icon: 'file-text', text: 'الشروط والأحكام', route: null, action: 'terms' },
                 { icon: 'shield', text: 'سياسة الخصوصية', route: null, action: 'privacy' },
                 { icon: 'help-circle', text: 'المساعدة', route: null, action: 'help' },
@@ -190,68 +365,38 @@
         }
     ];
 
-    /**
-     * Render the profile menu
-     * Loads user data and displays the menu
-     */
-    async function renderProfileMenu() {
-        const headerContainer = document.getElementById('profile-header-container');
-        const sectionsContainer = document.getElementById('profile-menu-sections');
-
-        if (!headerContainer || !sectionsContainer) {
-            console.error('Profile menu containers not found');
-            return;
-        }
-
-        // Load user data from JSON file
-        let userData = null;
-        try {
-            const response = await fetch('json-data/user-data.json');
-            if (response.ok) {
-                userData = await response.json();
-            }
-        } catch (error) {
-            console.warn('Could not load user data:', error);
-        }
-
-        // Render header with user data
-        headerContainer.innerHTML = createProfileHeader(userData);
-
-        // Render all menu sections
-        const sectionsHTML = menuConfig.map(section => createMenuSection(section)).join('');
-        sectionsContainer.innerHTML = sectionsHTML;
-
-        // Initialize Lucide icons for the menu
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-
-        // Update profile image in basic-data-view if it exists
-        updateBasicDataProfileImage(userData);
-
-        // Attach click event listeners to menu items
-        attachMenuListeners();
-    }
+    // ============================================================================
+    // STEP 5: FUNCTIONS TO UPDATE THE PROFILE IMAGE
+    // ============================================================================
 
     /**
-     * Update profile image in basic-data-view
-     * @param {Object} userData - User data object
+     * Updates the profile image in the account info page
+     * This makes sure the image shown in "البيانات الأساسية" matches the menu image
+     * @param {Object} userData - User data object with image URL
      */
     function updateBasicDataProfileImage(userData) {
+        // Find the image container in the account info page
         const basicDataImage = document.getElementById('basic-data-profile-image');
-        if (!basicDataImage) return;
+        if (!basicDataImage) return; // Exit if element doesn't exist
 
+        // Get the image URL from user data
         const imageUrl = userData?.imageUrl || userData?.image || userData?.avatar || null;
         const placeholder = basicDataImage.querySelector('.profile-image-placeholder');
 
+        // If we have an image URL, show the image
         if (imageUrl) {
+            // Check if an image element already exists
             let img = basicDataImage.querySelector('img');
             if (!img) {
+                // Create a new image element if it doesn't exist
                 img = document.createElement('img');
                 img.alt = 'صورة الملف الشخصي';
                 basicDataImage.appendChild(img);
             }
+            // Set the image source
             img.src = imageUrl;
+
+            // If image fails to load, hide it and show placeholder
             img.onerror = function () {
                 if (img.parentNode) {
                     img.parentNode.removeChild(img);
@@ -260,10 +405,13 @@
                     placeholder.style.display = 'block';
                 }
             };
+
+            // Hide the placeholder when image loads successfully
             if (placeholder) {
                 placeholder.style.display = 'none';
             }
         } else {
+            // No image URL, so remove any image and show placeholder
             const img = basicDataImage.querySelector('img');
             if (img) {
                 img.remove();
@@ -274,171 +422,254 @@
         }
     }
 
+    // ============================================================================
+    // STEP 6: FUNCTION TO RENDER THE PROFILE MENU
+    // ============================================================================
+
     /**
-     * Attach event listeners to menu items
-     * Makes menu items clickable
+     * This is the main function that displays the profile menu
+     * It loads user data and creates all the menu items
+     */
+    async function renderProfileMenu() {
+        // Find the containers where we'll put the header and menu items
+        const headerContainer = document.getElementById('profile-header-container');
+        const sectionsContainer = document.getElementById('profile-menu-sections');
+
+        // Make sure the containers exist before trying to use them
+        if (!headerContainer || !sectionsContainer) {
+            console.error('Profile menu containers not found');
+            return; // Exit early if containers don't exist
+        }
+
+        // Try to load user data from the JSON file
+        let userData = null;
+        try {
+            const response = await fetch('json-data/user-data.json');
+            if (response.ok) {
+                userData = await response.json();
+            }
+        } catch (error) {
+            // If loading fails, that's okay - we'll just use default values
+            console.warn('Could not load user data:', error);
+        }
+
+        // Step 1: Put the profile header (name and image) into the header container
+        headerContainer.innerHTML = createProfileHeader(userData);
+
+        // Step 2: Create HTML for all menu sections and put them in the sections container
+        const sectionsHTML = menuConfig.map(section => createMenuSection(section)).join('');
+        sectionsContainer.innerHTML = sectionsHTML;
+
+        // Step 3: Initialize Lucide icons (this makes the icons appear)
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Step 4: Update the profile image in the account info page
+        updateBasicDataProfileImage(userData);
+
+        // Step 5: Make menu items clickable by attaching event listeners
+        attachMenuListeners();
+    }
+
+    // ============================================================================
+    // STEP 7: FUNCTION TO MAKE MENU ITEMS CLICKABLE
+    // ============================================================================
+
+    /**
+     * Attaches click event listeners to all menu items
+     * When you click a menu item, it will either navigate to a route or trigger an action
      */
     function attachMenuListeners() {
+        // Find all menu items that have a route or action
         const menuItems = document.querySelectorAll('.menu-item[data-route], .menu-item[data-action]');
 
+        // Add a click listener to each menu item
         menuItems.forEach(item => {
             item.addEventListener('click', function () {
+                // Get the route and action from the clicked item
                 const route = this.getAttribute('data-route');
                 const action = this.getAttribute('data-action');
 
+                // If the item has a route, navigate directly to that route
                 if (route) {
-                    // If item has a route, navigate to that route
                     navigateToProfileRoute(route);
-                } else if (action) {
-                    // If item has an action, handle the action
+                }
+                // If the item has an action, handle the action first
+                else if (action) {
                     handleMenuAction(action);
                 }
             });
         });
     }
 
+    // ============================================================================
+    // STEP 8: FUNCTION TO HANDLE MENU ACTIONS
+    // ============================================================================
+
     /**
-     * Handle menu actions
-     * Processes clicks on menu items that have actions
-     * @param {string} action - The action name
+     * Handles what happens when you click a menu item that has an "action"
+     * Some items navigate directly (they have a route), others need special handling (they have an action)
+     * @param {string} action - The name of the action (like 'favorites', 'settings', 'logout')
      */
     function handleMenuAction(action) {
-        // Get profile section element once for reuse
-        const profileSection = document.getElementById('profile-section');
-
+        // Use a switch statement to handle different actions
         switch (action) {
+            case 'install-app':
+                if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
+                    window.PWAInstaller.install();
+                } else {
+                    alert('التثبيت غير متاح حالياً. يرجى المحاولة لاحقاً.');
+                }
+                break;
+
             case 'favorites':
-                // Navigate to favorites view
-                if (profileSection && !profileSection.classList.contains('active')) {
-                    // Switch to profile section first
-                    if (typeof window.switchToSection === 'function') {
-                        window.switchToSection('profile-section');
-                        // Wait for section to be visible, then navigate to favorites
-                        setTimeout(() => {
-                            navigateToProfileRoute(ProfileRoutes.FAVORITES);
-                        }, 300);
-                    } else {
-                        navigateToProfileRoute(ProfileRoutes.FAVORITES);
-                    }
-                } else {
-                    navigateToProfileRoute(ProfileRoutes.FAVORITES);
-                }
+                navigateActionToRoute(ProfileRoutes.FAVORITES);
                 break;
+
             case 'settings':
-                // Navigate to settings view
-                if (profileSection && !profileSection.classList.contains('active')) {
-                    // Switch to profile section first
-                    if (typeof window.switchToSection === 'function') {
-                        window.switchToSection('profile-section');
-                        // Wait for section to be visible, then navigate to settings
-                        setTimeout(() => {
-                            navigateToProfileRoute(ProfileRoutes.SETTINGS);
-                        }, 300);
-                    } else {
-                        navigateToProfileRoute(ProfileRoutes.SETTINGS);
-                    }
-                } else {
-                    navigateToProfileRoute(ProfileRoutes.SETTINGS);
-                }
+                navigateActionToRoute(ProfileRoutes.SETTINGS);
                 break;
+
+            // These actions are not implemented yet (TODO)
             case 'wallet':
-                // TODO: Navigate to wallet
+                // TODO: Navigate to wallet page
                 break;
             case 'transactions':
-                // TODO: Navigate to transactions
+                // TODO: Navigate to transactions page
                 break;
             case 'reports':
-                // TODO: Navigate to reports
+                // TODO: Navigate to reports page
                 break;
             case 'statements':
-                // TODO: Navigate to statements
+                // TODO: Navigate to statements page
                 break;
             case 'terms':
-                // TODO: Show terms
+                // TODO: Show terms and conditions
                 break;
             case 'privacy':
-                // TODO: Show privacy
+                // TODO: Show privacy policy
                 break;
             case 'help':
-                // TODO: Show help
+                // TODO: Show help page
                 break;
+
             case 'logout':
-                // Handle logout
+                // User clicked "تسجيل الخروج"
+                // Ask for confirmation before logging out
                 if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                    // TODO: Implement logout logic
+                    // TODO: Implement logout logic here
                 }
                 break;
+
             default:
+                // If we get an unknown action, log a warning
                 console.warn('Unknown action:', action);
         }
     }
 
     /**
-     * Navigate to a profile route
-     * Main function for switching between profile views
-     * @param {string} route - The route to navigate to (menu, account-info, or settings)
+     * Shared helper to navigate to a profile route triggered from a menu action.
+     * Ensures the profile section is active before navigating.
+     */
+    function navigateActionToRoute(targetRoute) {
+        const profileSection = document.getElementById('profile-section');
+
+        // If profile section is not active, switch to it first, then navigate
+        if (profileSection && !profileSection.classList.contains('active')) {
+            if (typeof window.switchToSection === 'function') {
+                window.switchToSection('profile-section');
+                setTimeout(() => {
+                    navigateToProfileRoute(targetRoute);
+                }, 300);
+            } else {
+                navigateToProfileRoute(targetRoute);
+            }
+        } else {
+            navigateToProfileRoute(targetRoute);
+        }
+    }
+
+
+    // ============================================================================
+    // STEP 9: MAIN NAVIGATION FUNCTION
+    // ============================================================================
+
+    /**
+     * This is the most important function - it switches between different profile views
+     * Think of it like changing channels on a TV - it shows one view and hides the others
+     * @param {string} route - Which view to show (menu, account-info, settings, or favorites)
      */
     function navigateToProfileRoute(route) {
-        // Prevent recursive calls
+        // Safety check: Don't navigate if we're already navigating (prevents loops)
         if (isNavigatingProfileRoute) {
             return;
         }
 
-        // If already on the same route, don't navigate again
+        // Safety check: Don't navigate if we're already on that route
         if (currentProfileRoute === route) {
             return;
         }
 
+        // Set flag to prevent other navigation calls
         isNavigatingProfileRoute = true;
 
-        // Set flag to prevent unwanted section switches
+        // Tell other parts of the app that we're navigating within profile
         if (typeof window.setNavigatingWithinProfile === 'function') {
             window.setNavigatingWithinProfile(true);
         }
 
+        // Get references to the main view containers
         const menuView = document.getElementById('profile-menu-view');
         const accountInfoView = document.getElementById('profile-account-info-view');
 
+        // Make sure the views exist
         if (!menuView || !accountInfoView) {
             console.error('Profile views not found');
             isNavigatingProfileRoute = false;
             return;
         }
 
-        // Scroll to top when navigating
+        // Scroll to the top of the page when navigating
         window.scrollToTop();
 
-        // Get profile section element once for reuse
+        // Get the profile section element (we'll use it in multiple places)
         const profileSection = document.getElementById('profile-section');
 
-        // Handle navigation to account-info route
+        // ========================================================================
+        // Now handle each route type:
+        // ========================================================================
+
+        // ROUTE 1: Navigate to Account Info page
         if (route === ProfileRoutes.ACCOUNT_INFO) {
-            // Show account tabs header
+            // Show the account tabs header
             const accountTabsHeader = document.getElementById('account-tabs-header');
             if (accountTabsHeader) {
                 accountTabsHeader.style.display = 'flex';
             }
-            // Hide profile page title
+
+            // Hide the profile page title
             const profilePageTitle = document.querySelector('.profile-page-title');
             if (profilePageTitle) {
                 profilePageTitle.style.display = 'none';
             }
-            // Hide all card headers (but not the main account-tabs-header)
+
+            // Hide all card headers (individual tab headers)
             document.querySelectorAll('.account-tabs-header').forEach(header => {
                 if (header.id && header.id.startsWith('card-header-')) {
                     header.style.display = 'none';
                 }
             });
 
-            // Show account info view
+            // Show the account info view and hide the menu view
             menuView.classList.remove('active');
             accountInfoView.classList.add('active');
             currentProfileRoute = route;
 
-            // Update URL hash
+            // Update the URL in the browser
             window.location.hash = '#/profile/account-info';
 
-            // Hide all tab views and show tabs
+            // Reset the account tabs (show tabs, hide individual tab views)
             const accountTabs = document.querySelector('.account-tabs');
             const tabViews = document.querySelectorAll('.tab-view');
 
@@ -447,27 +678,27 @@
                 view.classList.remove('active');
             });
 
-            // Show account tabs
+            // Show the account tabs container
             if (accountTabs) {
                 accountTabs.classList.remove('hidden');
-                // Reset any active tab states
+                // Remove active state from all tabs
                 const tabs = accountTabs.querySelectorAll('.account-tab');
                 tabs.forEach(tab => tab.classList.remove('active'));
             }
 
-            // Update sticky header positions
+            // Update sticky header positions (for proper scrolling)
             if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.updateStickyPositions === 'function') {
                 window.AccountInfoTabs.updateStickyPositions();
             }
 
-            // Initialize account tabs if not already initialized
+            // Initialize account tabs functionality
             if (typeof window.AccountInfoTabs !== 'undefined' && typeof window.AccountInfoTabs.initAccountTabs === 'function') {
                 setTimeout(() => {
                     window.AccountInfoTabs.initAccountTabs();
                 }, 100);
             }
 
-            // Push navigation state to history after navigation completes
+            // Update browser history after navigation completes
             setTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
@@ -475,188 +706,37 @@
                 isNavigatingProfileRoute = false;
             }, 300);
         }
-        // Handle navigation to favorites route
-        else if (route === ProfileRoutes.FAVORITES) {
-            // Ensure profile section is active and visible
-            if (profileSection) {
-                profileSection.classList.add('active');
-                profileSection.style.display = 'block';
-                profileSection.style.visibility = 'visible';
-                profileSection.style.opacity = '1';
-                profileSection.style.pointerEvents = 'auto';
-                profileSection.style.transform = 'translateX(0)';
-            }
 
-            // Hide profile page title
-            const profilePageTitle = document.querySelector('.profile-page-title');
-            if (profilePageTitle) {
-                profilePageTitle.style.display = 'none';
-            }
-            // Hide account tabs header
-            const accountTabsHeader = document.getElementById('account-tabs-header');
-            if (accountTabsHeader) {
-                accountTabsHeader.style.display = 'none';
-            }
-            // Hide all card headers
-            document.querySelectorAll('.account-tabs-header').forEach(header => {
-                if (header.id && header.id.startsWith('card-header-')) {
-                    header.style.display = 'none';
-                }
+        // ROUTE 2: Navigate to Favorites page (single-page helper)
+        else if (route === ProfileRoutes.FAVORITES && profileSinglePages[ProfileRoutes.FAVORITES]) {
+            showSingleProfilePage(ProfileRoutes.FAVORITES, profileSinglePages[ProfileRoutes.FAVORITES], {
+                menuView,
+                accountInfoView,
+                profileSection
             });
-
-            // Show favorites header
-            const favoritesHeader = document.getElementById('favorites-header');
-            if (favoritesHeader) {
-                favoritesHeader.style.display = 'flex';
-            }
-
-            // Hide menu view, account info view, and settings view
-            menuView.classList.remove('active');
-            accountInfoView.classList.remove('active');
-            const settingsView = document.getElementById('profile-settings-view');
-            if (settingsView) {
-                settingsView.classList.remove('active');
-            }
-
-            // Show favorites view
-            const favoritesView = document.getElementById('profile-favorites-view');
-            if (favoritesView) {
-                favoritesView.classList.add('active');
-                currentProfileRoute = route;
-
-                // Update URL hash
-                window.location.hash = '#/profile/favorites';
-
-                // Initialize favorites page
-                if (typeof window.FavoritesPage !== 'undefined' && typeof window.FavoritesPage.init === 'function') {
-                    setTimeout(() => {
-                        window.FavoritesPage.init();
-                        // Update header position after initialization
-                        if (typeof window.FavoritesPage.updateHeaderPosition === 'function') {
-                            window.FavoritesPage.updateHeaderPosition();
-                        }
-                    }, 100);
-                }
-
-                // Initialize Lucide icons
-                if (typeof lucide !== 'undefined') {
-                    setTimeout(() => {
-                        lucide.createIcons();
-                    }, 100);
-                }
-            } else {
-                console.error('[Navigation] Favorites view not found');
-            }
-
-            // Push navigation state to history after navigation completes
-            setTimeout(() => {
-                if (typeof window.pushNavigationState === 'function') {
-                    window.pushNavigationState(false);
-                }
-                isNavigatingProfileRoute = false;
-            }, 400);
         }
-        // Handle navigation to settings route
-        else if (route === ProfileRoutes.SETTINGS) {
-            // Ensure profile section is active and visible
-            if (profileSection) {
-                profileSection.classList.add('active');
-                profileSection.style.display = 'block';
-                profileSection.style.visibility = 'visible';
-                profileSection.style.opacity = '1';
-                profileSection.style.pointerEvents = 'auto';
-                profileSection.style.transform = 'translateX(0)';
-            }
 
-            // Hide profile page title
-            const profilePageTitle = document.querySelector('.profile-page-title');
-            if (profilePageTitle) {
-                profilePageTitle.style.display = 'none';
-            }
-            // Hide account tabs header
-            const accountTabsHeader = document.getElementById('account-tabs-header');
-            if (accountTabsHeader) {
-                accountTabsHeader.style.display = 'none';
-            }
-            // Hide all card headers
-            document.querySelectorAll('.account-tabs-header').forEach(header => {
-                if (header.id && header.id.startsWith('card-header-')) {
-                    header.style.display = 'none';
-                }
+        // ROUTE 3: Navigate to Settings page (single-page helper)
+        else if (route === ProfileRoutes.SETTINGS && profileSinglePages[ProfileRoutes.SETTINGS]) {
+            showSingleProfilePage(ProfileRoutes.SETTINGS, profileSinglePages[ProfileRoutes.SETTINGS], {
+                menuView,
+                accountInfoView,
+                profileSection
             });
-
-            // Show settings header
-            const settingsHeader = document.getElementById('settings-header');
-            if (settingsHeader) {
-                settingsHeader.style.display = 'flex';
-            }
-
-            // Hide menu view and account info view
-            menuView.classList.remove('active');
-            accountInfoView.classList.remove('active');
-
-            // Show settings view
-            const settingsView = document.getElementById('profile-settings-view');
-            if (settingsView) {
-                settingsView.classList.add('active');
-                currentProfileRoute = route;
-
-                // Update URL hash
-                window.location.hash = '#/profile/settings';
-
-                // Initialize settings page
-                if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.init === 'function') {
-                    setTimeout(() => {
-                        window.SettingsPage.init();
-                    }, 100);
-                }
-
-                // Initialize Lucide icons
-                if (typeof lucide !== 'undefined') {
-                    setTimeout(() => {
-                        lucide.createIcons();
-                    }, 100);
-                }
-            } else {
-                console.error('[Navigation] Settings view not found');
-            }
-
-            // Push navigation state to history after navigation completes
-            setTimeout(() => {
-                if (typeof window.pushNavigationState === 'function') {
-                    window.pushNavigationState(false);
-                }
-                isNavigatingProfileRoute = false;
-            }, 400);
         }
-        // Handle navigation to menu route
+
+        // ROUTE 4: Navigate back to Menu
         else if (route === ProfileRoutes.MENU) {
-            // Show profile page title
+            // Show the profile page title
             const profilePageTitle = document.querySelector('.profile-page-title');
             if (profilePageTitle) {
                 profilePageTitle.style.display = 'block';
             }
-            // Hide account tabs header
-            const accountTabsHeader = document.getElementById('account-tabs-header');
-            if (accountTabsHeader) {
-                accountTabsHeader.style.display = 'none';
-            }
-            // Hide all card headers, settings header, and favorites header
-            document.querySelectorAll('.account-tabs-header').forEach(header => {
-                if (header.id && header.id.startsWith('card-header-')) {
-                    header.style.display = 'none';
-                }
-            });
-            const settingsHeader = document.getElementById('settings-header');
-            if (settingsHeader) {
-                settingsHeader.style.display = 'none';
-            }
-            const favoritesHeader = document.getElementById('favorites-header');
-            if (favoritesHeader) {
-                favoritesHeader.style.display = 'none';
-            }
 
-            // Show menu view
+            // Hide all headers (none should be visible on the menu)
+            hideAllHeaders();
+
+            // Hide all other views
             const settingsView = document.getElementById('profile-settings-view');
             if (settingsView) {
                 settingsView.classList.remove('active');
@@ -666,10 +746,12 @@
                 favoritesView.classList.remove('active');
             }
             accountInfoView.classList.remove('active');
+
+            // Show the menu view
             menuView.classList.add('active');
             currentProfileRoute = route;
 
-            // Ensure profile section is active
+            // Make sure profile section is active
             if (profileSection) {
                 profileSection.classList.add('active');
                 profileSection.style.display = 'block';
@@ -684,7 +766,7 @@
                 window.AccountInfoTabs.updateStickyPositions();
             }
 
-            // Reset account info tabs state
+            // Reset account info tabs to initial state
             const accountTabs = document.querySelector('.account-tabs');
             const tabViews = document.querySelectorAll('.tab-view');
 
@@ -696,12 +778,12 @@
                 view.classList.remove('active');
             });
 
-            // Update URL hash
+            // Update the URL
             window.location.hash = '#/profile';
 
-            // Push navigation state to history after navigation completes
+            // Update browser history
             setTimeout(() => {
-                // Double-check profile section is active before pushing state
+                // Double-check profile section is active
                 const profileSectionCheck = document.getElementById('profile-section');
                 if (profileSectionCheck && !profileSectionCheck.classList.contains('active')) {
                     profileSectionCheck.classList.add('active');
@@ -711,7 +793,8 @@
                     window.pushNavigationState(false);
                 }
                 isNavigatingProfileRoute = false;
-                // Clear the flag after a bit more delay to ensure navigation is complete
+
+                // Clear the navigation flag after a delay
                 setTimeout(() => {
                     if (typeof window.setNavigatingWithinProfile === 'function') {
                         window.setNavigatingWithinProfile(false);
@@ -719,6 +802,7 @@
                 }, 100);
             }, 300);
         } else {
+            // Unknown route - reset the navigation flag
             isNavigatingProfileRoute = false;
             if (typeof window.setNavigatingWithinProfile === 'function') {
                 window.setNavigatingWithinProfile(false);
@@ -726,8 +810,12 @@
         }
     }
 
+    // ============================================================================
+    // STEP 10: INITIALIZE CLOSE BUTTON
+    // ============================================================================
+
     /**
-     * Initialize close button handler
+     * Sets up the close button (if it exists) to go back to the menu
      */
     function initCloseButton() {
         const closeBtn = document.getElementById('profile-close-btn');
@@ -738,19 +826,26 @@
         }
     }
 
+    // ============================================================================
+    // STEP 11: HANDLE BROWSER NAVIGATION (Back button, URL changes)
+    // ============================================================================
+
     /**
-     * Initialize browser navigation handlers
-     * Handles browser back button and URL hash changes
+     * Sets up listeners for browser back button and URL hash changes
+     * This makes the browser's back button work correctly with our navigation
      */
     function initBrowserNavigation() {
-        // Handle hash changes (when URL changes)
+        // Listen for URL hash changes (when user clicks back/forward or URL changes)
         window.addEventListener('hashchange', function () {
-            // Only handle hashchange if we're not already navigating (to prevent recursion)
+            // Don't handle if we're already navigating (prevents loops)
             if (isNavigatingProfileRoute) {
                 return;
             }
 
+            // Get the current hash from the URL
             const hash = window.location.hash;
+
+            // Navigate to the correct route based on the hash
             if (hash === '#/profile' || hash === '#/profile/' || !hash.includes('/profile')) {
                 navigateToProfileRoute(ProfileRoutes.MENU);
             } else if (hash === '#/profile/account-info') {
@@ -762,18 +857,19 @@
             }
         });
 
-        // Handle initial hash (when page loads with a hash)
+        // Handle initial hash when page first loads
         const hash = window.location.hash;
         if (hash === '#/profile/account-info') {
-            // If directly accessing account info, show it
+            // If page loads with account-info hash, show account info
             setTimeout(() => {
                 navigateToProfileRoute(ProfileRoutes.ACCOUNT_INFO);
             }, 100);
         }
 
-        // Handle Android back button (popstate event)
+        // Listen for browser back/forward button (popstate event)
         window.addEventListener('popstate', function (event) {
             const hash = window.location.hash;
+            // Navigate based on the hash
             if (hash === '#/profile' || hash === '#/profile/' || !hash.includes('/profile')) {
                 navigateToProfileRoute(ProfileRoutes.MENU);
             } else if (hash === '#/profile/account-info') {
@@ -785,9 +881,10 @@
             }
         });
 
-        // Handle back button press (for mobile apps/Cordova)
+        // Handle Android back button (for mobile apps)
         if (typeof document.addEventListener !== 'undefined') {
             document.addEventListener('backbutton', function (event) {
+                // If we're on account-info, settings, or favorites, go back to menu
                 if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO ||
                     currentProfileRoute === ProfileRoutes.SETTINGS ||
                     currentProfileRoute === ProfileRoutes.FAVORITES) {
@@ -801,36 +898,42 @@
         }
     }
 
+    // ============================================================================
+    // STEP 12: INITIALIZE THE ENTIRE PROFILE SYSTEM
+    // ============================================================================
+
     /**
-     * Initialize the profile system
-     * Sets up all profile-related functionality
+     * This is the main initialization function
+     * It sets up everything when the page loads
      */
     function initProfileSystem() {
-        // Only initialize if we're in profile section
+        // Check if profile section exists
         const profileSection = document.getElementById('profile-section');
         if (!profileSection) {
-            return;
+            return; // Exit if profile section doesn't exist
         }
 
-        // Render menu on initialization
+        // Step 1: Render the profile menu
         renderProfileMenu();
 
-        // Initialize close button
+        // Step 2: Set up the close button
         initCloseButton();
 
-        // Initialize browser navigation
+        // Step 3: Set up browser navigation handlers
         initBrowserNavigation();
 
-        // Re-render menu when profile section becomes active
+        // Step 4: Watch for when profile section becomes active
+        // This re-renders the menu when you navigate to the profile section
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
+                // Check if the 'class' attribute changed
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = profileSection.classList.contains('active');
                     if (isActive) {
-                        // Check if menu view is active and needs rendering
+                        // If profile section is now active, check if we need to re-render menu
                         const menuView = document.getElementById('profile-menu-view');
                         if (menuView && menuView.classList.contains('active') && currentProfileRoute === ProfileRoutes.MENU) {
-                            // Re-render menu to ensure icons are initialized
+                            // Re-render menu to make sure icons are initialized
                             setTimeout(() => {
                                 renderProfileMenu();
                             }, 100);
@@ -840,12 +943,13 @@
             });
         });
 
+        // Start watching the profile section for changes
         observer.observe(profileSection, {
             attributes: true,
             attributeFilter: ['class']
         });
 
-        // Also listen for profile button clicks to ensure menu is rendered
+        // Step 5: Listen for clicks on the profile button in the header
         const profileBtn = document.querySelector('.header-profile-btn');
         if (profileBtn) {
             profileBtn.addEventListener('click', function () {
@@ -853,7 +957,7 @@
                 if (currentProfileRoute !== ProfileRoutes.MENU) {
                     navigateToProfileRoute(ProfileRoutes.MENU);
                 }
-                // Render menu after a short delay to ensure section is visible
+                // Re-render menu after a short delay
                 setTimeout(() => {
                     renderProfileMenu();
                 }, 200);
@@ -861,18 +965,29 @@
         }
     }
 
-    // Initialize when DOM is ready
+    // ============================================================================
+    // STEP 13: START EVERYTHING WHEN PAGE LOADS
+    // ============================================================================
+
+    // Wait for the page to finish loading, then initialize
     if (document.readyState === 'loading') {
+        // Page is still loading, wait for it to finish
         document.addEventListener('DOMContentLoaded', () => {
             initProfileSystem();
         });
     } else {
+        // Page is already loaded, initialize immediately
         initProfileSystem();
     }
 
+    // ============================================================================
+    // STEP 14: EXPORT FUNCTIONS FOR OTHER FILES TO USE
+    // ============================================================================
+
     /**
-     * Export ProfileNavigation object for use by other files
-     * Allows other files to navigate to profile routes
+     * Export ProfileNavigation object
+     * Other files can use this to navigate between profile routes
+     * Example: window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.SETTINGS)
      */
     window.ProfileNavigation = {
         navigateTo: navigateToProfileRoute,
@@ -880,7 +995,8 @@
     };
 
     /**
-     * Export header creation functions for use in other files
+     * Export header creation functions
+     * Other files can use these to create headers dynamically
      */
     window.createProfilePageTitle = createProfilePageTitle;
     window.createAccountTabsHeader = createAccountTabsHeader;

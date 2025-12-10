@@ -1,13 +1,15 @@
 // My Actions Section - Tab Switching Logic
-(function () {
+;(function () {
     'use strict';
+
+    let eventListenersAttached = false;
+    let myActionsRendered = false;
 
     // Create and append filter buttons to finished content
     function createFilterButtons() {
         const finishedContent = document.getElementById('finished-content');
         if (!finishedContent || document.querySelector('.finished-filters')) return;
 
-        // Create filter buttons container
         const filterContainer = document.createElement('div');
         filterContainer.className = 'finished-filters';
         filterContainer.style.display = 'flex';
@@ -16,7 +18,6 @@
         filterContainer.style.marginBottom = '16px';
         filterContainer.style.width = '100%';
 
-        // Create buttons
         const buttons = [
             { id: 'won-auctions', text: 'الرابحة' },
             { id: 'lost-auctions', text: 'الخاسرة' }
@@ -32,24 +33,17 @@
             filterContainer.appendChild(button);
         });
 
-        // Insert filter buttons at the beginning of finished content
         if (finishedContent.firstChild) {
             finishedContent.insertBefore(filterContainer, finishedContent.firstChild);
         } else {
             finishedContent.appendChild(filterContainer);
         }
 
-        // Add click handlers for filter buttons
         const filterButtons = filterContainer.querySelectorAll('.my-actions-tab');
         filterButtons.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Check if the clicked button is already active
                 const isActive = this.classList.contains('active');
-                
-                // Remove active class from all filter buttons
                 filterButtons.forEach(b => b.classList.remove('active'));
-                
-                // Toggle active state only if it wasn't active before
                 if (!isActive) {
                     this.classList.add('active');
                     console.log(`Filtering by: ${this.textContent}`);
@@ -60,40 +54,71 @@
         });
     }
 
+    // Render my actions section markup
+    function renderMyActionsSection() {
+        const myActionsSection = document.getElementById('my-actions-section');
+        if (!myActionsSection || myActionsRendered) return;
+
+        myActionsSection.innerHTML = `
+            <div class="section-content">
+                <div class="my-actions-header">
+                    <h1 class="my-actions-title">مشاركاتي</h1>
+                </div>
+
+                <div class="my-actions-tabs">
+                    <button class="my-actions-tab active" data-tab="pending" id="pending-tab">
+                        <span>المزادات قيد الانتظار</span>
+                    </button>
+                    <button class="my-actions-tab" data-tab="finished" id="finished-tab">
+                        <span>المزادات المنتهية</span>
+                    </button>
+                </div>
+
+                <div class="my-actions-content">
+                    <div class="my-actions-tab-content active" id="pending-content">
+                        <div class="my-actions-empty-state">
+                            <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
+                        </div>
+                    </div>
+
+                    <div class="my-actions-tab-content" id="finished-content">
+                        <div class="my-actions-empty-state">
+                            <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        eventListenersAttached = false;
+        myActionsRendered = true;
+    }
+
     // Initialize tab switching
     function initMyActionsTabs() {
+        if (eventListenersAttached) return;
+
         const tabs = document.querySelectorAll('.my-actions-tab:not(.finished-filters .my-actions-tab)');
         const tabContents = document.querySelectorAll('.my-actions-tab-content');
 
-        // Add click event listeners to tabs
         tabs.forEach(tab => {
             tab.addEventListener('click', function () {
                 const targetTab = this.getAttribute('data-tab');
-
-                // Remove active class from all tabs
                 tabs.forEach(t => t.classList.remove('active'));
-
-                // Add active class to clicked tab
                 this.classList.add('active');
+                tabContents.forEach(content => content.classList.remove('active'));
 
-                // Hide all tab contents
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                });
-
-                // Show the corresponding content
                 const targetContent = document.getElementById(`${targetTab}-content`);
                 if (targetContent) {
                     targetContent.classList.add('active');
-                    
-                    // If it's the finished tab, ensure filter buttons are created
                     if (targetTab === 'finished') {
-                        // Use setTimeout to ensure the content is visible before creating buttons
                         setTimeout(createFilterButtons, 10);
                     }
                 }
             });
         });
+
+        eventListenersAttached = true;
     }
 
     // Initialize when DOM is ready
@@ -103,16 +128,14 @@
             return;
         }
 
-        // Initialize tabs
+        renderMyActionsSection();
         initMyActionsTabs();
 
-        // Use MutationObserver to re-initialize when section becomes active
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = myActionsSection.classList.contains('active');
                     if (isActive) {
-                        // Re-initialize tabs when section becomes active
                         setTimeout(() => {
                             initMyActionsTabs();
                         }, 100);
@@ -126,20 +149,17 @@
             attributeFilter: ['class']
         });
 
-        // Also initialize if already active
         if (myActionsSection.classList.contains('active')) {
             initMyActionsTabs();
         }
     }
 
-    // Initialize on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
-    // Export for external use
     window.MyActionsTabs = {
         init: initMyActionsTabs
     };

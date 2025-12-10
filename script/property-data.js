@@ -326,7 +326,7 @@
                             <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
                         </div>
                         <button class="auction-cta-btn">
-                            شارك بالمزاد
+                            شارك الآن
                         </button>
                     </div>
                 </div>

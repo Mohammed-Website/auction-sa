@@ -10,6 +10,147 @@
     // Track if event listeners are already attached to prevent duplicates
     let eventListenersAttached = false;
 
+    // Track render state to rebuild markup once
+    let accountInfoRendered = false;
+
+    // Build the account info view markup
+    function renderAccountInfoView() {
+        const accountInfoView = document.getElementById('profile-account-info-view');
+        if (!accountInfoView || accountInfoRendered) return;
+
+        accountInfoView.innerHTML = `
+            <div class="account-info-container">
+                <div class="account-tabs-wrapper">
+                    <div class="account-tabs">
+                        <button class="account-tab active" data-tab="basic-data">
+                            <i data-lucide="user" class="account-tab-icon"></i>
+                            <span class="tab-text">البيانات الأساسية</span>
+                            <i data-lucide="chevron-left" class="account-tab-arrow"></i>
+                        </button>
+                        <button class="account-tab" data-tab="contact-info">
+                            <i data-lucide="phone" class="account-tab-icon"></i>
+                            <span class="tab-text">معلومات التواصل</span>
+                            <i data-lucide="chevron-left" class="account-tab-arrow"></i>
+                        </button>
+                        <button class="account-tab" data-tab="addresses">
+                            <i data-lucide="map-pin" class="account-tab-icon"></i>
+                            <span class="tab-text">عناويني</span>
+                            <i data-lucide="chevron-left" class="account-tab-arrow"></i>
+                        </button>
+                    </div>
+
+                    <div class="account-tab-content">
+                        <div id="basic-data-view" class="tab-view">
+                            <div class="account-card">
+                                <div class="card-body">
+                                    <div class="info-row profile-image-row">
+                                        <div class="info-label">
+                                            <i data-lucide="image" class="info-icon"></i>
+                                            <span>صورة الملف الشخصي</span>
+                                        </div>
+                                        <div class="info-value profile-image-value">
+                                            <div class="profile-image-edit">
+                                                <div class="profile-image" id="basic-data-profile-image">
+                                                    <i class="fas fa-user profile-image-placeholder"></i>
+                                                </div>
+                                                <button class="edit-image-btn" type="button">
+                                                    <i data-lucide="camera" class="edit-image-icon"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="user" class="info-icon"></i>
+                                            <span>الاسم الكامل</span>
+                                        </div>
+                                        <div class="info-value">عبدالله محمد</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="id-card" class="info-icon"></i>
+                                            <span>الهوية الوطنية</span>
+                                        </div>
+                                        <div class="info-value">1029384756</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="calendar" class="info-icon"></i>
+                                            <span>تاريخ الميلاد</span>
+                                        </div>
+                                        <div class="info-value">01/01/1990</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="fingerprint-pattern" class="info-icon"></i>
+                                            <span>الجنس</span>
+                                        </div>
+                                        <div class="info-value">ذكر</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="flag" class="info-icon"></i>
+                                            <span>الجنسية</span>
+                                        </div>
+                                        <div class="info-value">سعودي</div>
+                                    </div>
+                                    <button class="edit-btn">
+                                        <i data-lucide="edit" class="edit-icon"></i>
+                                        <span>تعديل البيانات</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="contact-info-view" class="tab-view">
+                            <div class="account-card">
+                                <div class="card-body">
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="mail" class="info-icon"></i>
+                                            <span>البريد الإلكتروني</span>
+                                        </div>
+                                        <div class="info-value">abdullahmakingbos@propertyapp.com</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i data-lucide="phone" class="info-icon"></i>
+                                            <span>رقم الجوال</span>
+                                        </div>
+                                        <div class="info-value">0557894321</div>
+                                    </div>
+                                    <button class="edit-btn">
+                                        <i data-lucide="edit" class="edit-icon"></i>
+                                        <span>تعديل البيانات</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="addresses-view" class="tab-view">
+                            <div class="account-card">
+                                <div class="card-body">
+                                    <div class="empty-state">
+                                        <i data-lucide="map-pin" class="empty-icon"></i>
+                                        <p class="empty-text">لا توجد عناوين محفوظة</p>
+                                        <button class="add-address-btn">
+                                            <i data-lucide="plus" class="add-icon"></i>
+                                            <span>إضافة عنوان جديد</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Allow event listeners to reattach on fresh markup
+        eventListenersAttached = false;
+        accountInfoRendered = true;
+    }
+
     // Initialize tabs
     function initAccountTabs() {
         // Prevent duplicate event listeners
@@ -314,6 +455,9 @@
         if (!accountInfoView) {
             return;
         }
+
+        // Build the view markup once
+        renderAccountInfoView();
 
         // Update sticky header positions
         updateStickyHeaderPositions();

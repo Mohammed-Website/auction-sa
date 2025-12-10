@@ -5,6 +5,35 @@
 
     // Track if event listeners are already attached to prevent duplicates
     let eventListenersAttached = false;
+    let favoritesRendered = false;
+
+    // Build favorites view markup
+    function renderFavoritesView() {
+        const favoritesView = document.getElementById('profile-favorites-view');
+        if (!favoritesView || favoritesRendered) return;
+
+        favoritesView.innerHTML = `
+            <div class="favorites-container">
+                <div class="account-tabs-header" id="favorites-header">
+                    <button class="back-btn" id="favorites-back-btn" aria-label="رجوع">
+                        <i data-lucide="arrow-right" class="back-icon"></i>
+                    </button>
+                    <h2 class="account-tabs-title">المفضلة</h2>
+                </div>
+
+                <div class="favorites-content">
+                    <div class="favorites-empty-state">
+                        <i data-lucide="heart" class="favorites-icon"></i>
+                        <p class="favorites-empty-text">لم يتم العثور على مزادات</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Allow listeners to attach on fresh markup
+        eventListenersAttached = false;
+        favoritesRendered = true;
+    }
 
     // Update sticky header position based on top-header height
     function updateFavoritesHeaderPosition() {
@@ -68,6 +97,9 @@
         if (!favoritesView) {
             return;
         }
+
+        // Build view markup once
+        renderFavoritesView();
 
         // Initialize favorites
         initFavorites();

@@ -25,12 +25,11 @@
 .my-actions-tab {
     width: fit-content;
     padding: var(--spacing-xs) var(--spacing-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border: none;
+    border-radius: 5px;
     background-color: var(--bg-white);
     color: var(--text-secondary);
     font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all var(--transition-base);
     text-align: center;
