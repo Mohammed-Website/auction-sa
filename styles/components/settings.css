@@ -232,7 +232,7 @@ body:has(#profile-settings-view.active) {
     .settings-content {
         height: calc(100vh - 50px - 75px);
         position: relative;
-        padding-bottom: calc(75px + var(--spacing-lg) + var(--spacing-lg));
+        padding-bottom: calc(75px + var(--spacing-lg) + var(--spacing-xl));
     }
 
     .settings-section-title {
