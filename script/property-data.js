@@ -19,20 +19,20 @@
         'home-section': {
             // Home section loads all data and organizes into 3 grids
             grids: {
-                auctions: { 
-                    gridId: 'home-auctions-grid', 
-                    renderFunction: 'renderAuctionCard', 
-                    url: 'json-data/auction-property.json' 
+                auctions: {
+                    gridId: 'home-auctions-grid',
+                    renderFunction: 'renderAuctionCard',
+                    url: 'json-data/auction-property.json'
                 },
-                sell: { 
-                    gridId: 'home-sell-grid', 
-                    renderFunction: 'renderPropertyCard', 
-                    url: 'json-data/sell-property.json' 
+                sell: {
+                    gridId: 'home-sell-grid',
+                    renderFunction: 'renderPropertyCard',
+                    url: 'json-data/sell-property.json'
                 },
-                rent: { 
-                    gridId: 'home-rent-grid', 
-                    renderFunction: 'renderRentalCard', 
-                    url: 'json-data/rent-property.json' 
+                rent: {
+                    gridId: 'home-rent-grid',
+                    renderFunction: 'renderRentalCard',
+                    url: 'json-data/rent-property.json'
                 }
             }
         },
@@ -79,6 +79,277 @@
     }
 
     /**
+     * Parse Arabic date/time string to JavaScript Date object
+     * Handles formats like "2025-12-28 12:00 صباحً" or "2025-12-28 12:00 مساءً"
+     * @param {string} dateString - Date string in Arabic format
+     * @returns {Date|null} Parsed date or null if invalid
+     */
+    function parseArabicDate(dateString) {
+        if (!dateString) return null;
+
+        try {
+            // Replace Arabic time indicators
+            let normalized = dateString
+                .replace(/صباحً|ص/g, 'AM')
+                .replace(/مساءً|م/g, 'PM')
+                .trim();
+
+            // Extract date and time parts
+            const parts = normalized.split(/\s+/);
+            if (parts.length < 2) return null;
+
+            const datePart = parts[0]; // "2025-12-28"
+            const timePart = parts.slice(1).join(' '); // "12:00 AM"
+
+            // Parse the date
+            const [year, month, day] = datePart.split(/[-\/]/).map(Number);
+            if (!year || !month || !day) return null;
+
+            // Parse time
+            const timeMatch = timePart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!timeMatch) return null;
+
+            let hours = parseInt(timeMatch[1], 10);
+            const minutes = parseInt(timeMatch[2], 10);
+            const ampm = timeMatch[3].toUpperCase();
+
+            // Convert to 24-hour format
+            if (ampm === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (ampm === 'AM' && hours === 12) {
+                hours = 0;
+            }
+
+            return new Date(year, month - 1, day, hours, minutes, 0);
+        } catch (error) {
+            console.warn('Failed to parse date:', dateString, error);
+            return null;
+        }
+    }
+
+    /**
+     * Calculate time remaining until target date
+     * @param {Date} targetDate - The target date to count down to
+     * @returns {Object} Object with days, hours, minutes, seconds
+     */
+    function calculateTimeRemaining(targetDate) {
+        const now = new Date();
+        const diff = targetDate.getTime() - now.getTime();
+
+        if (diff <= 0) {
+            return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        return { days, hours, minutes, seconds, expired: false };
+    }
+
+    /**
+     * Format a number as two digits (e.g., 5 becomes "05")
+     * @param {number} num - Number to format
+     * @returns {string} Two-digit string
+     */
+    function padNumber(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    /**
+     * Create flip clock digit HTML structure
+     * @param {string} digit - The digit to display
+     * @param {string} unit - The unit type (days, hours, minutes, seconds)
+     * @returns {string} HTML for a single digit box
+     */
+    function createFlipDigit(digit, unit) {
+        return `
+            <div class="flip-digit-box" data-unit="${unit}">
+                <div class="flip-digit-inner">
+                    <span class="flip-digit-text">${digit}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Create flip clock structure for countdown
+     * @param {Object} timeObj - Object with days, hours, minutes, seconds
+     * @returns {string} HTML for the flip clock
+     */
+    function createFlipClockHTML(timeObj) {
+        if (timeObj.expired) {
+            return `
+                <div class="flip-clock-container">
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'days')}${createFlipDigit('0', 'days')}
+                        </div>
+                        <div class="flip-label">يوم</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'hours')}${createFlipDigit('0', 'hours')}
+                        </div>
+                        <div class="flip-label">ساعة</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'minutes')}${createFlipDigit('0', 'minutes')}
+                        </div>
+                        <div class="flip-label">دقيقة</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'seconds')}${createFlipDigit('0', 'seconds')}
+                        </div>
+                        <div class="flip-label">ثانية</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const daysStr = padNumber(timeObj.days);
+        const hoursStr = padNumber(timeObj.hours);
+        const minutesStr = padNumber(timeObj.minutes);
+        const secondsStr = padNumber(timeObj.seconds);
+
+        return `
+            <div class="flip-clock-container">
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit(daysStr[0], 'days')}${createFlipDigit(daysStr[1], 'days')}
+                    </div>
+                    <div class="flip-label">يوم</div>
+                </div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit(hoursStr[0], 'hours')}${createFlipDigit(hoursStr[1], 'hours')}
+                    </div>
+                    <div class="flip-label">ساعة</div>
+                </div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit(minutesStr[0], 'minutes')}${createFlipDigit(minutesStr[1], 'minutes')}
+                    </div>
+                    <div class="flip-label">دقيقة</div>
+                </div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit(secondsStr[0], 'seconds')}${createFlipDigit(secondsStr[1], 'seconds')}
+                    </div>
+                    <div class="flip-label">ثانية</div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Update a single digit with flip animation
+     * @param {HTMLElement} digitBox - The digit box element
+     * @param {string} newDigit - The new digit value
+     */
+    function updateFlipDigit(digitBox, newDigit) {
+        const digitText = digitBox.querySelector('.flip-digit-text');
+        if (!digitText) return;
+
+        const currentDigit = digitText.textContent;
+
+        if (currentDigit === newDigit) return; // No change needed
+
+        // Add flip animation class (old number will fade out)
+        digitBox.classList.add('flip-animate');
+
+        // Update the digit value at the midpoint (when old number is fully faded out)
+        // This ensures the old number stays visible during fade-out
+        setTimeout(() => {
+            digitText.textContent = newDigit;
+        }, 150); // Half of animation duration (50% - when fade-out completes)
+
+        // Remove animation class after animation completes
+        setTimeout(() => {
+            digitBox.classList.remove('flip-animate');
+        }, 300); // Match CSS animation duration
+    }
+
+    /**
+     * Update countdown timer for a single element with flip clock
+     * @param {HTMLElement} element - The container element
+     * @param {string} bidEndDate - The bid end date string
+     */
+    function updateCountdownTimer(element, bidEndDate) {
+        const targetDate = parseArabicDate(bidEndDate);
+        if (!targetDate) {
+            element.innerHTML = '<div style="color: red;">Invalid date</div>';
+            return;
+        }
+
+        const timeRemaining = calculateTimeRemaining(targetDate);
+
+        // Check if flip clock structure exists
+        let container = element.querySelector('.flip-clock-container');
+
+        if (!container) {
+            // First time - create the structure
+            element.innerHTML = createFlipClockHTML(timeRemaining);
+            container = element.querySelector('.flip-clock-container');
+            return;
+        }
+
+        // Update existing digits with animation
+        const daysStr = padNumber(timeRemaining.days);
+        const hoursStr = padNumber(timeRemaining.hours);
+        const minutesStr = padNumber(timeRemaining.minutes);
+        const secondsStr = padNumber(timeRemaining.seconds);
+
+        // Get all time groups
+        const timeGroups = container.querySelectorAll('.flip-time-group');
+        const digitValues = [daysStr, hoursStr, minutesStr, secondsStr];
+
+        timeGroups.forEach((group, groupIndex) => {
+            const digitBoxes = group.querySelectorAll('.flip-digit-box');
+            const value = digitValues[groupIndex];
+
+            if (digitBoxes.length >= 2) {
+                updateFlipDigit(digitBoxes[0], value[0]);
+                updateFlipDigit(digitBoxes[1], value[1]);
+            }
+        });
+    }
+
+    /**
+     * Initialize countdown timers for all auction cards
+     * Sets up interval to update timers every second
+     */
+    function initializeAuctionCountdowns() {
+        // Find all auction cards with countdown timers
+        const countdownElements = document.querySelectorAll('.remaining-time-counter[data-bid-end-date]');
+
+        // Clear any existing intervals
+        if (window.auctionCountdownIntervals) {
+            window.auctionCountdownIntervals.forEach(interval => clearInterval(interval));
+        }
+        window.auctionCountdownIntervals = [];
+
+        // Set up interval for each countdown
+        countdownElements.forEach(element => {
+            const bidEndDate = element.getAttribute('data-bid-end-date');
+            if (!bidEndDate) return;
+
+            // Update immediately
+            updateCountdownTimer(element, bidEndDate);
+
+            // Update every second
+            const interval = setInterval(() => {
+                updateCountdownTimer(element, bidEndDate);
+            }, 1000);
+
+            window.auctionCountdownIntervals.push(interval);
+        });
+    }
+
+    /**
      * Render property features (bedrooms, bathrooms, area)
      * Creates HTML for the features section of a property card
      */
@@ -93,7 +364,7 @@
         else if (property.bedrooms) {
             features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.bedrooms}`);
         }
-        
+
         // Add totalBathroom if available (preferred over bathrooms if both exist)
         if (property.totalBathroom !== undefined) {
             features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.totalBathroom}`);
@@ -102,7 +373,7 @@
         else if (property.bathrooms) {
             features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.bathrooms}`);
         }
-        
+
         // Add area if available
         if (property.area) {
             // Handle area format - could be "450 م²" or just "450"
@@ -191,7 +462,7 @@
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = property.specialWord ? 
+        const specialWordBadge = property.specialWord ?
             `<div class="special-word-badge">${property.specialWord}</div>` : '';
 
         return `
@@ -207,7 +478,7 @@
                 ${renderBadge(property.badge)}
                 <div class="property-info">
                     <h3>${property.title || 'عقار للبيع'}</h3>
-                    <p class="property-location"><i data-lucide="map-pin" class="location-icon"></i> ${property.location || 'غير محدد'}</p>
+                    <p class="property-location"><i data-lucide="map-pin" class="property-card-location-icon"></i> ${property.location || 'غير محدد'}</p>
                     ${renderFeatures(property)}
                     <p class="property-price">${property.price ? (property.price.includes('ريال') ? property.price : `${property.price} ريال`) : 'غير محدد'}</p>
                 </div>
@@ -225,7 +496,7 @@
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = property.specialWord ? 
+        const specialWordBadge = property.specialWord ?
             `<div class="special-word-badge">${property.specialWord}</div>` : '';
 
         // Handle price - check if it already includes "/ شهرياً" or "/ سنوياً"
@@ -247,7 +518,7 @@
                 ${renderBadge(property.badge)}
                 <div class="property-info">
                     <h3>${property.title || 'عقار للإيجار'}</h3>
-                    <p class="property-location"><i data-lucide="map-pin" class="location-icon"></i> ${property.location || 'غير محدد'}</p>
+                    <p class="property-location"><i data-lucide="map-pin" class="property-card-location-icon"></i> ${property.location || 'غير محدد'}</p>
                     ${renderFeatures(property)}
                     <p class="property-price rental-price">${priceText || 'غير محدد'}</p>
                 </div>
@@ -265,11 +536,11 @@
         const imageUrl = getImageUrl(auction);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = auction.specialWord ? 
+        const specialWordBadge = auction.specialWord ?
             `<div class="special-word-badge">${auction.specialWord}</div>` : '';
 
         // Handle timer - use 'timer' from JSON or fallback to 'timeRemaining'
-        const timeRemaining = auction.timer || auction.timeRemaining || 'غير محدد';
+        const timeRemaining = auction.bidStartDate || 'غير محدد';
 
         // Get start date (if available in JSON)
         const startDate = auction.startDate || auction.date || '';
@@ -307,17 +578,20 @@
                         ${startDate ? `<div class="auction-date"><i data-lucide="calendar" class="meta-icon"></i> ${startDate}</div>` : ''}
                         <div class="auction-timer-new">
                             <i data-lucide="clock" class="meta-icon"></i>
-                            <span class="timer-text">المتبقي: <strong>${timeRemaining}</strong></span>
+                            <span class="bid-start-date-text">بدأ المزاد: <strong>${timeRemaining}</strong></span>
                         </div>
                     </div>
                     <div class="auction-bid-section">
-                        <div class="bid-section-left">
-                            <div class="starting-bid-label">المزايدة الابتدائية</div>
-                            <div class="starting-bid-amount">${startingBid || 'غير محدد'}</div>
+                        <div class="bid-section-top">
+                            <div class="location-wrapper">
+                                <i data-lucide="map-pin" class="property-card-location-icon"></i>
+                                <span>${auction.location || 'غير محدد'}</span>
+                            </div>
+                            <i data-lucide="heart" class="property-card-heart-icon"></i>
                         </div>
-                        <div class="bid-section-right">
-                            <i data-lucide="map-pin" class="location-icon"></i>
-                            <span>${auction.location || 'غير محدد'}</span>
+                        <div class="bid-section-left">
+                            <div class="remaining-time-label">الوقت المتبقي</div>
+                            <div class="remaining-time-counter" ${auction.bidEndDate ? `data-bid-end-date="${auction.bidEndDate}"` : ''}></div>
                         </div>
                     </div>
                     <div class="auction-cta-container">
@@ -399,6 +673,13 @@
             setTimeout(() => {
                 lucide.createIcons();
             }, 100);
+        }
+
+        // Initialize countdown timers for auction cards
+        if (renderFunction === 'renderAuctionCard') {
+            setTimeout(() => {
+                initializeAuctionCountdowns();
+            }, 150);
         }
     }
 

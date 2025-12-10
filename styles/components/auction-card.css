@@ -13,7 +13,7 @@
 }
 
 .auction-banner {
-    width: 100%;
+    width: 95%;
     height: 160px;
     background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
     position: relative;
@@ -22,6 +22,8 @@
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
+    border-radius: 5px;
+    align-self: center;
 }
 
 .auction-badges {
@@ -42,7 +44,7 @@
 }
 
 .live-badge {
-    background: #dc3545;
+    background: #db283a;
     color: white;
     border-top-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -51,7 +53,7 @@
 
 .electronic-badge {
     background: rgba(255, 255, 255, 0.95);
-    color: #2c5aa0;
+    color: black;
     border: 1px solid rgba(44, 90, 160, 0.2);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -86,7 +88,6 @@
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.3rem;
-    background: #f8f9fa;
     border-radius: 10px;
 }
 
@@ -106,48 +107,161 @@
     stroke-width: 2;
 }
 
-.timer-text {
+.bid-start-date-text {
     font-weight: 500;
     font-size: var(--spacing-sm);
 }
 
-.timer-text strong {
-    color: #dc3545;
+.bid-start-date-text strong {
     font-weight: 700;
+    color: rgb(56, 56, 56);
 }
 
-.starting-bid-label {
-    font-size: var(--spacing-sm);
+
+.remaining-time-counter {
+    direction: ltr;
+    width: 100%;
+}
+
+/* Flip Clock Container */
+.flip-clock-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 0 0.5rem;
+}
+
+/* Time Group (e.g., days with label) */
+.flip-time-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Digit Pair Container */
+.flip-digits-pair {
+    display: flex;
+    gap: 0.15rem;
+    align-items: center;
+}
+
+/* Individual Digit Box */
+.flip-digit-box {
+    width: 2rem;
+    height: 2.5rem;
+    background-color: #E6E6E6;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Digit Inner Container */
+.flip-digit-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Digit Text */
+.flip-digit-text {
+    font-weight: bold;
+    font-size: var(--font-size-sm);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Fade and Slide Up Animation */
+.flip-digit-box.flip-animate .flip-digit-text {
+    animation: fadeSlideDigit 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeSlideDigit {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    51% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Arabic Label */
+.flip-label {
+    font-size: 0.75rem;
     color: #666;
-    margin-bottom: 0.5rem;
+    margin-top: 0.25rem;
     font-weight: 500;
+    text-align: center;
 }
 
-.starting-bid-amount {
-    font-size: var(--spacing-sm);
-    font-weight: 700;
-    color: black;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .flip-digit-box {
+        width: 1.75rem;
+        height: 2.25rem;
+    }
+
+    .flip-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .flip-digit-box {
+        width: 1.5rem;
+        height: 2rem;
+    }
+
+    .flip-label {
+        font-size: 0.65rem;
+    }
 }
 
 .auction-cta-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 0.3rem;
 }
 
-.auction-cta-container > * {
+.auction-cta-container>* {
     padding: 0 10px;
-    border-right: 1px solid #ccc; /* divider */
+    border-right: 1px solid #ccc;
+    /* divider */
 }
 
 /* remove line after the last item */
-.auction-cta-container > *:last-child {
+.auction-cta-container>*:last-child {
     border-right: none;
 }
 
 .auction-cta-btn {
     padding: 0.3rem 0.5rem;
-    background: linear-gradient(135deg, #5319b8 0%, #370883 100%);
+    background: linear-gradient(135deg, #5e1fca 0%, #5014b0 100%);
     color: white;
     width: fit-content;
     border: none;

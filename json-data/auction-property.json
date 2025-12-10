@@ -1,38 +1,41 @@
 [
     {
       "id": 1,
-      "title": "أرض سكنية في مزاد مباشر",
-      "currentBid": "1,150,000",
+      "title": "مزاد النخبة",
+      "bidStartDate": "2025/12/20 — 08:00 مساءً",
+      "bidEndDate": "2025-12-28 12:00 صباحً",
       "location": "مكة المكرمة",
       "timer": "01:42:30",
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
       "compLogo": "https://cryptologos.cc/logos/compound-comp-logo.png?v=040",
       "compName": "بندر لإجار البيوت",
       "specialWord": "جديد",
-      "viewCount": 1250
+      "viewCount": 3
     },
     {
       "id": 2,
       "title": "فيلا نصف تشطيب بالمزاد",
-      "currentBid": "980,000",
+      "bidStartDate": "2025-12-15 6:00 مساءً",
+      "bidEndDate": "2025-12-20 12:00 صباحً",
       "location": "الطائف",
       "timer": "03:15:10",
       "image": "https://images.unsplash.com/photo-1599423300746-b62533397364",
       "compLogo": "https://static.vecteezy.com/system/resources/thumbnails/047/656/219/small/abstract-logo-design-for-any-corporate-brand-business-company-vector.jpg",
       "compName": "نسرين للأراضي الزراعية",
       "specialWord": "مميز",
-      "viewCount": 180
+      "viewCount": 2
     },
     {
       "id": 3,
       "title": "عمارة تجارية بالمزاد",
-      "currentBid": "3,200,000",
+      "bidStartDate": "2025-12-28 2:00 مساءً",
+      "bidEndDate": "2025-12-30 12:00 صباحً",
       "location": "الرياض - النسيم",
       "timer": "00:58:45",
       "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858",
       "compLogo": "https://marketplace.canva.com/EAGaybKnslM/1/0/800w/canva-blue-simple-modern-minimalist-building-company-logo-uVmgkHNBmPs.jpg",
       "compName": "ابو عبد الله للمزاد",
-      "viewCount": 50
+      "viewCount": 4
     }
   ]
   

@@ -56,15 +56,6 @@
     border: 2px solid transparent;
 }
 
-.menu-item:hover {
-    background: #f0f0f0;
-    border-color: #e0e0e0;
-}
-
-.menu-item:active {
-    background: #e8f4f8;
-}
-
 .menu-item-content {
     display: flex;
     align-items: center;

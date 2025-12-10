@@ -3,14 +3,9 @@
     background: #f9f9f9;
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.3s ease;
     min-width: 290px;
     flex-shrink: 0;
-}
-
-.property-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    cursor: pointer;
 }
 
 .property-image {
@@ -51,7 +46,8 @@
 
 .property-location i,
 .auction-location i,
-.location-icon {
+.property-card-location-icon,
+.property-card-heart-icon {
     color: #000000 !important;
     width: 16px;
     height: 16px;

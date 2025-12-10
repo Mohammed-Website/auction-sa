@@ -159,13 +159,6 @@
     stroke: var(--primary-color);
 }
 
-.account-tab:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    transform: translateX(-4px);
-    box-shadow: var(--shadow-md);
-}
-
 .tab-text {
     display: block;
     transition: color var(--transition-base);
