@@ -51,7 +51,6 @@
     justify-content: space-between;
     padding: 1rem;
     border-radius: var(--radius-sm);
-    background: #fafafa;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;

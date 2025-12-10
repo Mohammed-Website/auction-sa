@@ -128,7 +128,6 @@
     color: var(--text-secondary);
     text-align: right;
     position: relative;
-    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     justify-content: space-between;

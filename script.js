@@ -80,6 +80,27 @@
         }
     }
 
+    /**
+     * Register Service Worker for PWA functionality
+     * This enables offline capabilities and PWA installation
+     */
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.warn('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    }
+
+    // Register service worker
+    registerServiceWorker();
+
     // Start loading modules when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadAllModules);
