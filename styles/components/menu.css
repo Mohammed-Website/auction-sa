@@ -88,20 +88,10 @@
     transition: transform 0.3s ease;
 }
 
-.menu-item:hover .menu-item-arrow {
-    color: #2c5aa0;
-    stroke: #2c5aa0;
-}
-
 /* Special styling for logout item */
 .menu-item[data-action="logout"] {
     background: #fff5f5;
     border-color: #fee;
-}
-
-.menu-item[data-action="logout"]:hover {
-    background: #ffe0e0;
-    border-color: #fcc;
 }
 
 .menu-item[data-action="logout"] .menu-item-icon {
