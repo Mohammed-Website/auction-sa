@@ -231,10 +231,8 @@ body:has(#profile-settings-view.active) {
     /* Mobile: Extend height to bottom-nav for native app feel */
     .settings-content {
         height: calc(100vh - 50px - 75px);
-        /* 100vh - header height (50px) - bottom-nav height (75px) */
         position: relative;
-        padding-bottom: calc(75px + var(--spacing-lg));
-        /* Bottom padding = bottom-nav height + extra spacing to ensure last content scrolls above nav */
+        padding-bottom: calc(75px + var(--spacing-lg) + var(--spacing-lg));
     }
 
     .settings-section-title {
