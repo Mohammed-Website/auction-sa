@@ -7,6 +7,30 @@
     let eventListenersAttached = false;
     let settingsRendered = false;
 
+    // Functions to disable/enable body scrolling
+    function disableBodyScroll() {
+        const body = document.body;
+        const scrollY = window.scrollY;
+        body.style.position = 'fixed';
+        body.style.top = `-${scrollY}px`;
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+        // Store scroll position for restoration
+        body.setAttribute('data-scroll-y', scrollY);
+    }
+
+    function enableBodyScroll() {
+        const body = document.body;
+        const scrollY = body.getAttribute('data-scroll-y') || '0';
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        body.removeAttribute('data-scroll-y');
+        // Restore scroll position
+        window.scrollTo(0, parseInt(scrollY, 10));
+    }
+
     // Build settings view markup
     function renderSettingsView() {
         const settingsView = document.getElementById('profile-settings-view');
@@ -45,6 +69,44 @@
                                 <span class="radio-label">رقم المزايد في المزاد</span>
                                 <span class="radio-checkmark"></span>
                             </label>
+
+
+
+
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="auction-display" value="bidder-number">
+                                <span class="radio-label">رقم المزايد في المزاد</span>
+                                <span class="radio-checkmark"></span>
+                            </label>
+
+
+
+
                         </div>
                     </div>
 
@@ -96,6 +158,9 @@
                 e.preventDefault();
                 e.stopPropagation();
 
+                // Re-enable body scrolling when leaving settings
+                enableBodyScroll();
+
                 // Scroll to top for better UX
                 if (typeof window.scrollToTop === 'function') {
                     window.scrollToTop();
@@ -143,10 +208,15 @@
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = settingsView.classList.contains('active');
                     if (isActive) {
+                        // Disable body scrolling when settings becomes active
+                        disableBodyScroll();
                         // Re-initialize when settings view becomes active
                         setTimeout(() => {
                             initSettings();
                         }, 100);
+                    } else {
+                        // Re-enable body scrolling when settings becomes inactive
+                        enableBodyScroll();
                     }
                 }
             });
@@ -159,6 +229,7 @@
 
         // Also initialize if already active
         if (settingsView.classList.contains('active')) {
+            disableBodyScroll();
             initSettings();
         }
     }
