@@ -67,6 +67,25 @@
     position: relative;
 }
 
+/* Profile Section Content - Scrollable Container */
+#profile-section.active .section-content {
+    height: calc(100vh - 60px);
+    /* 100vh - header height */
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Mobile: Profile Section Content extends to bottom-nav */
+@media (max-width: 768px) {
+    #profile-section.active .section-content {
+        height: calc(100vh - 60px - 75px);
+        /* 100vh - header height (60px) - bottom-nav height (75px) */
+        padding-bottom: calc(100px + var(--spacing-lg) + var(--spacing-lg));
+        /* Bottom padding = bottom-nav height + extra spacing */
+    }
+}
+
 /* Home Section Horizontal Scroll Sections */
 .home-subsection {
     margin-bottom: 3rem;

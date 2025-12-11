@@ -8,25 +8,77 @@
     let settingsRendered = false;
 
     // Functions to disable/enable body scrolling
+    let scrollHandler = null;
+    let touchHandler = null;
+    let initialScrollY = 0;
+
     function disableBodyScroll() {
         const body = document.body;
-        const scrollY = window.scrollY;
-        body.style.position = 'fixed';
-        body.style.top = `-${scrollY}px`;
-        body.style.width = '100%';
-        body.style.overflow = 'hidden';
+        initialScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+
         // Store scroll position for restoration
-        body.setAttribute('data-scroll-y', scrollY);
+        body.setAttribute('data-scroll-y', initialScrollY);
+
+        // Create scroll handler that prevents downward scrolling but allows upward
+        scrollHandler = function () {
+            const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+
+            // If trying to scroll down past initial position, prevent it
+            if (currentScrollY > initialScrollY) {
+                window.scrollTo(0, initialScrollY);
+            }
+        };
+
+        // Add scroll event listener
+        window.addEventListener('scroll', scrollHandler, { passive: true });
+
+        // Prevent touchmove events that would cause downward scrolling on body
+        // But allow scrolling within settings-content and profile-section's section-content
+        touchHandler = function (e) {
+            // Check if the touch is within settings-content - if so, allow it
+            const settingsContent = document.querySelector('.settings-content');
+            if (settingsContent && settingsContent.contains(e.target)) {
+                return; // Allow scrolling within settings-content
+            }
+
+            // Check if the touch is within profile-section's section-content - if so, allow it
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection && profileSection.classList.contains('active')) {
+                const sectionContent = profileSection.querySelector('.section-content');
+                if (sectionContent && sectionContent.contains(e.target)) {
+                    return; // Allow scrolling within profile-section's section-content
+                }
+            }
+
+            // For body scrolling, check if it would cause downward scroll
+            const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+            if (currentScrollY > initialScrollY) {
+                e.preventDefault();
+                return false;
+            }
+        };
+
+        document.addEventListener('touchmove', touchHandler, { passive: false });
     }
 
     function enableBodyScroll() {
         const body = document.body;
         const scrollY = body.getAttribute('data-scroll-y') || '0';
-        body.style.position = '';
-        body.style.top = '';
-        body.style.width = '';
-        body.style.overflow = '';
+
+        // Remove scroll event listener
+        if (scrollHandler) {
+            window.removeEventListener('scroll', scrollHandler);
+            scrollHandler = null;
+        }
+
+        // Remove touch handler
+        if (touchHandler) {
+            document.removeEventListener('touchmove', touchHandler);
+            touchHandler = null;
+        }
+
         body.removeAttribute('data-scroll-y');
+
         // Restore scroll position
         window.scrollTo(0, parseInt(scrollY, 10));
     }
@@ -210,6 +262,13 @@
                     if (isActive) {
                         // Disable body scrolling when settings becomes active
                         disableBodyScroll();
+                        // Scroll settings-content to top
+                        setTimeout(() => {
+                            const settingsContent = document.querySelector('.settings-content');
+                            if (settingsContent) {
+                                settingsContent.scrollTop = 0;
+                            }
+                        }, 50);
                         // Re-initialize when settings view becomes active
                         setTimeout(() => {
                             initSettings();
@@ -230,6 +289,11 @@
         // Also initialize if already active
         if (settingsView.classList.contains('active')) {
             disableBodyScroll();
+            // Scroll settings-content to top
+            const settingsContent = document.querySelector('.settings-content');
+            if (settingsContent) {
+                settingsContent.scrollTop = 0;
+            }
             initSettings();
         }
     }
@@ -243,6 +307,8 @@
 
     // Export for external use
     window.SettingsPage = {
-        init: initSettings
+        init: initSettings,
+        disableBodyScroll: disableBodyScroll,
+        enableBodyScroll: enableBodyScroll
     };
 })();
