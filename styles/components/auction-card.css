@@ -51,6 +51,22 @@
     border-bottom-left-radius: 0;
 }
 
+.upcoming-badge {
+    background: #28a745;
+    color: white;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.ended-badge {
+    background: #1e3d6f;
+    color: white;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .electronic-badge {
     background: rgba(255, 255, 255, 0.95);
     color: black;

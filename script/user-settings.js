@@ -121,44 +121,6 @@
                                 <span class="radio-label">رقم المزايد في المزاد</span>
                                 <span class="radio-checkmark"></span>
                             </label>
-
-
-
-
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="auction-display" value="bidder-number">
-                                <span class="radio-label">رقم المزايد في المزاد</span>
-                                <span class="radio-checkmark"></span>
-                            </label>
-
-
-
-
                         </div>
                     </div>
 

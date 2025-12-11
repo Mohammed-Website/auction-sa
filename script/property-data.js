@@ -88,18 +88,19 @@
         if (!dateString) return null;
 
         try {
-            // Replace Arabic time indicators
+            // Replace Arabic time indicators and em dashes
             let normalized = dateString
                 .replace(/صباحً|ص/g, 'AM')
                 .replace(/مساءً|م/g, 'PM')
+                .replace(/[—–−]/g, '-') // Replace various dash types with regular dash
                 .trim();
 
             // Extract date and time parts
             const parts = normalized.split(/\s+/);
             if (parts.length < 2) return null;
 
-            const datePart = parts[0]; // "2025-12-28"
-            const timePart = parts.slice(1).join(' '); // "12:00 AM"
+            const datePart = parts[0]; // "2025-12-28" or "2025/12/11"
+            const timePart = parts.slice(1).join(' '); // "12:00 AM" or "08:00 PM"
 
             // Parse the date
             const [year, month, day] = datePart.split(/[-\/]/).map(Number);
@@ -275,11 +276,31 @@
 
     /**
      * Update countdown timer for a single element with flip clock
+     * Also updates the label dynamically based on auction status
      * @param {HTMLElement} element - The container element
+     * @param {string} bidStartDate - The bid start date string
      * @param {string} bidEndDate - The bid end date string
      */
-    function updateCountdownTimer(element, bidEndDate) {
-        const targetDate = parseArabicDate(bidEndDate);
+    function updateCountdownTimer(element, bidStartDate, bidEndDate) {
+        // Get remaining time info to determine which date to use and what label to show
+        const remainingTimeInfo = getRemainingTimeInfo(bidStartDate, bidEndDate);
+
+        // Update the label (it's a sibling element within the same parent)
+        const parentSection = element.parentElement;
+        if (parentSection) {
+            const labelElement = parentSection.querySelector('.remaining-time-label');
+            if (labelElement) {
+                labelElement.textContent = remainingTimeInfo.label;
+            }
+        }
+
+        // If auction has ended, show ended message instead of countdown
+        if (!remainingTimeInfo.targetDate) {
+            element.innerHTML = '<div style="color: #1e3d6f; font-weight: 600; text-align: center; padding: 0.5rem;">انتهى المزاد</div>';
+            return;
+        }
+
+        const targetDate = parseArabicDate(remainingTimeInfo.targetDate);
         if (!targetDate) {
             element.innerHTML = '<div style="color: red;">Invalid date</div>';
             return;
@@ -324,7 +345,7 @@
      */
     function initializeAuctionCountdowns() {
         // Find all auction cards with countdown timers
-        const countdownElements = document.querySelectorAll('.remaining-time-counter[data-bid-end-date]');
+        const countdownElements = document.querySelectorAll('.remaining-time-counter[data-bid-start-date], .remaining-time-counter[data-bid-end-date]');
 
         // Clear any existing intervals
         if (window.auctionCountdownIntervals) {
@@ -334,15 +355,18 @@
 
         // Set up interval for each countdown
         countdownElements.forEach(element => {
+            const bidStartDate = element.getAttribute('data-bid-start-date');
             const bidEndDate = element.getAttribute('data-bid-end-date');
-            if (!bidEndDate) return;
+
+            // Need at least one date to proceed
+            if (!bidStartDate && !bidEndDate) return;
 
             // Update immediately
-            updateCountdownTimer(element, bidEndDate);
+            updateCountdownTimer(element, bidStartDate, bidEndDate);
 
             // Update every second
             const interval = setInterval(() => {
-                updateCountdownTimer(element, bidEndDate);
+                updateCountdownTimer(element, bidStartDate, bidEndDate);
             }, 1000);
 
             window.auctionCountdownIntervals.push(interval);
@@ -527,6 +551,90 @@
     }
 
     /**
+     * Determine auction badge status based on dates
+     * @param {string} bidStartDate - The bid start date string
+     * @param {string} bidEndDate - The bid end date string
+     * @returns {Object} Object with text and className for the badge
+     */
+    function getAuctionBadgeStatus(bidStartDate, bidEndDate) {
+        const now = new Date();
+        const startDate = parseArabicDate(bidStartDate);
+        const endDate = parseArabicDate(bidEndDate);
+
+        // If dates can't be parsed, default to "جاري الآن"
+        if (!startDate || !endDate) {
+            return {
+                text: 'جاري الآن',
+                className: 'live-badge'
+            };
+        }
+
+        // If current date is before start date -> "قادم" (Upcoming) with green bg
+        if (now < startDate) {
+            return {
+                text: 'قادم',
+                className: 'upcoming-badge'
+            };
+        }
+
+        // If current date is after end date -> "انتهى" (Ended) with dark blue bg
+        if (now > endDate) {
+            return {
+                text: 'انتهى',
+                className: 'ended-badge'
+            };
+        }
+
+        // If current date is between start and end date -> "جاري الآن" (Currently running)
+        return {
+            text: 'جاري الآن',
+            className: 'live-badge'
+        };
+    }
+
+    /**
+     * Get remaining time label and target date for countdown
+     * @param {string} bidStartDate - The bid start date string
+     * @param {string} bidEndDate - The bid end date string
+     * @returns {Object} Object with label text and target date string for countdown
+     */
+    function getRemainingTimeInfo(bidStartDate, bidEndDate) {
+        const now = new Date();
+        const startDate = parseArabicDate(bidStartDate);
+        const endDate = parseArabicDate(bidEndDate);
+
+        // If dates can't be parsed, default to showing end date
+        if (!startDate || !endDate) {
+            return {
+                label: 'ينتهي المزاد بعد:',
+                targetDate: bidEndDate
+            };
+        }
+
+        // If current date is before start date -> show countdown to start date
+        if (now < startDate) {
+            return {
+                label: 'يبدأ المزاد بعد:',
+                targetDate: bidStartDate
+            };
+        }
+
+        // If current date is after end date -> auction has ended
+        if (now > endDate) {
+            return {
+                label: 'انتهى المزاد',
+                targetDate: null // No countdown needed
+            };
+        }
+
+        // If current date is between start and end date -> show countdown to end date
+        return {
+            label: 'ينتهي المزاد بعد:',
+            targetDate: bidEndDate
+        };
+    }
+
+    /**
      * Render auction card (for auction section)
      * Creates the HTML for an auction property card
      */
@@ -551,6 +659,12 @@
             startingBid = formatPrice(startingBid);
         }
 
+        // Get dynamic badge status
+        const badgeStatus = getAuctionBadgeStatus(auction.bidStartDate, auction.bidEndDate);
+
+        // Get remaining time info (label and target date)
+        const remainingTimeInfo = getRemainingTimeInfo(auction.bidStartDate, auction.bidEndDate);
+
         return `
             <div class="auction-card-new">
                 <div class="card-header">
@@ -562,9 +676,9 @@
                 </div>
                 <div class="auction-banner" ${imageStyle}>
                     <div class="auction-badges">
-                        <span class="status-badge live-badge">
+                        <span class="status-badge ${badgeStatus.className}">
                             <i data-lucide="circle" class="badge-dot"></i>
-                            جاري الآن
+                            ${badgeStatus.text}
                         </span>
                         <span class="status-badge electronic-badge">
                             <i data-lucide="globe" class="badge-icon"></i>
@@ -590,8 +704,10 @@
                             <i data-lucide="heart" class="property-card-heart-icon"></i>
                         </div>
                         <div class="bid-section-left">
-                            <div class="remaining-time-label">الوقت المتبقي</div>
-                            <div class="remaining-time-counter" ${auction.bidEndDate ? `data-bid-end-date="${auction.bidEndDate}"` : ''}></div>
+                            <div class="remaining-time-label">${remainingTimeInfo.label}</div>
+                            <div class="remaining-time-counter" 
+                                ${auction.bidStartDate ? `data-bid-start-date="${auction.bidStartDate}"` : ''}
+                                ${auction.bidEndDate ? `data-bid-end-date="${auction.bidEndDate}"` : ''}></div>
                         </div>
                     </div>
                     <div class="auction-cta-container">

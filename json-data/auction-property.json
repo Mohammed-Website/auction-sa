@@ -2,28 +2,63 @@
   {
     "id": 1,
     "title": "مزاد النخبة",
-    "bidStartDate": "2025/12/20 — 08:00 مساءً",
+    "bidStartDate": "2025/12/11 — 08:00 مساءً",
     "bidEndDate": "2025-12-28 12:00 صباحً",
     "location": "مكة المكرمة",
-    "timer": "01:42:30",
     "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
     "compLogo": "https://cryptologos.cc/logos/compound-comp-logo.png?v=040",
     "compName": "بندر لإجار البيوت",
     "specialWord": "جديد",
     "viewCount": 3,
-
-
-    "assets": {
-      "id": 1,
-      "title": "مزاد النخبة",
-      "bidStartDate": "2025/12/20 — 08:00 مساءً",
-      "bidEndDate": "2025-12-28 12:00 صباحً",
-      "location": "مكة المكرمة",
-      "timer": "01:42:30",
-      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
-      "compLogo": "https://cryptologos.cc/logos/compound-comp-logo.png?v=040"
-    }
-
+  
+    
+    "assets": [
+      {
+        "id": 1,
+        "title": "ارض زراعية للبيع",
+        "bidStartDate": "2025/12/20 — 08:00 مساءً",
+        "bidEndDate": "2025-12-28 12:00 صباحً",
+        "location": "مكة المكرمة",
+        "bidAmount": "10,000",
+        "startingPrice": "650,000",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+        ]
+      },
+  
+      {
+        "id": 2,
+        "title": "فيلا حديثة",
+        "bidStartDate": "2025/12/22 — 05:00 مساءً",
+        "bidEndDate": "2025-12-30 10:00 مساءً",
+        "location": "الرياض",
+        "bidAmount": "20,500",
+        "startingPrice": "1,200,000",
+        "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+          "https://images.unsplash.com/photo-1528807017028-cb87eb598862"
+        ]
+      },
+  
+      {
+        "id": 3,
+        "title": "شقة فاخرة",
+        "bidStartDate": "2025/12/25 — 07:00 مساءً",
+        "bidEndDate": "2025-12-31 01:00 صباحً",
+        "location": "جدة",
+        "bidAmount": "5,000",
+        "startingPrice": "350,000",
+        "image": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+          "https://images.unsplash.com/photo-1505692794400-55c2b6995e57"
+        ]
+      }
+    ]
   },
 
 
@@ -31,26 +66,125 @@
   {
     "id": 2,
     "title": "فيلا نصف تشطيب بالمزاد",
-    "bidStartDate": "2025-12-15 6:00 مساءً",
+    "bidStartDate": "2025-12-20 6:00 مساءً",
     "bidEndDate": "2025-12-20 12:00 صباحً",
     "location": "الطائف",
-    "timer": "03:15:10",
     "image": "https://images.unsplash.com/photo-1599423300746-b62533397364",
     "compLogo": "https://static.vecteezy.com/system/resources/thumbnails/047/656/219/small/abstract-logo-design-for-any-corporate-brand-business-company-vector.jpg",
     "compName": "نسرين للأراضي الزراعية",
     "specialWord": "مميز",
-    "viewCount": 2
+    "viewCount": 2,
+
+
+    "assets": [
+      {
+        "id": 1,
+        "title": "ارض زراعية للبيع",
+        "bidStartDate": "2025/12/20 — 08:00 مساءً",
+        "bidEndDate": "2025-12-28 12:00 صباحً",
+        "location": "مكة المكرمة",
+        "bidAmount": "10,000",
+        "startingPrice": "650,000",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+        ]
+      },
+  
+      {
+        "id": 2,
+        "title": "فيلا حديثة",
+        "bidStartDate": "2025/12/22 — 05:00 مساءً",
+        "bidEndDate": "2025-12-30 10:00 مساءً",
+        "location": "الرياض",
+        "bidAmount": "20,500",
+        "startingPrice": "1,200,000",
+        "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+          "https://images.unsplash.com/photo-1528807017028-cb87eb598862"
+        ]
+      },
+  
+      {
+        "id": 3,
+        "title": "شقة فاخرة",
+        "bidStartDate": "2025/12/25 — 07:00 مساءً",
+        "bidEndDate": "2025-12-31 01:00 صباحً",
+        "location": "جدة",
+        "bidAmount": "5,000",
+        "startingPrice": "350,000",
+        "image": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+          "https://images.unsplash.com/photo-1505692794400-55c2b6995e57"
+        ]
+      }
+    ]
+
   },
+
+  
   {
     "id": 3,
     "title": "عمارة تجارية بالمزاد",
     "bidStartDate": "2025-12-28 2:00 مساءً",
     "bidEndDate": "2025-12-30 12:00 صباحً",
     "location": "الرياض - النسيم",
-    "timer": "00:58:45",
     "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858",
     "compLogo": "https://marketplace.canva.com/EAGaybKnslM/1/0/800w/canva-blue-simple-modern-minimalist-building-company-logo-uVmgkHNBmPs.jpg",
     "compName": "ابو عبد الله للمزاد",
-    "viewCount": 4
+    "viewCount": 4,
+
+    
+    "assets": [
+      {
+        "id": 1,
+        "title": "ارض زراعية للبيع",
+        "bidStartDate": "2025/12/20 — 08:00 مساءً",
+        "bidEndDate": "2025-12-28 12:00 صباحً",
+        "location": "مكة المكرمة",
+        "bidAmount": "10,000",
+        "startingPrice": "650,000",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+        ]
+      },
+  
+      {
+        "id": 2,
+        "title": "فيلا حديثة",
+        "bidStartDate": "2025/12/22 — 05:00 مساءً",
+        "bidEndDate": "2025-12-30 10:00 مساءً",
+        "location": "الرياض",
+        "bidAmount": "20,500",
+        "startingPrice": "1,200,000",
+        "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+          "https://images.unsplash.com/photo-1528807017028-cb87eb598862"
+        ]
+      },
+  
+      {
+        "id": 3,
+        "title": "شقة فاخرة",
+        "bidStartDate": "2025/12/25 — 07:00 مساءً",
+        "bidEndDate": "2025-12-31 01:00 صباحً",
+        "location": "جدة",
+        "bidAmount": "5,000",
+        "startingPrice": "350,000",
+        "image": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+        "propertyImages": [
+          "https://images.unsplash.com/photo-1507089947368-19c1da9775ae",
+          "https://images.unsplash.com/photo-1505692794400-55c2b6995e57"
+        ]
+      }
+    ]
   }
 ]
