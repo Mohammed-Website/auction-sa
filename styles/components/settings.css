@@ -30,9 +30,8 @@ body:has(#profile-settings-view.active) {
 }
 
 /* Settings Content - Scrollable Container */
-.settings-content {
+.scrollable-container {
     height: 75vh;
-    /* Desktop default */
     overflow-y: auto;
     overflow-x: hidden;
     padding: var(--spacing-md);
@@ -226,7 +225,7 @@ body:has(#profile-settings-view.active) {
 @media (max-width: 768px) {
 
     /* Mobile: Extend height to bottom-nav for native app feel */
-    .settings-content {
+    .scrollable-container {
         height: calc(100vh - 50px - 75px);
         position: relative;
         padding-bottom: calc(100px + var(--spacing-2xl) + var(--spacing-2xl));

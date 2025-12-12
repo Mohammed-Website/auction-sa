@@ -1,5 +1,6 @@
 /* Favorites Page Styles */
 
+/* Ensure favorites-container doesn't scroll - only favorites-content should scroll */
 .favorites-container {
     width: 100%;
     max-width: 100%;
@@ -11,6 +12,8 @@
     padding-top: 60px;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
+    height: 100%;
 }
 
 /* Ensure favorites header is fixed at the top */
@@ -23,20 +26,12 @@
     display: flex !important;
 }
 
-/* Favorites Content */
+/* Favorites Content - Scrollable Container */
 .favorites-content {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* Favorites Empty State */
-.favorites-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    gap: var(--spacing-lg);
+    justify-content: center;
 }
 
 /* Favorites Icon */
@@ -67,10 +62,6 @@
     .favorites-empty-text {
         font-size: var(--font-size-base);
     }
-
-    .favorites-content {
-        padding: var(--spacing-lg) var(--spacing-md);
-    }
 }
 
 @media (max-width: 480px) {
@@ -81,9 +72,5 @@
 
     .favorites-empty-text {
         font-size: var(--font-size-sm);
-    }
-
-    .favorites-content {
-        padding: var(--spacing-md) var(--spacing-sm);
     }
 }

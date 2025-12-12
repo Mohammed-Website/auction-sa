@@ -130,10 +130,6 @@
                 // Hide profile if it's active
                 const profileSection = document.getElementById('profile-section');
                 if (profileSection && profileSection.classList.contains('active')) {
-                    // Re-enable body scrolling when leaving profile section
-                    if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.enableBodyScroll === 'function') {
-                        window.SettingsPage.enableBodyScroll();
-                    }
                     profileSection.classList.remove('active');
                     profileSection.style.display = 'none';
                     profileSection.style.opacity = '0';
@@ -231,10 +227,6 @@
             // Hide profile if it's active (unless we're transitioning to/from profile)
             if (!isFromProfileToMyActions && !isFromMyActionsToProfile) {
                 if (profileSection && profileSection.classList.contains('active')) {
-                    // Re-enable body scrolling when leaving profile section
-                    if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.enableBodyScroll === 'function') {
-                        window.SettingsPage.enableBodyScroll();
-                    }
                     profileSection.classList.remove('active');
                     profileSection.style.display = 'none';
                     profileSection.style.opacity = '0';
@@ -392,10 +384,6 @@
             // Hide profile if it's active
             const profileSection = document.getElementById('profile-section');
             if (profileSection && profileSection.classList.contains('active')) {
-                // Re-enable body scrolling when leaving profile section
-                if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.enableBodyScroll === 'function') {
-                    window.SettingsPage.enableBodyScroll();
-                }
                 profileSection.classList.remove('active');
                 profileSection.style.display = 'none';
                 profileSection.style.opacity = '0';
@@ -516,19 +504,14 @@
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
-                    
-                    // Disable body scrolling when profile section becomes active
-                    // Allow only section-content scrolling
-                    if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.disableBodyScroll === 'function') {
-                        setTimeout(() => {
-                            window.SettingsPage.disableBodyScroll();
-                            // Scroll section-content to top
-                            const sectionContent = targetSection.querySelector('.section-content');
-                            if (sectionContent) {
-                                sectionContent.scrollTop = 0;
-                            }
-                        }, 100);
-                    }
+
+                    // Scroll section-content to top
+                    setTimeout(() => {
+                        const sectionContent = targetSection.querySelector('.section-content');
+                        if (sectionContent) {
+                            sectionContent.scrollTop = 0;
+                        }
+                    }, 100);
                 });
             });
 
@@ -555,11 +538,6 @@
         // For non-profile sections, ensure profile is hidden
         const profileSection = document.getElementById('profile-section');
         if (profileSection && profileSection.classList.contains('active')) {
-            // Re-enable body scrolling when leaving profile section
-            if (typeof window.SettingsPage !== 'undefined' && typeof window.SettingsPage.enableBodyScroll === 'function') {
-                window.SettingsPage.enableBodyScroll();
-            }
-            
             profileSection.classList.remove('active');
             profileSection.style.display = 'none';
             profileSection.style.opacity = '0';
@@ -908,6 +886,12 @@
      */
     function handleNavClick(e) {
         e.preventDefault();
+
+        // Enable website scrolling when clicking navigation links
+        if (typeof window.controlWebsiteScroll === 'function') {
+            window.controlWebsiteScroll('enable');
+        }
+
         const sectionId = this.getAttribute('data-section');
         if (sectionId) {
             switchToSection(sectionId);
@@ -1055,6 +1039,12 @@
         if (headerProfileBtn) {
             headerProfileBtn.addEventListener('click', function (e) {
                 e.preventDefault();
+
+                // Disable website scrolling when opening profile
+                if (typeof window.controlWebsiteScroll === 'function') {
+                    window.controlWebsiteScroll('disable');
+                }
+
                 const sectionId = this.getAttribute('data-section');
                 if (sectionId) {
                     switchToSection(sectionId);

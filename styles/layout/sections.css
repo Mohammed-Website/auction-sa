@@ -76,6 +76,15 @@
     box-sizing: border-box;
 }
 
+/* Prevent section-content scrolling when favorites or settings view is active */
+/* Only the inner content (favorites-content/settings-content) should scroll */
+#profile-section.active .section-content:has(#profile-favorites-view.active),
+#profile-section.active .section-content:has(#profile-settings-view.active) {
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+}
+
 /* Mobile: Profile Section Content extends to bottom-nav */
 @media (max-width: 768px) {
     #profile-section.active .section-content {

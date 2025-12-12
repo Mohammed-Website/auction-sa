@@ -97,7 +97,7 @@
                     <h2 class="account-tabs-title">الإعدادات</h2>
                 </div>
 
-                <div class="settings-content">
+                <div class="settings-content scrollable-container">
                     <p class="settings-description">
                         تتيح لك صفحة الإعدادات تخصيص حسابك. يمكنك تعديل معلوماتك، تغيير طريقة ظهورك، وإدارة
                         تفضيلات الخصوصية.
@@ -172,9 +172,6 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Re-enable body scrolling when leaving settings
-                enableBodyScroll();
-
                 // Scroll to top for better UX
                 if (typeof window.scrollToTop === 'function') {
                     window.scrollToTop();
@@ -222,8 +219,6 @@
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = settingsView.classList.contains('active');
                     if (isActive) {
-                        // Disable body scrolling when settings becomes active
-                        disableBodyScroll();
                         // Scroll settings-content to top
                         setTimeout(() => {
                             const settingsContent = document.querySelector('.settings-content');
@@ -235,9 +230,6 @@
                         setTimeout(() => {
                             initSettings();
                         }, 100);
-                    } else {
-                        // Re-enable body scrolling when settings becomes inactive
-                        enableBodyScroll();
                     }
                 }
             });
@@ -250,7 +242,6 @@
 
         // Also initialize if already active
         if (settingsView.classList.contains('active')) {
-            disableBodyScroll();
             // Scroll settings-content to top
             const settingsContent = document.querySelector('.settings-content');
             if (settingsContent) {

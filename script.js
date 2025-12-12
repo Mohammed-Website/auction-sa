@@ -21,6 +21,46 @@
     };
 
     /**
+     * Control website scrolling functionality
+     * @param {string} action - "disable" to disable scrolling, "enable" to enable scrolling
+     */
+    window.controlWebsiteScroll = function (action) {
+        const body = document.body;
+        const html = document.documentElement;
+
+        if (action === 'disable') {
+            // Store current scroll position
+            const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+            body.setAttribute('data-scroll-y', scrollY);
+
+            // Disable scrolling by setting overflow hidden
+            body.style.overflow = 'hidden';
+            html.style.overflow = 'hidden';
+
+            // Lock scroll position
+            body.style.position = 'fixed';
+            body.style.width = '100%';
+            body.style.top = `-${scrollY}px`;
+        } else if (action === 'enable') {
+            // Get stored scroll position
+            const scrollY = body.getAttribute('data-scroll-y') || '0';
+
+            // Re-enable scrolling
+            body.style.overflow = '';
+            html.style.overflow = '';
+            body.style.position = '';
+            body.style.width = '';
+            body.style.top = '';
+
+            // Remove stored scroll position
+            body.removeAttribute('data-scroll-y');
+
+            // Restore scroll position
+            window.scrollTo(0, parseInt(scrollY, 10));
+        }
+    };
+
+    /**
      * Load a JavaScript file dynamically
      * @param {string} src - The path to the JavaScript file
      * @returns {Promise} Promise that resolves when script is loaded

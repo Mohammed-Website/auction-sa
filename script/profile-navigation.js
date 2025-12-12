@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
  * Profile Components and Navigation
  * 
  * This file handles:
@@ -524,6 +524,10 @@
                 break;
 
             case 'favorites':
+                // Disable website scrolling when opening favorites
+                if (typeof window.controlWebsiteScroll === 'function') {
+                    window.controlWebsiteScroll('disable');
+                }
                 navigateActionToRoute(ProfileRoutes.FAVORITES);
                 break;
 
@@ -953,6 +957,11 @@
         const profileBtn = document.querySelector('.header-profile-btn');
         if (profileBtn) {
             profileBtn.addEventListener('click', function () {
+                // Disable website scrolling when opening profile
+                if (typeof window.controlWebsiteScroll === 'function') {
+                    window.controlWebsiteScroll('disable');
+                }
+
                 // Reset to menu view when opening profile
                 if (currentProfileRoute !== ProfileRoutes.MENU) {
                     navigateToProfileRoute(ProfileRoutes.MENU);

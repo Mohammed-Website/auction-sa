@@ -21,11 +21,9 @@
                     <h2 class="account-tabs-title">المفضلة</h2>
                 </div>
 
-                <div class="favorites-content">
-                    <div class="favorites-empty-state">
-                        <i data-lucide="heart" class="favorites-icon"></i>
-                        <p class="favorites-empty-text">لم يتم العثور على مزادات</p>
-                    </div>
+                <div class="favorites-content scrollable-container">
+                    <i data-lucide="heart" class="favorites-icon"></i>
+                    <p class="favorites-empty-text">لم يتم العثور على مزادات</p>
                 </div>
             </div>
         `;
@@ -34,6 +32,7 @@
         eventListenersAttached = false;
         favoritesRendered = true;
     }
+
 
     // Update sticky header position based on top-header height
     function updateFavoritesHeaderPosition() {
