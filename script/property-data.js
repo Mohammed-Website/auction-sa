@@ -696,7 +696,7 @@
         const remainingTimeInfo = getRemainingTimeInfo(auction.bidStartDate, auction.bidEndDate);
 
         return `
-            <div class="property-card-home-page">
+            <div class="property-card-home-page auction-card-home-page">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
