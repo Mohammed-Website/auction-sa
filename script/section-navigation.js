@@ -17,7 +17,7 @@
      */
     const sectionOrder = [
         'home-section',
-        'sell-section',
+        'buy-section',
         'rent-section',
         'auction-section',
         'my-actions-section',
@@ -61,7 +61,7 @@
     function clearPropertyCards() {
         const propertyGrids = [
             'home-properties-grid',
-            'sell-properties-grid',
+            'buy-properties-grid',
             'rent-properties-grid',
             'auction-properties-grid'
         ];
@@ -70,7 +70,7 @@
             const grid = document.getElementById(gridId);
             if (grid) {
                 // Clear all property cards but keep the grid element
-                const cards = grid.querySelectorAll('.property-card, .auction-card');
+                const cards = grid.querySelectorAll('.property-card-home-page');
                 cards.forEach(card => {
                     card.style.display = 'none';
                     card.remove();
@@ -85,7 +85,7 @@
      */
     function ensureProfileOnlyVisible() {
         // Hide all property sections
-        const propertySections = ['home-section', 'sell-section', 'rent-section', 'auction-section', 'my-actions-section'];
+        const propertySections = ['home-section', 'buy-section', 'rent-section', 'auction-section', 'my-actions-section'];
 
         propertySections.forEach(sectionId => {
             const section = document.getElementById(sectionId);
@@ -119,8 +119,8 @@
         window.scrollToTop();
 
 
-        // Handle case: switching from subsection (sell-section, rent-section, auction-section) to home-section
-        const isSubsection = currentSection === 'sell-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
+        // Handle case: switching from subsection (buy-section, rent-section, auction-section) to home-section
+        const isSubsection = currentSection === 'buy-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
         if (isSubsection && sectionId === 'home-section') {
             // When coming from a subsection to home-section, use fade-in animation (like profile-to-home)
             const homeSection = document.getElementById('home-section');
@@ -201,20 +201,20 @@
         // Prevent switching to the same section
         if (sectionId === currentSection) {
             // If clicking the same section, still update visibility of subsections
-            if (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+            if (sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section') {
                 toggleHomeSubsections(sectionId);
             }
             return;
         }
 
         // Special handling for transitions between home-section and my-actions-section
-        // Also handles transitions between subsections (auction-section, sell-section, rent-section) and my-actions-section
+        // Also handles transitions between subsections (auction-section, buy-section, rent-section) and my-actions-section
         // Also handles transitions between profile-section and my-actions-section
         // This creates a smooth transition similar to profile-section
         const isFromHomeToMyActions = currentSection === 'home-section' && sectionId === 'my-actions-section';
         const isFromMyActionsToHome = currentSection === 'my-actions-section' && sectionId === 'home-section';
-        const isFromSubsectionToMyActions = (currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section') && sectionId === 'my-actions-section';
-        const isFromMyActionsToSubsection = currentSection === 'my-actions-section' && (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section');
+        const isFromSubsectionToMyActions = (currentSection === 'auction-section' || currentSection === 'buy-section' || currentSection === 'rent-section') && sectionId === 'my-actions-section';
+        const isFromMyActionsToSubsection = currentSection === 'my-actions-section' && (sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section');
         const isFromProfileToMyActions = currentSection === 'profile-section' && sectionId === 'my-actions-section';
         const isFromMyActionsToProfile = currentSection === 'my-actions-section' && sectionId === 'profile-section';
 
@@ -247,7 +247,7 @@
             const bannerSection = document.querySelector('.banner-section');
             if (bannerSection) {
                 // Show banner for home-section and subsections, hide for my-actions-section and profile-section
-                if (sectionId === 'home-section' || sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+                if (sectionId === 'home-section' || sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section') {
                     bannerSection.classList.add('active');
                 } else {
                     bannerSection.classList.remove('active');
@@ -256,7 +256,7 @@
 
             // Determine target section
             // For subsections, we're actually showing home-section, but will toggle the specific subsection
-            const isTargetingSubsection = sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section';
+            const isTargetingSubsection = sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section';
             let targetSection;
             if (isFromMyActionsToProfile) {
                 targetSection = profileSection;
@@ -269,7 +269,7 @@
             }
 
             // Determine if we're coming from a subsection (current section is a subsection)
-            const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'sell-section' || currentSection === 'rent-section';
+            const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'buy-section' || currentSection === 'rent-section';
 
             // Prepare target section - position it off-screen
             targetSection.style.display = 'block';
@@ -378,9 +378,9 @@
             return;
         }
 
-        // Handle special cases: auction-section, sell-section, rent-section
+        // Handle special cases: auction-section, buy-section, rent-section
         // These are now subsections within home-section
-        if (sectionId === 'auction-section' || sectionId === 'sell-section' || sectionId === 'rent-section') {
+        if (sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section') {
             // Switch to home-section and show/hide appropriate subsections
             const homeSection = document.getElementById('home-section');
             const currentActiveSection = document.querySelector('.tab-section.active');
@@ -550,7 +550,7 @@
 
         // Check if we're coming from profile section or a subsection
         const isComingFromProfile = currentSection === 'profile-section';
-        const isComingFromSubsection = currentSection === 'sell-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
+        const isComingFromSubsection = currentSection === 'buy-section' || currentSection === 'rent-section' || currentSection === 'auction-section';
 
         // For non-profile sections, ensure profile is hidden
         const profileSection = document.getElementById('profile-section');
@@ -579,7 +579,7 @@
 
         // Show banner section smoothly when navigating to other sections (use only active class)
         const bannerSection = document.querySelector('.banner-section');
-        if (bannerSection && (sectionId === 'home-section' || sectionId === 'sell-section' || sectionId === 'rent-section' || sectionId === 'auction-section')) {
+        if (bannerSection && (sectionId === 'home-section' || sectionId === 'buy-section' || sectionId === 'rent-section' || sectionId === 'auction-section')) {
             bannerSection.classList.add('active');
         } else if (bannerSection && sectionId === 'my-actions-section') {
             // Hide banner for my-actions-section
@@ -799,7 +799,7 @@
                 // Find the grid element by ID based on section
                 let gridId = '';
                 if (sectionId === 'home-section') gridId = 'home-properties-grid';
-                else if (sectionId === 'sell-section') gridId = 'sell-properties-grid';
+                else if (sectionId === 'buy-section') gridId = 'buy-properties-grid';
                 else if (sectionId === 'rent-section') gridId = 'rent-properties-grid';
                 else if (sectionId === 'auction-section') gridId = 'auction-properties-grid';
 
@@ -834,7 +834,7 @@
                         });
                     } else {
                         // Same section (shouldn't happen due to early return, but check anyway)
-                        const hasCards = targetGrid.querySelector('.property-card, .auction-card-new');
+                        const hasCards = targetGrid.querySelector('.property-card-home-page');
                         const isEmpty = targetGrid.children.length === 0;
 
                         if (!hasCards || isEmpty) {
@@ -947,12 +947,12 @@
 
     /**
      * Show or hide subsections within the home section
-     * Home section has 3 subsections: auctions, sell, and rent
-     * @param {string} activeSubsection - Which subsection to show ('auction-section', 'sell-section', 'rent-section', or 'home-section' for all)
+     * Home section has 3 subsections: auctions, buy, and rent
+     * @param {string} activeSubsection - Which subsection to show ('auction-section', 'buy-section', 'rent-section', or 'home-section' for all)
      */
     function toggleHomeSubsections(activeSubsection) {
         const auctionsSubsection = document.getElementById('auctions-section');
-        const sellSubsection = document.getElementById('sell-section');
+        const sellSubsection = document.getElementById('buy-section');
         const rentSubsection = document.getElementById('rent-section');
 
         const allSubsections = [auctionsSubsection, sellSubsection, rentSubsection].filter(Boolean);
@@ -983,7 +983,7 @@
                     auctionsSubsection.style.transform = 'translateX(0)';
                     auctionsSubsection.style.visibility = 'visible';
                 });
-            } else if (activeSubsection === 'sell-section' && sellSubsection) {
+            } else if (activeSubsection === 'buy-section' && sellSubsection) {
                 sellSubsection.style.display = 'block';
                 requestAnimationFrame(() => {
                     sellSubsection.style.opacity = '1';

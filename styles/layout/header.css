@@ -2,7 +2,7 @@
 .top-header {
     background: linear-gradient(135deg, #0b2c4a 0%, #0b2c4a 100%);
     color: white;
-    padding: 0.7rem 1rem;
+    padding: 0.4rem 1rem;
     position: sticky;
     top: 0;
     z-index: 100;

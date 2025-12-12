@@ -24,10 +24,10 @@
                     renderFunction: 'renderAuctionCard',
                     url: 'json-data/auction-property.json'
                 },
-                sell: {
-                    gridId: 'home-sell-grid',
+                buy: {
+                    gridId: 'home-buy-grid',
                     renderFunction: 'renderPropertyCard',
-                    url: 'json-data/sell-property.json'
+                    url: 'json-data/buy-property.json'
                 },
                 rent: {
                     gridId: 'home-rent-grid',
@@ -36,9 +36,9 @@
                 }
             }
         },
-        'sell-section': {
-            url: 'json-data/sell-property.json',
-            gridId: 'sell-properties-grid',
+        'buy-section': {
+            url: 'json-data/buy-property.json',
+            gridId: 'buy-properties-grid',
             renderFunction: 'renderPropertyCard'
         },
         'rent-section': {
@@ -382,20 +382,20 @@
 
         // Add totalBed if available (preferred over bedrooms if both exist)
         if (property.totalBed !== undefined) {
-            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.totalBed}`);
+            features.push(`<i data-lucide="bed" class="property-feature-icon-home-page"></i> ${property.totalBed}`);
         }
         // Fallback to bedrooms if totalBed doesn't exist
         else if (property.bedrooms) {
-            features.push(`<i data-lucide="bed" class="feature-icon"></i> ${property.bedrooms}`);
+            features.push(`<i data-lucide="bed" class="property-feature-icon-home-page"></i> ${property.bedrooms}`);
         }
 
         // Add totalBathroom if available (preferred over bathrooms if both exist)
         if (property.totalBathroom !== undefined) {
-            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.totalBathroom}`);
+            features.push(`<i data-lucide="bath" class="property-feature-icon-home-page"></i> ${property.totalBathroom}`);
         }
         // Fallback to bathrooms if totalBathroom doesn't exist
         else if (property.bathrooms) {
-            features.push(`<i data-lucide="bath" class="feature-icon"></i> ${property.bathrooms}`);
+            features.push(`<i data-lucide="bath" class="property-feature-icon-home-page"></i> ${property.bathrooms}`);
         }
 
         // Add area if available
@@ -403,7 +403,7 @@
             // Handle area format - could be "450 م²" or just "450"
             const areaValue = property.area.toString().replace(/[^\d]/g, '');
             const areaText = areaValue ? `${formatNumber(areaValue)} م²` : property.area;
-            features.push(`<i data-lucide="maximize" class="feature-icon"></i> ${areaText}`);
+            features.push(`<i data-lucide="maximize" class="property-feature-icon-home-page"></i> ${areaText}`);
         }
 
         // If no features, return empty string
@@ -411,7 +411,7 @@
 
         // Return HTML for features
         return `
-            <div class="property-features">
+            <div class="property-features-home-page">
                 ${features.map(feature => `<span>${feature}</span>`).join('')}
             </div>
         `;
@@ -423,7 +423,7 @@
      */
     function renderBadge(badge) {
         if (!badge) return '';
-        return `<div class="property-badge">${badge}</div>`;
+        return `<div class="property-badge-home-page">${badge}</div>`;
     }
 
     /**
@@ -477,7 +477,7 @@
     }
 
     /**
-     * Render property card (for home and sell sections)
+     * Render property card (for home and buy sections)
      * Creates the HTML for a property card that's for sale
      */
     function renderPropertyCard(property) {
@@ -490,7 +490,7 @@
             `<div class="special-word-badge">${property.specialWord}</div>` : '';
 
         return `
-            <div class="property-card">
+            <div class="property-card-home-page">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
@@ -498,13 +498,28 @@
                     </div>
                     ${specialWordBadge}
                 </div>
-                <div class="property-image" ${imageStyle}></div>
+                <div class="property-image-home-page" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
-                <div class="property-info">
-                    <h3>${property.title || 'عقار للبيع'}</h3>
-                    <p class="property-location"><i data-lucide="map-pin" class="property-card-location-icon"></i> ${property.location || 'غير محدد'}</p>
+                <div class="property-content-home-page">
+                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.title || 'عقار للبيع'}</h3>
+                    <div class="bid-section-top">
+                        <div class="location-wrapper">
+                            <i data-lucide="map-pin" class="property-card-location-icon"></i>
+                            <span>${property.location || 'غير محدد'}</span>
+                        </div>
+                        <i data-lucide="heart" class="property-card-heart-icon"></i>
+                    </div>
                     ${renderFeatures(property)}
-                    <p class="property-price">${property.price ? (property.price.includes('ريال') ? property.price : `${property.price} ريال`) : 'غير محدد'}</p>
+                    <p class="property-price-home-page">${property.price ? (property.price.includes('ريال') ? property.price : `${property.price} ريال`) : 'غير محدد'}</p>
+                    <div class="property-cta-container-home-page">
+                        <div class="property-view-count-home-page">
+                            <i data-lucide="eye" class="property-view-icon-home-page"></i>
+                            <span class="property-view-number-home-page">${property.viewCount ? formatNumber(property.viewCount) : '0'}</span>
+                        </div>
+                        <button class="property-cta-btn-home-page">
+                            اشتري الآن
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -530,7 +545,7 @@
         }
 
         return `
-            <div class="property-card rental-card">
+            <div class="property-card-home-page rental-card">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
@@ -538,13 +553,28 @@
                     </div>
                     ${specialWordBadge}
                 </div>
-                <div class="property-image" ${imageStyle}></div>
+                <div class="property-image-home-page" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
-                <div class="property-info">
-                    <h3>${property.title || 'عقار للإيجار'}</h3>
-                    <p class="property-location"><i data-lucide="map-pin" class="property-card-location-icon"></i> ${property.location || 'غير محدد'}</p>
+                <div class="property-content-home-page">
+                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.title || 'عقار للإيجار'}</h3>
+                    <div class="bid-section-top">
+                        <div class="location-wrapper">
+                            <i data-lucide="map-pin" class="property-card-location-icon"></i>
+                            <span>${property.location || 'غير محدد'}</span>
+                        </div>
+                        <i data-lucide="heart" class="property-card-heart-icon"></i>
+                    </div>
                     ${renderFeatures(property)}
-                    <p class="property-price rental-price">${priceText || 'غير محدد'}</p>
+                    <p class="property-price-home-page rental-price-home-page">${priceText || 'غير محدد'}</p>
+                    <div class="property-cta-container-home-page">
+                        <div class="property-view-count-home-page">
+                            <i data-lucide="eye" class="property-view-icon-home-page"></i>
+                            <span class="property-view-number-home-page">${property.viewCount ? formatNumber(property.viewCount) : '0'}</span>
+                        </div>
+                        <button class="property-cta-btn-home-page">
+                            استأجر الآن
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -565,7 +595,7 @@
         if (!startDate || !endDate) {
             return {
                 text: 'جاري الآن',
-                className: 'live-badge'
+                className: 'live-badge-home-page'
             };
         }
 
@@ -573,7 +603,7 @@
         if (now < startDate) {
             return {
                 text: 'قادم',
-                className: 'upcoming-badge'
+                className: 'upcoming-badge-home-page'
             };
         }
 
@@ -581,14 +611,14 @@
         if (now > endDate) {
             return {
                 text: 'انتهى',
-                className: 'ended-badge'
+                className: 'ended-badge-home-page'
             };
         }
 
         // If current date is between start and end date -> "جاري الآن" (Currently running)
         return {
             text: 'جاري الآن',
-            className: 'live-badge'
+            className: 'live-badge-home-page'
         };
     }
 
@@ -666,7 +696,7 @@
         const remainingTimeInfo = getRemainingTimeInfo(auction.bidStartDate, auction.bidEndDate);
 
         return `
-            <div class="auction-card-new">
+            <div class="property-card-home-page">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
@@ -674,23 +704,23 @@
                     </div>
                     ${specialWordBadge}
                 </div>
-                <div class="auction-banner" ${imageStyle}>
-                    <div class="auction-badges">
-                        <span class="status-badge ${badgeStatus.className}">
-                            <i data-lucide="circle" class="badge-dot"></i>
+                <div class="property-image-home-page" ${imageStyle}>
+                    <div class="auction-badge-home-page">
+                        <span class="auction-status-badge-home-page ${badgeStatus.className}">
+                            <i data-lucide="circle" class="badge-dot-home-page"></i>
                             ${badgeStatus.text}
                         </span>
-                        <span class="status-badge electronic-badge">
-                            <i data-lucide="globe" class="badge-icon"></i>
+                        <span class="auction-status-badge-home-page electronic-badge-home-page">
+                            <i data-lucide="globe" class="badge-icon-home-page"></i>
                             إلكتروني
                         </span>
                     </div>
                 </div>
-                <div class="auction-content">
-                    <h3 class="auction-title">${auction.title || 'عقار في المزاد'}</h3>
-                    <div class="auction-meta">
+                <div class="property-content-home-page">
+                    <h3 class="property-title-home-page">${auction.title || 'عقار في المزاد'}</h3>
+                    <div class="auction-meta-home-page">
                         ${startDate ? `<div class="auction-date"><i data-lucide="calendar" class="meta-icon"></i> ${startDate}</div>` : ''}
-                        <div class="auction-timer-new">
+                        <div class="auction-timer-home-page">
                             <i data-lucide="clock" class="meta-icon"></i>
                             <span class="bid-start-date-text">بدأ المزاد: <strong>${timeRemaining}</strong></span>
                         </div>
@@ -703,23 +733,23 @@
                             </div>
                             <i data-lucide="heart" class="property-card-heart-icon"></i>
                         </div>
-                        <div class="bid-section-left">
+                        <div class="bid-section-bottom">
                             <div class="remaining-time-label">${remainingTimeInfo.label}</div>
                             <div class="remaining-time-counter" 
                                 ${auction.bidStartDate ? `data-bid-start-date="${auction.bidStartDate}"` : ''}
                                 ${auction.bidEndDate ? `data-bid-end-date="${auction.bidEndDate}"` : ''}></div>
                         </div>
                     </div>
-                    <div class="auction-cta-container">
-                        <div class="view-count">
-                            <i data-lucide="eye" class="view-icon"></i>
-                            <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
+                    <div class="property-cta-container-home-page">
+                        <div class="property-view-count-home-page">
+                            <i data-lucide="eye" class="property-view-icon-home-page"></i>
+                            <span class="property-view-number-home-page">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
                         </div>
-                        <div class="property-count">
-                            <span class="view-number">عدد الأصول</span>
-                            <span class="view-number">${auction.viewCount ? formatNumber(auction.viewCount) : '1'}</span>
+                        <div class="auction-property-count-home-page">
+                            <span class="property-view-number-home-page">عدد الأصول</span>
+                            <span class="property-view-number-home-page">${auction.viewCount ? formatNumber(auction.viewCount) : '1'}</span>
                         </div>
-                        <button class="auction-cta-btn">
+                        <button class="property-cta-btn-home-page">
                             شارك الآن
                         </button>
                     </div>
@@ -947,7 +977,7 @@
             await renderProperties(properties, gridElement, config.renderFunction);
 
             // Verify cards were rendered
-            const renderedCards = gridElement.querySelectorAll('.property-card, .auction-card-new');
+            const renderedCards = gridElement.querySelectorAll('.property-card-home-page');
 
             if (renderedCards.length === 0) {
                 console.error(`No cards were rendered for ${sectionId}! Check render function: ${config.renderFunction}`);

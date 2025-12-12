@@ -1,51 +1,3 @@
-/* Property Card */
-.property-card {
-    background: #f9f9f9;
-    border-radius: 12px;
-    overflow: hidden;
-    min-width: 290px;
-    flex-shrink: 0;
-    cursor: pointer;
-}
-
-.property-image {
-    width: 100%;
-    height: 160px;
-    background: linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%);
-    position: relative;
-}
-
-.property-image::after {
-    content: '🖼️';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 3rem;
-    opacity: 0.3;
-}
-
-.property-info {
-    padding: 0.5rem 1rem;
-}
-
-.property-info h3 {
-    font-size: var(--spacing-sm);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #333;
-}
-
-.property-location {
-    font-size: var(--spacing-sm);
-    color: #666;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.property-location i,
-.auction-location i,
 .property-card-location-icon,
 .property-card-heart-icon {
     color: #000000 !important;
@@ -58,7 +10,7 @@
     margin-left: 0.25rem;
 }
 
-.feature-icon {
+.property-feature-icon-home-page {
     width: 16px;
     height: 16px;
     stroke: #666;
@@ -68,14 +20,13 @@
     margin-left: 0.25rem;
 }
 
-.property-price {
+.property-price-home-page {
     font-size: var(--spacing-sm);
     font-weight: 700;
-    color: #2c5aa0;
     margin: 0;
 }
 
-.property-badge {
+.property-badge-home-page {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
@@ -88,20 +39,16 @@
     z-index: 1;
 }
 
-.property-image {
-    position: relative;
-}
-
-.property-features {
+.property-features-home-page {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 0.1rem 0;
+    margin: 0.5rem 0;
     font-size: 0.85rem;
     color: #666;
 }
 
-.property-features span {
+.property-features-home-page span {
     background: #f0f4f8;
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
@@ -109,11 +56,7 @@
     align-items: center;
 }
 
-.property-features i {
+.property-features-home-page i {
     color: #000000 !important;
     font-size: 0.85rem;
-}
-
-.rental-price {
-    color: #28a745;
 }

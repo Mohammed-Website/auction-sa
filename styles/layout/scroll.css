@@ -46,8 +46,7 @@
     width: 0.1rem;
 }
 
-.horizontal-scroll-grid .property-card,
-.horizontal-scroll-grid .auction-card-new {
+.horizontal-scroll-grid .property-card-home-page {
     scroll-snap-align: center;
     scroll-snap-stop: always;
 }

@@ -54,7 +54,7 @@
         // Check if we're in a subsection within home-section
         if (sectionId === 'home-section') {
             const auctionsSubsection = document.getElementById('auctions-section');
-            const sellSubsection = document.getElementById('sell-section');
+            const sellSubsection = document.getElementById('buy-section');
             const rentSubsection = document.getElementById('rent-section');
 
             // Check which subsection is visible
@@ -67,7 +67,7 @@
             if (sellSubsection) {
                 const style = window.getComputedStyle(sellSubsection);
                 if (style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0) {
-                    return { section: 'sell-section', subsection: true };
+                    return { section: 'buy-section', subsection: true };
                 }
             }
             if (rentSubsection) {
@@ -98,7 +98,7 @@
             } else {
                 return '#/profile';
             }
-        } else if (state.section === 'auction-section' || state.section === 'sell-section' || state.section === 'rent-section') {
+        } else if (state.section === 'auction-section' || state.section === 'buy-section' || state.section === 'rent-section') {
             return `#/${state.section}`;
         } else if (state.section === 'my-actions-section') {
             return '#/my-actions';
@@ -198,7 +198,7 @@
         }
 
         // If we're in auction-section (or other subsections), go back to home
-        if (currentState.section === 'auction-section' || currentState.section === 'sell-section' || currentState.section === 'rent-section') {
+        if (currentState.section === 'auction-section' || currentState.section === 'buy-section' || currentState.section === 'rent-section') {
             if (typeof window.switchToSection === 'function') {
                 window.switchToSection('home-section');
             } else {

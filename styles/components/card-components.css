@@ -91,7 +91,7 @@
 }
 
 /* Countdown Section - Bottom */
-.bid-section-left {
+.bid-section-bottom {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -100,7 +100,7 @@
     gap: 0.75rem;
 }
 
-.bid-section-left .remaining-time-label {
+.bid-section-bottom .remaining-time-label {
     font-size: 0.75rem;
     color: #666;
     font-weight: 600;
@@ -110,7 +110,7 @@
     margin: 0;
 }
 
-.bid-section-left .remaining-time-counter {
+.bid-section-bottom .remaining-time-counter {
     width: 100%;
     min-width: 0;
 }
@@ -126,7 +126,7 @@
         height: 16px;
     }
 
-    .bid-section-left .remaining-time-label {
+    .bid-section-bottom .remaining-time-label {
         font-size: 0.7rem;
     }
 }
@@ -141,7 +141,7 @@
         height: 16px;
     }
 
-    .bid-section-left .remaining-time-label {
+    .bid-section-bottom .remaining-time-label {
         font-size: 0.65rem;
     }
 }
