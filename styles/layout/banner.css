@@ -3,21 +3,32 @@
     position: relative;
     margin-bottom: 1.5rem;
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
     visibility: visible;
     height: auto;
     overflow: visible;
-    transition: opacity var(--transition-base), transform var(--transition-base), visibility var(--transition-base), height var(--transition-base), margin-bottom var(--transition-base);
+    transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+        opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+        visibility 0.4s,
+        height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+        margin-bottom 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: transform, opacity;
 }
 
 .banner-section:not(.active) {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(100%);
     visibility: hidden;
     pointer-events: none;
     height: 0;
     margin-bottom: 0;
     overflow: hidden;
+}
+
+/* Banner slide-out animation (keeps active class during and after animation) */
+.banner-section.active.slide-out {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
 }
 
 .banner-slider {

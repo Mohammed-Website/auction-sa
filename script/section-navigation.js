@@ -475,6 +475,56 @@
             return;
         }
 
+        // Special handling for property-detail-section with zoom animation
+        if (sectionId === 'property-detail-section') {
+            // Hide banner section
+            const bannerSection = document.querySelector('.banner-section');
+            if (bannerSection) {
+                bannerSection.classList.remove('active');
+            }
+
+            // Hide current section
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.display = 'none';
+            currentActiveSection.style.opacity = '0';
+            currentActiveSection.style.visibility = 'hidden';
+            currentActiveSection.style.pointerEvents = 'none';
+
+            // Prepare property-detail-section - start with zoom out
+            targetSection.style.display = 'block';
+            targetSection.style.transform = 'scale(0.8)';
+            targetSection.style.opacity = '0';
+            targetSection.style.visibility = 'visible';
+            targetSection.style.pointerEvents = 'none';
+            targetSection.style.transition = 'transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.classList.remove('active');
+
+            // Force reflow
+            targetSection.offsetHeight;
+
+            // Animate zoom in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    targetSection.style.transform = 'scale(1)';
+                    targetSection.style.opacity = '1';
+                    targetSection.style.pointerEvents = 'auto';
+                    targetSection.classList.add('active');
+                });
+            });
+
+            // Update current section
+            currentSection = sectionId;
+
+            // Push navigation state to history
+            setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 100);
+
+            return;
+        }
+
         // Special handling for profile section
         if (sectionId === 'profile-section') {
             ensureProfileOnlyVisible();
@@ -529,6 +579,24 @@
             }, 100);
 
             return;
+        }
+
+        // Check if we're coming from property-detail-section - handle zoom out (faster)
+        if (currentSection === 'property-detail-section') {
+            const propertyDetailSection = document.getElementById('property-detail-section');
+            if (propertyDetailSection && propertyDetailSection.classList.contains('active')) {
+                // Zoom out animation (faster - 0.2s instead of 0.4s)
+                propertyDetailSection.style.transition = 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                propertyDetailSection.style.transform = 'scale(0.8)';
+                propertyDetailSection.style.opacity = '0';
+
+                setTimeout(() => {
+                    propertyDetailSection.classList.remove('active');
+                    propertyDetailSection.style.display = 'none';
+                    propertyDetailSection.style.visibility = 'hidden';
+                    propertyDetailSection.style.pointerEvents = 'none';
+                }, 200);
+            }
         }
 
         // Check if we're coming from profile section or a subsection

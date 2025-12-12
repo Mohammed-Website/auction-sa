@@ -811,6 +811,33 @@
 
             if (cardElement) {
                 gridElement.appendChild(cardElement);
+
+                // Add click handler for auction cards
+                if (renderFunction === 'renderAuctionCard' && cardElement.classList.contains('auction-card-home-page')) {
+                    cardElement.addEventListener('click', function (e) {
+                        // Don't trigger if clicking on buttons or interactive elements
+                        if (e.target.closest('button') || e.target.closest('.property-cta-btn-home-page')) {
+                            return;
+                        }
+
+                        // Open property detail page
+                        const auctionId = property.id;
+                        console.log('Auction card clicked, ID:', auctionId, 'Property:', property);
+
+                        if (auctionId) {
+                            if (typeof window.openPropertyDetail === 'function') {
+                                window.openPropertyDetail(auctionId);
+                            } else {
+                                console.error('openPropertyDetail function not available');
+                            }
+                        } else {
+                            console.error('Property ID not found:', property);
+                        }
+                    });
+
+                    // Make card cursor pointer
+                    cardElement.style.cursor = 'pointer';
+                }
             }
         });
 

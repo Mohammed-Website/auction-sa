@@ -38,6 +38,15 @@
         visibility 0.4s;
 }
 
+/* Property Detail Section - Zoom Animation */
+#property-detail-section {
+    transform-origin: center center;
+}
+
+#property-detail-section.active {
+    transform: scale(1) !important;
+}
+
 .tab-section.slide-out-left {
     transform: translateX(-100%);
     transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
