@@ -1,5 +1,7 @@
 /* Banner Slider */
 .banner-section {
+    width: 100vw;
+    justify-self: center;
     position: relative;
     margin-bottom: 1.5rem;
     opacity: 1;
@@ -13,22 +15,6 @@
         height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
         margin-bottom 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
     will-change: transform, opacity;
-}
-
-.banner-section:not(.active) {
-    opacity: 0;
-    transform: translateX(100%);
-    visibility: hidden;
-    pointer-events: none;
-    height: 0;
-    margin-bottom: 0;
-    overflow: hidden;
-}
-
-/* Banner slide-out animation (keeps active class during and after animation) */
-.banner-section.active.slide-out {
-    transform: translateX(100%) !important;
-    opacity: 0 !important;
 }
 
 .banner-slider {

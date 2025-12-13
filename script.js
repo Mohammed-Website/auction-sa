@@ -99,7 +99,6 @@
         const scripts = [
             'script/navigation-history.js',      // Browser history management
             'script/section-navigation.js',      // Section switching
-            'script/auction-property-data.js',           // Property data loading
             'script/auction-property-detail.js',         // Property detail page
             'script/banner-slider.js',           // Banner slider
             'script/install-pwa.js',             // PWA install helper

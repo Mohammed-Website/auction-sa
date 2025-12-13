@@ -11,7 +11,7 @@
 }
 
 /* Prevent section-content from scrolling when property detail view is active */
-#property-detail-section.active .section-content {
+#property-detail-section.active .scrollable-container {
     overflow: hidden !important;
     overflow-y: hidden !important;
     overflow-x: hidden !important;

@@ -180,10 +180,6 @@
         padding: 0 2rem;
     }
 
-    .section-content {
-        max-width: 100%;
-    }
-
     .section-title {
         font-size: var(--font-size-xxl);
     }
@@ -280,7 +276,10 @@
         margin-top: 0;
     }
 
-    /* Add margin-top to banner-section to account for fixed top-nav */
+    .section-content {
+        padding-top: 4rem;
+    }
+
     .banner-section {
         margin-top: var(--top-nav-height);
     }
@@ -315,10 +314,6 @@
         padding: 20px 2rem 0 2rem;
         max-width: 1200px;
         margin: 0 auto;
-    }
-
-    .section-content {
-        max-width: 100%;
     }
 
     .profile-container {

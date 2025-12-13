@@ -34,7 +34,7 @@ body:has(#profile-settings-view.active) {
     height: 75vh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-sm);
     box-sizing: border-box;
 }
 

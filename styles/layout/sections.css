@@ -71,32 +71,23 @@
         opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.section-content {
-    max-width: 100%;
-    position: relative;
-}
-
 /* Profile Section Content - Scrollable Container */
-#profile-section.active .section-content {
+#profile-section.active .scrollable-container {
     height: calc(100vh - 60px);
-    /* 100vh - header height */
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
 }
 
-/* Prevent section-content scrolling when favorites or settings view is active */
-/* Only the inner content (favorites-content/settings-content) should scroll */
-#profile-section.active .section-content:has(#profile-favorites-view.active),
-#profile-section.active .section-content:has(#profile-settings-view.active) {
+#profile-section.active .scrollable-container:has(#profile-favorites-view.active),
+#profile-section.active .scrollable-container:has(#profile-settings-view.active) {
     overflow: hidden !important;
     overflow-y: hidden !important;
     overflow-x: hidden !important;
 }
 
-/* Mobile: Profile Section Content extends to bottom-nav */
 @media (max-width: 768px) {
-    #profile-section.active .section-content {
+    #profile-section.active .scrollable-container {
         height: calc(100vh - 60px - 75px);
         /* 100vh - header height (60px) - bottom-nav height (75px) */
         padding-bottom: calc(100px + var(--spacing-lg) + var(--spacing-lg));
