@@ -111,7 +111,6 @@
     /**
      * Cancel all pending timeouts and animation frames
      * This prevents overlapping animations when navigating quickly
-     * Also resets any in-progress CSS transitions for smooth animation
      */
     function cancelPendingOperations() {
         // Clear all pending timeouts
@@ -125,25 +124,6 @@
             cancelAnimationFrame(rafId);
         });
         pendingAnimationFrames = [];
-
-        // Reset all sections' transitions to prevent visual lag
-        // This ensures clean state before starting new animations
-        sections.forEach(section => {
-            // Temporarily disable transitions for instant reset
-            section.style.transition = 'none';
-            // Force reflow to apply the change
-            section.offsetHeight;
-            // Re-enable transitions for smooth animation
-            section.style.transition = '';
-
-            // Also reset section content transitions
-            const sectionContent = section.querySelector('.section-content');
-            if (sectionContent) {
-                sectionContent.style.transition = 'none';
-                sectionContent.offsetHeight;
-                sectionContent.style.transition = '';
-            }
-        });
     }
 
     /**
@@ -209,39 +189,6 @@
     }
 
     /**
-     * Prepare section for smooth animation
-     * Ensures clean state before starting transition
-     * @param {HTMLElement} section - The section element to prepare
-     */
-    function prepareSectionForAnimation(section) {
-        if (!section) return;
-
-        // Disable transitions temporarily for instant positioning
-        const originalTransition = section.style.transition;
-        section.style.transition = 'none';
-
-        // Force reflow to apply the change immediately
-        section.offsetHeight;
-
-        // Re-enable transitions for smooth animation (use CSS default if no inline style)
-        section.style.transition = originalTransition || '';
-
-        // Ensure hardware acceleration for smooth performance
-        section.style.willChange = 'transform, opacity';
-        section.style.backfaceVisibility = 'hidden';
-        section.style.webkitBackfaceVisibility = 'hidden';
-
-        // Ensure transform uses translateZ(0) for GPU acceleration
-        const currentTransform = section.style.transform;
-        if (currentTransform && !currentTransform.includes('translateZ')) {
-            // Preserve existing transform but add translateZ(0)
-            section.style.transform = currentTransform.replace(')', ' translateZ(0))');
-        } else if (!currentTransform) {
-            section.style.transform = 'translateZ(0)';
-        }
-    }
-
-    /**
      * Main function to switch between sections
      * This is the most important function - it handles all section switching
      * @param {string} sectionId - The ID of the section to switch to
@@ -250,38 +197,11 @@
         // If already navigating, cancel previous operations and proceed with new navigation
         if (isNavigating) {
             cancelPendingOperations();
-            // Use requestAnimationFrame to sync with browser's rendering cycle
-            // This ensures CSS transitions are fully reset before starting new animation
-            // Double RAF ensures we're in the next frame after cancellation
-            const rafId1 = requestAnimationFrame(() => {
-                const rafId2 = requestAnimationFrame(() => {
-                    // Remove from tracking arrays
-                    const index1 = pendingAnimationFrames.indexOf(rafId1);
-                    const index2 = pendingAnimationFrames.indexOf(rafId2);
-                    if (index1 > -1) pendingAnimationFrames.splice(index1, 1);
-                    if (index2 > -1) pendingAnimationFrames.splice(index2, 1);
-
-                    // Continue with navigation after reset
-                    performNavigation(sectionId);
-                });
-                pendingAnimationFrames.push(rafId2);
-            });
-            pendingAnimationFrames.push(rafId1);
-            return;
         }
 
         // Set navigation lock
         isNavigating = true;
 
-        // Perform the navigation
-        performNavigation(sectionId);
-    }
-
-    /**
-     * Performs the actual section navigation
-     * @param {string} sectionId - The ID of the section to switch to
-     */
-    function performNavigation(sectionId) {
         // Scroll to the top of the page when switching sections
         window.scrollToTop();
 
@@ -304,32 +224,27 @@
                     profileSection.style.pointerEvents = 'none';
                 }
 
-                // Prepare home section for smooth animation
-                prepareSectionForAnimation(homeSection);
-
                 // Ensure home-section is visible
                 homeSection.style.display = 'block';
                 homeSection.style.visibility = 'visible';
                 homeSection.style.opacity = '1';
                 homeSection.style.pointerEvents = 'auto';
-                homeSection.style.transform = 'translateX(0) translateZ(0)';
+                homeSection.style.transform = 'translateX(0)';
                 homeSection.classList.add('active');
 
                 // Hide content initially for fade-in animation
                 const sectionContent = homeSection.querySelector('.section-content');
                 if (sectionContent) {
-                    // Prepare content for smooth animation
-                    sectionContent.style.transition = 'none';
-                    sectionContent.offsetHeight;
                     sectionContent.style.opacity = '0';
                     sectionContent.style.transform = 'translateX(20px)';
                     sectionContent.style.visibility = 'hidden';
+                    sectionContent.style.transition = 'none';
                 }
 
                 // Fade in content after brief delay (like profile-to-home)
                 trackedSetTimeout(() => {
                     if (sectionContent) {
-                        sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
                         trackedRequestAnimationFrame(() => {
                             trackedRequestAnimationFrame(() => {
                                 sectionContent.style.opacity = '1';
@@ -427,52 +342,46 @@
             // Determine if we're coming from a subsection (current section is a subsection)
             const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'buy-section' || currentSection === 'rent-section';
 
-            // Prepare target section for smooth animation
-            prepareSectionForAnimation(targetSection);
-
-            // Position it off-screen
+            // Prepare target section - position it off-screen
             targetSection.style.display = 'block';
 
             // Determine slide direction based on transition type
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
                 // Coming from home/subsection, my-actions slides in from LEFT
-                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(-100%)';
             } else if (isFromProfileToMyActions) {
                 // Coming from profile, my-actions slides in from RIGHT
-                targetSection.style.transform = 'translateX(100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(100%)';
             } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
                 // Coming from my-actions to home/subsection, home slides in from right
-                targetSection.style.transform = 'translateX(100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(100%)';
             } else if (isFromMyActionsToProfile) {
                 // Coming from my-actions to profile, profile slides in from left
-                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(-100%)';
             }
 
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
-
-            // Prepare current section for smooth exit animation
-            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section with fade-out animation (synchronized)
             currentActiveSection.classList.remove('active');
-            currentActiveSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
 
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
                 // Home/subsection slides out to the right (my-actions comes from left)
-                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(100%)';
             } else if (isFromProfileToMyActions) {
                 // Profile slides out to the left (my-actions comes from right)
-                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(-100%)';
             } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
                 // My-actions slides out to the left (home comes from right)
-                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(-100%)';
             } else if (isFromMyActionsToProfile) {
                 // My-actions slides out to the right (profile comes from left)
-                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(100%)';
             }
 
             currentActiveSection.style.opacity = '0';
@@ -484,8 +393,8 @@
             // Animate both sections simultaneously for smooth synchronized transition
             trackedRequestAnimationFrame(() => {
                 trackedRequestAnimationFrame(() => {
-                    // Animate target section in with hardware acceleration
-                    targetSection.style.transform = 'translateX(0) translateZ(0)';
+                    // Animate target section in
+                    targetSection.style.transform = 'translateX(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
@@ -511,7 +420,7 @@
                         sectionContent.style.transition = 'none';
 
                         trackedSetTimeout(() => {
-                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
                             trackedRequestAnimationFrame(() => {
                                 trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
@@ -591,40 +500,34 @@
                 targetSection = profileSection;
             }
 
-            // Prepare target section for smooth animation
-            prepareSectionForAnimation(targetSection);
-
-            // Position it off-screen
+            // Prepare target section - position it off-screen
             targetSection.style.display = 'block';
 
             // Determine slide direction based on transition type
             if (isFromHomeToProfile || isFromSubsectionToProfile) {
                 // Coming from home/subsection, profile slides in from RIGHT (higher index in RTL)
-                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(-100%)';
             } else if (isFromProfileToHome || isFromProfileToSubsection) {
                 // Coming from profile to home/subsection, home slides in from LEFT (lower index in RTL)
-                targetSection.style.transform = 'translateX(100%) translateZ(0)';
+                targetSection.style.transform = 'translateX(100%)';
             }
 
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
-
-            // Prepare current section for smooth exit animation
-            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section with fade-out animation (synchronized)
             currentActiveSection.classList.remove('active');
-            currentActiveSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
 
             if (isFromHomeToProfile || isFromSubsectionToProfile) {
                 // Home/subsection slides out to the left (profile comes from right)
-                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(100%)';
             } else if (isFromProfileToHome || isFromProfileToSubsection) {
                 // Profile slides out to the right (home comes from left)
-                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
+                currentActiveSection.style.transform = 'translateX(-100%)';
             }
 
             currentActiveSection.style.opacity = '0';
@@ -636,8 +539,8 @@
             // Animate both sections simultaneously for smooth synchronized transition
             trackedRequestAnimationFrame(() => {
                 trackedRequestAnimationFrame(() => {
-                    // Animate target section in with hardware acceleration
-                    targetSection.style.transform = 'translateX(0) translateZ(0)';
+                    // Animate target section in
+                    targetSection.style.transform = 'translateX(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
@@ -663,7 +566,7 @@
                         sectionContent.style.transition = 'none';
 
                         trackedSetTimeout(() => {
-                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
                             trackedRequestAnimationFrame(() => {
                                 trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
@@ -738,33 +641,28 @@
                 currentActiveSection.style.pointerEvents = 'none';
             }
 
-            // Prepare home section for smooth animation
-            prepareSectionForAnimation(homeSection);
-
             // Show home-section
             homeSection.style.display = 'block';
             homeSection.style.visibility = 'visible';
             homeSection.style.opacity = '1';
             homeSection.style.pointerEvents = 'auto';
-            homeSection.style.transform = 'translateX(0) translateZ(0)';
+            homeSection.style.transform = 'translateX(0)';
             homeSection.classList.add('active');
 
             // Hide content initially for fade-in animation (same as home-section)
             const sectionContent = homeSection.querySelector('.section-content');
             if (sectionContent) {
-                // Prepare content for smooth animation
-                sectionContent.style.transition = 'none';
-                sectionContent.offsetHeight;
                 sectionContent.style.opacity = '0';
                 sectionContent.style.transform = 'translateX(20px)';
                 sectionContent.style.visibility = 'hidden';
+                sectionContent.style.transition = 'none';
             }
 
             // Fade in content after brief delay (same timing as home-section)
             const fadeInDelay = isComingFromProfile ? 100 : 150;
             trackedSetTimeout(() => {
                 if (sectionContent) {
-                    sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                    sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
                     trackedRequestAnimationFrame(() => {
                         trackedRequestAnimationFrame(() => {
                             sectionContent.style.opacity = '1';
@@ -870,23 +768,16 @@
         if (sectionId === 'profile-section') {
             ensureProfileOnlyVisible();
 
-            // Prepare profile section for smooth animation
-            prepareSectionForAnimation(targetSection);
-
-            // Position it off-screen from the left
+            // Prepare profile section - position it off-screen from the left
             targetSection.style.display = 'block';
-            targetSection.style.transform = 'translateX(-100%) translateZ(0)';
+            targetSection.style.transform = 'translateX(-100%)';
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
 
             // Force reflow to ensure styles are applied
             targetSection.offsetHeight;
-
-            // Prepare current section for smooth exit
-            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section first
             currentActiveSection.classList.remove('active');
@@ -898,7 +789,7 @@
             // Animate profile section in from the left
             trackedRequestAnimationFrame(() => {
                 trackedRequestAnimationFrame(() => {
-                    targetSection.style.transform = 'translateX(0) translateZ(0)';
+                    targetSection.style.transform = 'translateX(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
@@ -980,10 +871,6 @@
         const toIndex = getSectionIndex(sectionId);
         const direction = getSlideDirection(fromIndex, toIndex);
 
-        // Prepare both sections for smooth animation
-        prepareSectionForAnimation(currentActiveSection);
-        prepareSectionForAnimation(targetSection);
-
         // Remove active class from current section (will trigger exit animation)
         currentActiveSection.classList.remove('active');
 
@@ -1003,6 +890,10 @@
 
         // For my-actions-section, ensure proper initial state for animation
         if (sectionId === 'my-actions-section') {
+            // Remove any conflicting inline styles to let CSS transitions work
+            targetSection.style.removeProperty('opacity');
+            targetSection.style.removeProperty('transform');
+            targetSection.style.removeProperty('visibility');
             // Set initial state for animation
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
@@ -1030,6 +921,9 @@
 
         // For my-actions-section, ensure it's visible and ready for animation
         if (sectionId === 'my-actions-section') {
+            // Clear any conflicting inline styles to let CSS handle animation
+            targetSection.style.removeProperty('opacity');
+            targetSection.style.removeProperty('transform');
             targetSection.style.visibility = 'visible';
         }
 
@@ -1073,7 +967,7 @@
                                 sectionContent.style.visibility = 'hidden';
                             }
                             // Enable transition and animate in
-                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
                             trackedRequestAnimationFrame(() => {
                                 trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
@@ -1343,27 +1237,17 @@
             return; // Skip if no section-content found (profile section has different structure)
         }
 
-        // Prepare content for smooth animation
-        sectionContent.style.transition = 'none';
-        sectionContent.offsetHeight;
-
         // Start with fade-out state
         sectionContent.style.opacity = '0';
         sectionContent.style.transform = 'translateX(20px)';
         sectionContent.style.visibility = 'hidden';
-        sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
-
-        // Ensure hardware acceleration
-        sectionContent.style.willChange = 'transform, opacity';
-        sectionContent.style.backfaceVisibility = 'hidden';
-        sectionContent.style.webkitBackfaceVisibility = 'hidden';
-        sectionContent.style.transform = 'translateX(20px) translateZ(0)';
+        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
 
         // After a brief delay, fade in (stagger for smoother effect)
-        trackedSetTimeout(() => {
-            trackedRequestAnimationFrame(() => {
+        setTimeout(() => {
+            requestAnimationFrame(() => {
                 sectionContent.style.opacity = '1';
-                sectionContent.style.transform = 'translateX(0) translateZ(0)';
+                sectionContent.style.transform = 'translateX(0)';
                 sectionContent.style.visibility = 'visible';
             });
         }, 50);
