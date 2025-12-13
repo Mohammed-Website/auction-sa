@@ -20,7 +20,6 @@
     flex-direction: column;
     position: relative;
     padding-top: 0;
-    padding-bottom: var(--spacing-xl);
     margin-top: 0;
 }
 
@@ -29,8 +28,9 @@
 /* Wrapper for tabs and tab content to occupy same space */
 .account-tabs-wrapper {
     position: relative;
-    width: 100%;
-    min-height: 200px;
+    width: 95%;
+    min-height: 50px;
+    align-self: center;
 }
 
 /* When a tab view is active, adjust wrapper height */

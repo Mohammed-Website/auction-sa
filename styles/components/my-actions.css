@@ -2,7 +2,7 @@
 
 /* Header Section */
 .my-actions-header {
-    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+    padding: var(--spacing-md) 0;
     text-align: center;
 }
 
@@ -97,7 +97,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .my-actions-header {
-        padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
+        padding: var(--spacing-sm) 0;
     }
 
     .my-actions-title {

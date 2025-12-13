@@ -42,7 +42,7 @@
                     <div class="account-tab-content">
                         <div id="basic-data-view" class="tab-view">
                             <div class="account-card">
-                                <div class="card-body">
+                                <div class="card-body scrollable-container">
                                     <div class="info-row profile-image-row">
                                         <div class="info-label">
                                             <i data-lucide="image" class="info-icon"></i>
@@ -104,7 +104,7 @@
 
                         <div id="contact-info-view" class="tab-view">
                             <div class="account-card">
-                                <div class="card-body">
+                                <div class="card-body scrollable-container">
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="mail" class="info-icon"></i>
@@ -129,7 +129,7 @@
 
                         <div id="addresses-view" class="tab-view">
                             <div class="account-card">
-                                <div class="card-body">
+                                <div class="card-body scrollable-container">
                                     <div class="empty-state">
                                         <i data-lucide="map-pin" class="empty-icon"></i>
                                         <p class="empty-text">لا توجد عناوين محفوظة</p>

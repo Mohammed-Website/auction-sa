@@ -9,12 +9,10 @@
 
 
 .card-body {
-    padding: var(--spacing-xl);
     display: flex;
     flex-direction: column;
     gap: 0;
     height: auto;
-    min-height: auto;
     overflow: visible;
 }
 
@@ -34,16 +32,6 @@
 .info-row:last-child {
     border-bottom: none;
     margin-bottom: var(--spacing-md);
-}
-
-.info-label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    flex-shrink: 0;
 }
 
 .info-icon {

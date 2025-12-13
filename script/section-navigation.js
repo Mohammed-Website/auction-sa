@@ -33,6 +33,11 @@
     // Track which section is currently active
     let currentSection = 'home-section';
 
+    // Navigation lock to prevent multiple simultaneous navigations
+    let isNavigating = false;
+    let pendingTimeouts = [];
+    let pendingAnimationFrames = [];
+
     /**
      * Get the position of a section in the order array
      * @param {string} sectionId - The ID of the section
@@ -104,11 +109,179 @@
     }
 
     /**
+     * Cancel all pending timeouts and animation frames
+     * This prevents overlapping animations when navigating quickly
+     * Also resets any in-progress CSS transitions for smooth animation
+     */
+    function cancelPendingOperations() {
+        // Clear all pending timeouts
+        pendingTimeouts.forEach(timeoutId => {
+            clearTimeout(timeoutId);
+        });
+        pendingTimeouts = [];
+
+        // Cancel all pending animation frames
+        pendingAnimationFrames.forEach(rafId => {
+            cancelAnimationFrame(rafId);
+        });
+        pendingAnimationFrames = [];
+
+        // Reset all sections' transitions to prevent visual lag
+        // This ensures clean state before starting new animations
+        sections.forEach(section => {
+            // Temporarily disable transitions for instant reset
+            section.style.transition = 'none';
+            // Force reflow to apply the change
+            section.offsetHeight;
+            // Re-enable transitions for smooth animation
+            section.style.transition = '';
+
+            // Also reset section content transitions
+            const sectionContent = section.querySelector('.section-content');
+            if (sectionContent) {
+                sectionContent.style.transition = 'none';
+                sectionContent.offsetHeight;
+                sectionContent.style.transition = '';
+            }
+        });
+    }
+
+    /**
+     * Wrapper for setTimeout that tracks the timeout ID
+     * @param {Function} callback - Function to call
+     * @param {number} delay - Delay in milliseconds
+     * @returns {number} Timeout ID
+     */
+    function trackedSetTimeout(callback, delay) {
+        const timeoutId = setTimeout(() => {
+            // Remove from array when executed
+            const index = pendingTimeouts.indexOf(timeoutId);
+            if (index > -1) {
+                pendingTimeouts.splice(index, 1);
+            }
+            callback();
+        }, delay);
+        pendingTimeouts.push(timeoutId);
+        return timeoutId;
+    }
+
+    /**
+     * Wrapper for requestAnimationFrame that tracks the frame ID
+     * @param {Function} callback - Function to call
+     * @returns {number} Animation frame ID
+     */
+    function trackedRequestAnimationFrame(callback) {
+        const rafId = requestAnimationFrame(() => {
+            // Remove from array when executed
+            const index = pendingAnimationFrames.indexOf(rafId);
+            if (index > -1) {
+                pendingAnimationFrames.splice(index, 1);
+            }
+            callback();
+        });
+        pendingAnimationFrames.push(rafId);
+        return rafId;
+    }
+
+    /**
+     * Ensure section content is visible (safety function for fast navigation)
+     * @param {HTMLElement} sectionElement - The section element
+     */
+    function ensureSectionContentVisible(sectionElement) {
+        if (!sectionElement) return;
+
+        // Ensure section itself is visible
+        sectionElement.style.display = 'block';
+        sectionElement.style.visibility = 'visible';
+        sectionElement.style.opacity = '1';
+        sectionElement.style.pointerEvents = 'auto';
+        sectionElement.style.transform = 'translateX(0)';
+        sectionElement.classList.add('active');
+
+        // Ensure section content is visible
+        const sectionContent = sectionElement.querySelector('.section-content');
+        if (sectionContent) {
+            sectionContent.style.opacity = '1';
+            sectionContent.style.transform = 'translateX(0)';
+            sectionContent.style.visibility = 'visible';
+            sectionContent.style.transition = '';
+        }
+    }
+
+    /**
+     * Prepare section for smooth animation
+     * Ensures clean state before starting transition
+     * @param {HTMLElement} section - The section element to prepare
+     */
+    function prepareSectionForAnimation(section) {
+        if (!section) return;
+
+        // Disable transitions temporarily for instant positioning
+        const originalTransition = section.style.transition;
+        section.style.transition = 'none';
+
+        // Force reflow to apply the change immediately
+        section.offsetHeight;
+
+        // Re-enable transitions for smooth animation (use CSS default if no inline style)
+        section.style.transition = originalTransition || '';
+
+        // Ensure hardware acceleration for smooth performance
+        section.style.willChange = 'transform, opacity';
+        section.style.backfaceVisibility = 'hidden';
+        section.style.webkitBackfaceVisibility = 'hidden';
+
+        // Ensure transform uses translateZ(0) for GPU acceleration
+        const currentTransform = section.style.transform;
+        if (currentTransform && !currentTransform.includes('translateZ')) {
+            // Preserve existing transform but add translateZ(0)
+            section.style.transform = currentTransform.replace(')', ' translateZ(0))');
+        } else if (!currentTransform) {
+            section.style.transform = 'translateZ(0)';
+        }
+    }
+
+    /**
      * Main function to switch between sections
      * This is the most important function - it handles all section switching
      * @param {string} sectionId - The ID of the section to switch to
      */
     function switchToSection(sectionId) {
+        // If already navigating, cancel previous operations and proceed with new navigation
+        if (isNavigating) {
+            cancelPendingOperations();
+            // Use requestAnimationFrame to sync with browser's rendering cycle
+            // This ensures CSS transitions are fully reset before starting new animation
+            // Double RAF ensures we're in the next frame after cancellation
+            const rafId1 = requestAnimationFrame(() => {
+                const rafId2 = requestAnimationFrame(() => {
+                    // Remove from tracking arrays
+                    const index1 = pendingAnimationFrames.indexOf(rafId1);
+                    const index2 = pendingAnimationFrames.indexOf(rafId2);
+                    if (index1 > -1) pendingAnimationFrames.splice(index1, 1);
+                    if (index2 > -1) pendingAnimationFrames.splice(index2, 1);
+
+                    // Continue with navigation after reset
+                    performNavigation(sectionId);
+                });
+                pendingAnimationFrames.push(rafId2);
+            });
+            pendingAnimationFrames.push(rafId1);
+            return;
+        }
+
+        // Set navigation lock
+        isNavigating = true;
+
+        // Perform the navigation
+        performNavigation(sectionId);
+    }
+
+    /**
+     * Performs the actual section navigation
+     * @param {string} sectionId - The ID of the section to switch to
+     */
+    function performNavigation(sectionId) {
         // Scroll to the top of the page when switching sections
         window.scrollToTop();
 
@@ -131,34 +304,45 @@
                     profileSection.style.pointerEvents = 'none';
                 }
 
+                // Prepare home section for smooth animation
+                prepareSectionForAnimation(homeSection);
+
                 // Ensure home-section is visible
                 homeSection.style.display = 'block';
                 homeSection.style.visibility = 'visible';
                 homeSection.style.opacity = '1';
                 homeSection.style.pointerEvents = 'auto';
-                homeSection.style.transform = 'translateX(0)';
+                homeSection.style.transform = 'translateX(0) translateZ(0)';
                 homeSection.classList.add('active');
 
                 // Hide content initially for fade-in animation
                 const sectionContent = homeSection.querySelector('.section-content');
                 if (sectionContent) {
+                    // Prepare content for smooth animation
+                    sectionContent.style.transition = 'none';
+                    sectionContent.offsetHeight;
                     sectionContent.style.opacity = '0';
                     sectionContent.style.transform = 'translateX(20px)';
                     sectionContent.style.visibility = 'hidden';
-                    sectionContent.style.transition = 'none';
                 }
 
                 // Fade in content after brief delay (like profile-to-home)
-                setTimeout(() => {
+                trackedSetTimeout(() => {
                     if (sectionContent) {
-                        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                        requestAnimationFrame(() => {
-                            requestAnimationFrame(() => {
+                        sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                        trackedRequestAnimationFrame(() => {
+                            trackedRequestAnimationFrame(() => {
                                 sectionContent.style.opacity = '1';
                                 sectionContent.style.transform = 'translateX(0)';
                                 sectionContent.style.visibility = 'visible';
+                                // Release navigation lock after content is visible
+                                trackedSetTimeout(() => {
+                                    isNavigating = false;
+                                }, 100);
                             });
                         });
+                    } else {
+                        isNavigating = false;
                     }
                 }, 100);
 
@@ -172,7 +356,7 @@
                 updateActiveNavItems(sectionId);
 
                 // Push navigation state to history
-                setTimeout(() => {
+                trackedSetTimeout(() => {
                     if (typeof window.pushNavigationState === 'function') {
                         window.pushNavigationState(false);
                     }
@@ -188,6 +372,8 @@
             if (sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section') {
                 toggleHomeSubsections(sectionId);
             }
+            // Release navigation lock since we're not actually navigating
+            isNavigating = false;
             return;
         }
 
@@ -209,6 +395,7 @@
             const currentActiveSection = document.querySelector('.tab-section.active');
 
             if (!homeSection || !myActionsSection || !currentActiveSection) {
+                isNavigating = false;
                 return;
             }
 
@@ -240,46 +427,52 @@
             // Determine if we're coming from a subsection (current section is a subsection)
             const isComingFromSubsection = currentSection === 'auction-section' || currentSection === 'buy-section' || currentSection === 'rent-section';
 
-            // Prepare target section - position it off-screen
+            // Prepare target section for smooth animation
+            prepareSectionForAnimation(targetSection);
+
+            // Position it off-screen
             targetSection.style.display = 'block';
 
             // Determine slide direction based on transition type
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
                 // Coming from home/subsection, my-actions slides in from LEFT
-                targetSection.style.transform = 'translateX(-100%)';
+                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
             } else if (isFromProfileToMyActions) {
                 // Coming from profile, my-actions slides in from RIGHT
-                targetSection.style.transform = 'translateX(100%)';
+                targetSection.style.transform = 'translateX(100%) translateZ(0)';
             } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
                 // Coming from my-actions to home/subsection, home slides in from right
-                targetSection.style.transform = 'translateX(100%)';
+                targetSection.style.transform = 'translateX(100%) translateZ(0)';
             } else if (isFromMyActionsToProfile) {
                 // Coming from my-actions to profile, profile slides in from left
-                targetSection.style.transform = 'translateX(-100%)';
+                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
             }
 
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
+
+            // Prepare current section for smooth exit animation
+            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section with fade-out animation (synchronized)
             currentActiveSection.classList.remove('active');
-            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            currentActiveSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
 
             if (isFromHomeToMyActions || isFromSubsectionToMyActions) {
                 // Home/subsection slides out to the right (my-actions comes from left)
-                currentActiveSection.style.transform = 'translateX(100%)';
+                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
             } else if (isFromProfileToMyActions) {
                 // Profile slides out to the left (my-actions comes from right)
-                currentActiveSection.style.transform = 'translateX(-100%)';
+                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
             } else if (isFromMyActionsToHome || isFromMyActionsToSubsection) {
                 // My-actions slides out to the left (home comes from right)
-                currentActiveSection.style.transform = 'translateX(-100%)';
+                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
             } else if (isFromMyActionsToProfile) {
                 // My-actions slides out to the right (profile comes from left)
-                currentActiveSection.style.transform = 'translateX(100%)';
+                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
             }
 
             currentActiveSection.style.opacity = '0';
@@ -289,16 +482,16 @@
             currentActiveSection.offsetHeight;
 
             // Animate both sections simultaneously for smooth synchronized transition
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    // Animate target section in
-                    targetSection.style.transform = 'translateX(0)';
+            trackedRequestAnimationFrame(() => {
+                trackedRequestAnimationFrame(() => {
+                    // Animate target section in with hardware acceleration
+                    targetSection.style.transform = 'translateX(0) translateZ(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
 
                     // Hide current section after fade-out completes
-                    setTimeout(() => {
+                    trackedSetTimeout(() => {
                         currentActiveSection.style.display = 'none';
                         currentActiveSection.style.visibility = 'hidden';
                         currentActiveSection.style.pointerEvents = 'none';
@@ -317,15 +510,27 @@
                         sectionContent.style.visibility = 'hidden';
                         sectionContent.style.transition = 'none';
 
-                        setTimeout(() => {
-                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
+                        trackedSetTimeout(() => {
+                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            trackedRequestAnimationFrame(() => {
+                                trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
                                     sectionContent.style.transform = 'translateX(0)';
                                     sectionContent.style.visibility = 'visible';
+                                    // Release navigation lock after content is visible
+                                    trackedSetTimeout(() => {
+                                        isNavigating = false;
+                                        // Safety check: ensure content is visible
+                                        ensureSectionContentVisible(targetSection);
+                                    }, 100);
                                 });
                             });
+                        }, 100);
+                    } else {
+                        // No section content, release lock immediately
+                        trackedSetTimeout(() => {
+                            isNavigating = false;
+                            ensureSectionContentVisible(targetSection);
                         }, 100);
                     }
                 });
@@ -338,7 +543,7 @@
             updateActiveNavItems(sectionId);
 
             // Push navigation state to history
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
                 }
@@ -360,6 +565,7 @@
             const currentActiveSection = document.querySelector('.tab-section.active');
 
             if (!homeSection || !profileSection || !currentActiveSection) {
+                isNavigating = false;
                 return;
             }
 
@@ -385,34 +591,40 @@
                 targetSection = profileSection;
             }
 
-            // Prepare target section - position it off-screen
+            // Prepare target section for smooth animation
+            prepareSectionForAnimation(targetSection);
+
+            // Position it off-screen
             targetSection.style.display = 'block';
 
             // Determine slide direction based on transition type
             if (isFromHomeToProfile || isFromSubsectionToProfile) {
                 // Coming from home/subsection, profile slides in from RIGHT (higher index in RTL)
-                targetSection.style.transform = 'translateX(-100%)';
+                targetSection.style.transform = 'translateX(-100%) translateZ(0)';
             } else if (isFromProfileToHome || isFromProfileToSubsection) {
                 // Coming from profile to home/subsection, home slides in from LEFT (lower index in RTL)
-                targetSection.style.transform = 'translateX(100%)';
+                targetSection.style.transform = 'translateX(100%) translateZ(0)';
             }
 
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
+
+            // Prepare current section for smooth exit animation
+            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section with fade-out animation (synchronized)
             currentActiveSection.classList.remove('active');
-            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            currentActiveSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
 
             if (isFromHomeToProfile || isFromSubsectionToProfile) {
                 // Home/subsection slides out to the left (profile comes from right)
-                currentActiveSection.style.transform = 'translateX(100%)';
+                currentActiveSection.style.transform = 'translateX(100%) translateZ(0)';
             } else if (isFromProfileToHome || isFromProfileToSubsection) {
                 // Profile slides out to the right (home comes from left)
-                currentActiveSection.style.transform = 'translateX(-100%)';
+                currentActiveSection.style.transform = 'translateX(-100%) translateZ(0)';
             }
 
             currentActiveSection.style.opacity = '0';
@@ -422,16 +634,16 @@
             currentActiveSection.offsetHeight;
 
             // Animate both sections simultaneously for smooth synchronized transition
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    // Animate target section in
-                    targetSection.style.transform = 'translateX(0)';
+            trackedRequestAnimationFrame(() => {
+                trackedRequestAnimationFrame(() => {
+                    // Animate target section in with hardware acceleration
+                    targetSection.style.transform = 'translateX(0) translateZ(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
 
                     // Hide current section after fade-out completes
-                    setTimeout(() => {
+                    trackedSetTimeout(() => {
                         currentActiveSection.style.display = 'none';
                         currentActiveSection.style.visibility = 'hidden';
                         currentActiveSection.style.pointerEvents = 'none';
@@ -450,15 +662,27 @@
                         sectionContent.style.visibility = 'hidden';
                         sectionContent.style.transition = 'none';
 
-                        setTimeout(() => {
-                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
+                        trackedSetTimeout(() => {
+                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            trackedRequestAnimationFrame(() => {
+                                trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
                                     sectionContent.style.transform = 'translateX(0)';
                                     sectionContent.style.visibility = 'visible';
+                                    // Release navigation lock after content is visible
+                                    trackedSetTimeout(() => {
+                                        isNavigating = false;
+                                        // Safety check: ensure content is visible
+                                        ensureSectionContentVisible(targetSection);
+                                    }, 100);
                                 });
                             });
+                        }, 100);
+                    } else {
+                        // No section content, release lock immediately
+                        trackedSetTimeout(() => {
+                            isNavigating = false;
+                            ensureSectionContentVisible(targetSection);
                         }, 100);
                     }
                 });
@@ -471,7 +695,7 @@
             updateActiveNavItems(sectionId);
 
             // Push navigation state to history
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
                 }
@@ -488,6 +712,7 @@
             const currentActiveSection = document.querySelector('.tab-section.active');
 
             if (!homeSection) {
+                isNavigating = false;
                 return;
             }
 
@@ -513,35 +738,51 @@
                 currentActiveSection.style.pointerEvents = 'none';
             }
 
+            // Prepare home section for smooth animation
+            prepareSectionForAnimation(homeSection);
+
             // Show home-section
             homeSection.style.display = 'block';
             homeSection.style.visibility = 'visible';
             homeSection.style.opacity = '1';
             homeSection.style.pointerEvents = 'auto';
-            homeSection.style.transform = 'translateX(0)';
+            homeSection.style.transform = 'translateX(0) translateZ(0)';
             homeSection.classList.add('active');
 
             // Hide content initially for fade-in animation (same as home-section)
             const sectionContent = homeSection.querySelector('.section-content');
             if (sectionContent) {
+                // Prepare content for smooth animation
+                sectionContent.style.transition = 'none';
+                sectionContent.offsetHeight;
                 sectionContent.style.opacity = '0';
                 sectionContent.style.transform = 'translateX(20px)';
                 sectionContent.style.visibility = 'hidden';
-                sectionContent.style.transition = 'none';
             }
 
             // Fade in content after brief delay (same timing as home-section)
             const fadeInDelay = isComingFromProfile ? 100 : 150;
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 if (sectionContent) {
-                    sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
+                    sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                    trackedRequestAnimationFrame(() => {
+                        trackedRequestAnimationFrame(() => {
                             sectionContent.style.opacity = '1';
                             sectionContent.style.transform = 'translateX(0)';
                             sectionContent.style.visibility = 'visible';
+                            // Release navigation lock after content is visible
+                            trackedSetTimeout(() => {
+                                isNavigating = false;
+                                // Safety check: ensure content is visible
+                                ensureSectionContentVisible(homeSection);
+                            }, 100);
                         });
                     });
+                } else {
+                    trackedSetTimeout(() => {
+                        isNavigating = false;
+                        ensureSectionContentVisible(homeSection);
+                    }, 100);
                 }
             }, fadeInDelay);
 
@@ -556,14 +797,14 @@
 
             // Load data if needed
             if (typeof window.reloadSectionData === 'function') {
-                setTimeout(() => {
+                trackedSetTimeout(() => {
                     window.reloadSectionData('home-section').then(() => {
                     });
                 }, 100);
             }
 
             // Push navigation state to history
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
                 }
@@ -576,6 +817,7 @@
         const currentActiveSection = document.querySelector('.tab-section.active');
 
         if (!targetSection || !currentActiveSection) {
+            isNavigating = false;
             return;
         }
 
@@ -628,16 +870,23 @@
         if (sectionId === 'profile-section') {
             ensureProfileOnlyVisible();
 
-            // Prepare profile section - position it off-screen from the left
+            // Prepare profile section for smooth animation
+            prepareSectionForAnimation(targetSection);
+
+            // Position it off-screen from the left
             targetSection.style.display = 'block';
-            targetSection.style.transform = 'translateX(-100%)';
+            targetSection.style.transform = 'translateX(-100%) translateZ(0)';
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
+            targetSection.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
 
             // Force reflow to ensure styles are applied
             targetSection.offsetHeight;
+
+            // Prepare current section for smooth exit
+            prepareSectionForAnimation(currentActiveSection);
 
             // Clean up current section first
             currentActiveSection.classList.remove('active');
@@ -647,19 +896,23 @@
             currentActiveSection.style.pointerEvents = 'none';
 
             // Animate profile section in from the left
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    targetSection.style.transform = 'translateX(0)';
+            trackedRequestAnimationFrame(() => {
+                trackedRequestAnimationFrame(() => {
+                    targetSection.style.transform = 'translateX(0) translateZ(0)';
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
 
                     // Scroll section-content to top
-                    setTimeout(() => {
+                    trackedSetTimeout(() => {
                         const sectionContent = targetSection.querySelector('.section-content');
                         if (sectionContent) {
                             sectionContent.scrollTop = 0;
                         }
+                        // Release navigation lock
+                        isNavigating = false;
+                        // Safety check: ensure content is visible
+                        ensureSectionContentVisible(targetSection);
                     }, 100);
                 });
             });
@@ -671,7 +924,7 @@
             updateActiveNavItems(sectionId);
 
             // Push navigation state to history
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
                 }
@@ -727,6 +980,10 @@
         const toIndex = getSectionIndex(sectionId);
         const direction = getSlideDirection(fromIndex, toIndex);
 
+        // Prepare both sections for smooth animation
+        prepareSectionForAnimation(currentActiveSection);
+        prepareSectionForAnimation(targetSection);
+
         // Remove active class from current section (will trigger exit animation)
         currentActiveSection.classList.remove('active');
 
@@ -746,10 +1003,6 @@
 
         // For my-actions-section, ensure proper initial state for animation
         if (sectionId === 'my-actions-section') {
-            // Remove any conflicting inline styles to let CSS transitions work
-            targetSection.style.removeProperty('opacity');
-            targetSection.style.removeProperty('transform');
-            targetSection.style.removeProperty('visibility');
             // Set initial state for animation
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
@@ -777,9 +1030,6 @@
 
         // For my-actions-section, ensure it's visible and ready for animation
         if (sectionId === 'my-actions-section') {
-            // Clear any conflicting inline styles to let CSS handle animation
-            targetSection.style.removeProperty('opacity');
-            targetSection.style.removeProperty('transform');
             targetSection.style.visibility = 'visible';
         }
 
@@ -787,8 +1037,8 @@
         targetSection.offsetHeight;
 
         // Small delay to ensure exit animation starts
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+        trackedRequestAnimationFrame(() => {
+            trackedRequestAnimationFrame(() => {
                 // Remove slide-in class and add active to trigger enter animation
                 targetSection.classList.remove('slide-in-left', 'slide-in-right');
                 targetSection.classList.add('active');
@@ -797,7 +1047,7 @@
                 if (sectionId === 'my-actions-section') {
                     // Clear any remaining inline styles that might override CSS
                     // The .active class in CSS will handle the animation
-                    requestAnimationFrame(() => {
+                    trackedRequestAnimationFrame(() => {
                         targetSection.style.removeProperty('opacity');
                         targetSection.style.removeProperty('transform');
                         // Force reflow to ensure CSS classes take effect
@@ -812,7 +1062,7 @@
                     // When coming from other sections, wait for slide animation to complete
                     const animationDelay = (isComingFromProfile || isComingFromSubsection) ? 100 : 400;
 
-                    setTimeout(() => {
+                    trackedSetTimeout(() => {
                         const sectionContent = targetSection.querySelector('.section-content');
                         if (sectionContent) {
                             // Ensure content is hidden before fade-in (only if not already hidden)
@@ -823,21 +1073,38 @@
                                 sectionContent.style.visibility = 'hidden';
                             }
                             // Enable transition and animate in
-                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
+                            sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+                            trackedRequestAnimationFrame(() => {
+                                trackedRequestAnimationFrame(() => {
                                     sectionContent.style.opacity = '1';
                                     sectionContent.style.transform = 'translateX(0)';
                                     sectionContent.style.visibility = 'visible';
+                                    // Release navigation lock after content is visible
+                                    trackedSetTimeout(() => {
+                                        isNavigating = false;
+                                        // Safety check: ensure content is visible
+                                        ensureSectionContentVisible(targetSection);
+                                    }, 100);
                                 });
                             });
+                        } else {
+                            // No section content, release lock immediately
+                            trackedSetTimeout(() => {
+                                isNavigating = false;
+                                ensureSectionContentVisible(targetSection);
+                            }, 100);
                         }
                     }, animationDelay);
                 } else {
                     // For other sections, apply fade-in animation
                     const animationDelay = isComingFromProfile ? 100 : 200;
-                    setTimeout(() => {
+                    trackedSetTimeout(() => {
                         animateSectionContentFadeIn(targetSection);
+                        // Release navigation lock after animation
+                        trackedSetTimeout(() => {
+                            isNavigating = false;
+                            ensureSectionContentVisible(targetSection);
+                        }, 100);
                     }, animationDelay);
                 }
 
@@ -847,7 +1114,7 @@
                 }
 
                 // Clean up current section after animation completes
-                setTimeout(() => {
+                trackedSetTimeout(() => {
                     currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
                     currentActiveSection.style.display = 'none';
 
@@ -871,7 +1138,7 @@
             toggleHomeSubsections('home-section');
             // Ensure scrolling is enabled after switching to home section
             // Use multiple timeouts to ensure it works after all animations
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
                 scrollContainers.forEach(container => {
                     // Remove any inline styles that might block scrolling
@@ -896,7 +1163,7 @@
             }, 400); // Wait for animations to complete
 
             // Additional check after a longer delay to ensure everything is working
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 const scrollContainers = document.querySelectorAll('.horizontal-scroll-container');
                 scrollContainers.forEach(container => {
                     container.style.overflowX = 'auto';
@@ -912,7 +1179,7 @@
         // Load section data if it's a property section and hasn't been loaded
         if (sectionId !== 'profile-section' && typeof window.reloadSectionData === 'function') {
             // Wait for section to become visible (after animation completes)
-            setTimeout(() => {
+            trackedSetTimeout(() => {
                 // Verify section is actually visible
                 const sectionElement = document.getElementById(sectionId);
                 if (sectionElement) {
@@ -924,11 +1191,8 @@
 
                     if (!isVisible) {
                         console.warn(`Section ${sectionId} is not visible yet, waiting...`);
-                        // Force visibility
-                        sectionElement.style.display = 'block';
-                        sectionElement.style.visibility = 'visible';
-                        sectionElement.style.opacity = '1';
-                        sectionElement.style.pointerEvents = 'auto';
+                        // Force visibility - ensure content is always visible
+                        ensureSectionContentVisible(sectionElement);
                     }
                 }
 
@@ -1007,10 +1271,19 @@
         }
 
         // Push navigation state to history after section switch completes
-        setTimeout(() => {
+        trackedSetTimeout(() => {
             if (typeof window.pushNavigationState === 'function') {
                 window.pushNavigationState(false);
             }
+            // Final safety check: ensure content is visible and release lock if not already released
+            const finalSection = document.getElementById(sectionId);
+            if (finalSection) {
+                ensureSectionContentVisible(finalSection);
+            }
+            // Release navigation lock as final fallback (in case it wasn't released earlier)
+            trackedSetTimeout(() => {
+                isNavigating = false;
+            }, 100);
         }, 500);
     }
 
@@ -1070,17 +1343,27 @@
             return; // Skip if no section-content found (profile section has different structure)
         }
 
+        // Prepare content for smooth animation
+        sectionContent.style.transition = 'none';
+        sectionContent.offsetHeight;
+
         // Start with fade-out state
         sectionContent.style.opacity = '0';
         sectionContent.style.transform = 'translateX(20px)';
         sectionContent.style.visibility = 'hidden';
-        sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+        sectionContent.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.3s';
+
+        // Ensure hardware acceleration
+        sectionContent.style.willChange = 'transform, opacity';
+        sectionContent.style.backfaceVisibility = 'hidden';
+        sectionContent.style.webkitBackfaceVisibility = 'hidden';
+        sectionContent.style.transform = 'translateX(20px) translateZ(0)';
 
         // After a brief delay, fade in (stagger for smoother effect)
-        setTimeout(() => {
-            requestAnimationFrame(() => {
+        trackedSetTimeout(() => {
+            trackedRequestAnimationFrame(() => {
                 sectionContent.style.opacity = '1';
-                sectionContent.style.transform = 'translateX(0)';
+                sectionContent.style.transform = 'translateX(0) translateZ(0)';
                 sectionContent.style.visibility = 'visible';
             });
         }, 50);
@@ -1207,6 +1490,14 @@
                 if (sectionId) {
                     switchToSection(sectionId);
                 }
+
+                // Scroll to top of profile-menu-view
+                setTimeout(() => {
+                    const menuView = document.getElementById('profile-menu-view');
+                    if (menuView) {
+                        menuView.scrollTop = 0;
+                    }
+                }, 100);
             });
         }
 

@@ -80,8 +80,7 @@
     }
 
     .card-body {
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
     }
 
     .account-info-container {
@@ -144,6 +143,10 @@
 
 /* Tablet Styles */
 @media (min-width: 768px) {
+    .banner-slider {
+        height: 200px;
+    }
+
     .banner-content h2 {
         font-size: 2rem;
     }
@@ -176,11 +179,7 @@
         font-size: var(--spacing-md);
     }
 
-    #app-content {
-        padding: 0 2rem;
-    }
-
-    .section-title {
+    .home-page-property-section-title {
         font-size: var(--font-size-xxl);
     }
 
@@ -277,7 +276,7 @@
     }
 
     .section-content {
-        padding-top: 4rem;
+        padding-top: 5rem;
     }
 
     .banner-section {
@@ -311,7 +310,6 @@
     }
 
     #app-content {
-        padding: 20px 2rem 0 2rem;
         max-width: 1200px;
         margin: 0 auto;
     }

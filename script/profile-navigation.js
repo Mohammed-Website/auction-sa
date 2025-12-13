@@ -969,6 +969,11 @@
                 // Re-render menu after a short delay
                 setTimeout(() => {
                     renderProfileMenu();
+                    // Scroll to top of profile-menu-view
+                    const menuView = document.getElementById('profile-menu-view');
+                    if (menuView) {
+                        menuView.scrollTop = 0;
+                    }
                 }, 200);
             });
         }
