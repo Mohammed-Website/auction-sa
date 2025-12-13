@@ -1,10 +1,4 @@
 /* Settings Page Styles */
-
-/* Limit body scrolling when settings view is active - allow upward but prevent downward */
-body:has(#profile-settings-view.active) {
-    /* Note: JavaScript handles preventing downward scroll while allowing upward */
-}
-
 .settings-container {
     width: 100%;
     max-width: 100%;
