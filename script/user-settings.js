@@ -8,6 +8,7 @@
     let settingsRendered = false;
 
     // Functions to disable/enable body scrolling
+    let scrollHandler = null;
     let touchHandler = null;
     let initialScrollY = 0;
 
@@ -18,6 +19,18 @@
         // Store scroll position for restoration
         body.setAttribute('data-scroll-y', initialScrollY);
 
+        // Create scroll handler that prevents downward scrolling but allows upward
+        scrollHandler = function () {
+            const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+
+            // If trying to scroll down past initial position, prevent it
+            if (currentScrollY > initialScrollY) {
+                window.scrollTo(0, initialScrollY);
+            }
+        };
+
+        // Add scroll event listener
+        window.addEventListener('scroll', scrollHandler, { passive: true });
 
         // Prevent touchmove events that would cause downward scrolling on body
         // But allow scrolling within settings-content and profile-section's section-content
@@ -52,6 +65,11 @@
         const body = document.body;
         const scrollY = body.getAttribute('data-scroll-y') || '0';
 
+        // Remove scroll event listener
+        if (scrollHandler) {
+            window.removeEventListener('scroll', scrollHandler);
+            scrollHandler = null;
+        }
 
         // Remove touch handler
         if (touchHandler) {

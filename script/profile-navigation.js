@@ -516,70 +516,13 @@
         // Use a switch statement to handle different actions
         switch (action) {
             case 'install-app':
-                // Check if PWA installer is available
-                if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
-                    // Always do a fresh check if already installed (don't rely on cached value)
-                    if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                        alert('التطبيق مثبت بالفعل على هذا الجهاز');
-                        return;
-                    }
-
-                    // Check if prompt is available, if not wait a bit
-                    if (!window.PWAInstaller.hasPrompt()) {
-                        // Wait a moment and check again (sometimes the event fires late)
-                        setTimeout(() => {
-                            // Check again if installed (in case it was installed during the wait)
-                            if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                                alert('التطبيق مثبت بالفعل على هذا الجهاز');
-                                return;
-                            }
-
-                            if (window.PWAInstaller.hasPrompt()) {
-                                window.PWAInstaller.install().catch(error => {
-                                    console.error('PWA installation error:', error);
-                                });
-                            } else {
-                                // Still not available, show helpful message
-                                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-                                const isEdge = /Edg/.test(navigator.userAgent);
-                                const isFirefox = /Firefox/.test(navigator.userAgent);
-
-                                let message = 'لتثبيت التطبيق:\n\n';
-
-                                if (isChrome || isEdge) {
-                                    message += '1. ابحث عن أيقونة التثبيت في شريط العنوان (على اليمين)\n';
-                                    message += '2. أو اضغط على قائمة المتصفح (⋮) واختر "تثبيت التطبيق"\n';
-                                    message += '3. أو انتظر قليلاً ثم حاول مرة أخرى';
-                                } else if (isFirefox) {
-                                    message += '1. اضغط على قائمة المتصفح (☰)\n';
-                                    message += '2. اختر "تثبيت" أو "Install"\n';
-                                    message += '3. أو ابحث عن أيقونة التثبيت في شريط العنوان';
-                                } else {
-                                    message += 'استخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"';
-                                }
-
-                                alert(message);
-                            }
-                        }, 500);
-                    } else {
-                        // Prompt is available, but check if installed first
-                        if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                            alert('التطبيق مثبت بالفعل على هذا الجهاز');
-                            return;
-                        }
-                        // Install immediately
-                        window.PWAInstaller.install().catch(error => {
-                            console.error('PWA installation error:', error);
-                        });
-                    }
+                // Use the PWA installation handler from install-pwa.js
+                if (typeof window.handleInstallAppAction === 'function') {
+                    window.handleInstallAppAction();
                 } else {
-                    // Fallback for browsers that don't support PWA installation
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    if (isIOS) {
-                        alert('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)');
-                    } else {
-                        alert('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"');
-                    }
+                    // Fallback if install-pwa.js hasn't loaded yet
+                    console.warn('PWA installer not available yet');
+                    alert('جاري تحميل نظام التثبيت... يرجى المحاولة مرة أخرى بعد لحظة.');
                 }
                 break;
 

@@ -267,11 +267,6 @@
                 // Update current section
                 currentSection = sectionId;
 
-                // Enable website scrolling for home-section
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
-
                 // Update active states on all navigation items
                 updateActiveNavItems(sectionId);
 
@@ -414,10 +409,6 @@
                     // If switching to home-section or a subsection, show appropriate subsections
                     if (sectionId === 'home-section' || isTargetingSubsection) {
                         toggleHomeSubsections(sectionId);
-                        // Enable website scrolling for home-section or subsections
-                        if (typeof window.controlWebsiteScroll === 'function') {
-                            window.controlWebsiteScroll('enable');
-                        }
                     }
 
                     // Apply fade-in animation to content
@@ -699,11 +690,6 @@
             // Update current section
             currentSection = sectionId;
 
-            // Enable website scrolling for buy-section, rent-section, or auction-section
-            if (typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('enable');
-            }
-
             // Update active states on all navigation items
             updateActiveNavItems(sectionId);
 
@@ -878,10 +864,6 @@
                 homeSection.style.removeProperty('pointer-events');
                 homeSection.style.pointerEvents = 'auto';
             }
-            // Enable website scrolling for home-section
-            if (typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('enable');
-            }
         }
 
         // Get direction for animation
@@ -1045,15 +1027,6 @@
         // Update current section
         currentSection = sectionId;
 
-        // Enable website scrolling for home-section, buy-section, rent-section, or auction-section
-        const scrollableSections = ['home-section', 'buy-section', 'rent-section', 'auction-section'];
-        if (scrollableSections.includes(sectionId)) {
-            // Enable scrolling immediately
-            if (typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('enable');
-            }
-        }
-
         // If switching to home-section, show all subsections
         if (sectionId === 'home-section') {
             toggleHomeSubsections('home-section');
@@ -1091,20 +1064,7 @@
                     container.style.overflowY = 'hidden';
                     container.style.pointerEvents = 'auto';
                 });
-                // Ensure website scrolling is enabled
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
             }, 600);
-        }
-
-        // For buy-section, rent-section, or auction-section, also enable scrolling after animations
-        if (sectionId === 'buy-section' || sectionId === 'rent-section' || sectionId === 'auction-section') {
-            trackedSetTimeout(() => {
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
-            }, 500);
         }
 
         // Update active states on all navigation items
@@ -1252,16 +1212,12 @@
     function handleNavClick(e) {
         e.preventDefault();
 
-        const sectionId = this.getAttribute('data-section');
-        
-        // Enable website scrolling when clicking navigation links to scrollable sections
-        const scrollableSections = ['home-section', 'buy-section', 'rent-section', 'auction-section'];
-        if (sectionId && scrollableSections.includes(sectionId)) {
-            if (typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('enable');
-            }
+        // Enable website scrolling when clicking navigation links
+        if (typeof window.controlWebsiteScroll === 'function') {
+            window.controlWebsiteScroll('enable');
         }
 
+        const sectionId = this.getAttribute('data-section');
         if (sectionId) {
             switchToSection(sectionId);
         }
