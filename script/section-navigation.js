@@ -562,6 +562,13 @@
                     // If switching to home-section or a subsection, show appropriate subsections
                     if (sectionId === 'home-section' || isTargetingSubsection) {
                         toggleHomeSubsections(sectionId);
+
+                        // Enable website scrolling when switching from profile to home/subsection
+                        if (isFromProfileToHome || isFromProfileToSubsection) {
+                            if (typeof window.controlWebsiteScroll === 'function') {
+                                window.controlWebsiteScroll('enable');
+                            }
+                        }
                     }
 
                     // Apply fade-in animation to content
@@ -1099,6 +1106,11 @@
                 homeSection.style.removeProperty('pointer-events');
                 homeSection.style.pointerEvents = 'auto';
             }
+
+            // Enable website scrolling when switching to home-section (especially from profile)
+            if (isComingFromProfile && typeof window.controlWebsiteScroll === 'function') {
+                window.controlWebsiteScroll('enable');
+            }
         }
 
         // Get direction for animation
@@ -1240,6 +1252,11 @@
                 // If switching to home-section, ensure scroll containers are enabled
                 if (sectionId === 'home-section') {
                     targetSection.style.pointerEvents = 'auto';
+
+                    // Enable website scrolling when switching to home-section (especially from profile)
+                    if (typeof window.controlWebsiteScroll === 'function') {
+                        window.controlWebsiteScroll('enable');
+                    }
                 }
 
                 // Disable website scrolling when switching to my-actions-section
