@@ -748,6 +748,11 @@
                     targetSection.style.opacity = '1';
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
+
+                    // Enable website scrolling when property-detail-section is opened
+                    if (typeof window.controlWebsiteScroll === 'function') {
+                        window.controlWebsiteScroll('enable');
+                    }
                 });
             });
 
@@ -756,6 +761,222 @@
 
             // Push navigation state to history
             setTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 100);
+
+            return;
+        }
+
+        // Special handling for transitions from property-detail-section to profile-section with right slide
+        const isFromPropertyDetailToProfile = currentSection === 'property-detail-section' && sectionId === 'profile-section';
+
+        if (isFromPropertyDetailToProfile) {
+            const propertyDetailSection = document.getElementById('property-detail-section');
+            const profileSection = document.getElementById('profile-section');
+            const currentActiveSection = document.querySelector('.tab-section.active');
+
+            if (!propertyDetailSection || !profileSection || !currentActiveSection) {
+                isNavigating = false;
+                return;
+            }
+
+            // Hide my-actions if it's active
+            const myActionsSection = document.getElementById('my-actions-section');
+            if (myActionsSection && myActionsSection.classList.contains('active')) {
+                myActionsSection.classList.remove('active');
+                myActionsSection.style.display = 'none';
+                myActionsSection.style.opacity = '0';
+                myActionsSection.style.visibility = 'hidden';
+                myActionsSection.style.pointerEvents = 'none';
+            }
+
+            ensureProfileOnlyVisible();
+
+            // Prepare profile section - position it off-screen from the right (for RTL, this is translateX(-100%))
+            profileSection.style.display = 'block';
+            profileSection.style.transform = 'translateX(-100%)';
+            profileSection.style.opacity = '0';
+            profileSection.style.visibility = 'visible';
+            profileSection.style.pointerEvents = 'none';
+            profileSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            profileSection.classList.remove('active');
+
+            // Clean up property-detail-section with slide-out animation to the left
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            // Property-detail slides out to the left (profile comes from right)
+            currentActiveSection.style.transform = 'translateX(100%)';
+            currentActiveSection.style.opacity = '0';
+
+            // Force reflow to ensure styles are applied
+            profileSection.offsetHeight;
+            currentActiveSection.offsetHeight;
+
+            // Animate both sections simultaneously for smooth synchronized transition
+            trackedRequestAnimationFrame(() => {
+                trackedRequestAnimationFrame(() => {
+                    // Animate profile section in from the right
+                    profileSection.style.transform = 'translateX(0)';
+                    profileSection.style.opacity = '1';
+                    profileSection.style.pointerEvents = 'auto';
+                    profileSection.classList.add('active');
+
+                    // Hide property-detail-section after slide-out completes
+                    trackedSetTimeout(() => {
+                        currentActiveSection.style.display = 'none';
+                        currentActiveSection.style.visibility = 'hidden';
+                        currentActiveSection.style.pointerEvents = 'none';
+                    }, 400);
+
+                    // Scroll section-content to top
+                    trackedSetTimeout(() => {
+                        const sectionContent = profileSection.querySelector('.section-content');
+                        if (sectionContent) {
+                            sectionContent.scrollTop = 0;
+                        }
+                        // Release navigation lock
+                        isNavigating = false;
+                        // Safety check: ensure content is visible
+                        ensureSectionContentVisible(profileSection);
+                    }, 100);
+                });
+            });
+
+            // Update current section
+            currentSection = sectionId;
+
+            // Update active states on all navigation items
+            updateActiveNavItems(sectionId);
+
+            // Push navigation state to history
+            trackedSetTimeout(() => {
+                if (typeof window.pushNavigationState === 'function') {
+                    window.pushNavigationState(false);
+                }
+            }, 100);
+
+            return;
+        }
+
+        // Special handling for transitions between property-detail-section and my-actions-section with right slide
+        const isFromPropertyDetailToMyActions = currentSection === 'property-detail-section' && sectionId === 'my-actions-section';
+        const isFromMyActionsToPropertyDetail = currentSection === 'my-actions-section' && sectionId === 'property-detail-section';
+
+        if (isFromPropertyDetailToMyActions || isFromMyActionsToPropertyDetail) {
+            const propertyDetailSection = document.getElementById('property-detail-section');
+            const myActionsSection = document.getElementById('my-actions-section');
+            const currentActiveSection = document.querySelector('.tab-section.active');
+
+            if (!propertyDetailSection || !myActionsSection || !currentActiveSection) {
+                isNavigating = false;
+                return;
+            }
+
+            // Hide profile if it's active
+            const profileSection = document.getElementById('profile-section');
+            if (profileSection && profileSection.classList.contains('active')) {
+                profileSection.classList.remove('active');
+                profileSection.style.display = 'none';
+                profileSection.style.opacity = '0';
+                profileSection.style.visibility = 'hidden';
+                profileSection.style.pointerEvents = 'none';
+            }
+
+            // Determine target section
+            let targetSection;
+            if (isFromPropertyDetailToMyActions) {
+                targetSection = myActionsSection;
+            } else {
+                targetSection = propertyDetailSection;
+            }
+
+            // Prepare target section - position it off-screen from the right (for RTL, this is translateX(-100%))
+            targetSection.style.display = 'block';
+            targetSection.style.transform = 'translateX(-100%)';
+            targetSection.style.opacity = '0';
+            targetSection.style.visibility = 'visible';
+            targetSection.style.pointerEvents = 'none';
+            targetSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.classList.remove('active');
+
+            // Clean up current section with slide-out animation to the left
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            // Current section slides out to the left (target comes from right)
+            currentActiveSection.style.transform = 'translateX(100%)';
+            currentActiveSection.style.opacity = '0';
+
+            // Force reflow to ensure styles are applied
+            targetSection.offsetHeight;
+            currentActiveSection.offsetHeight;
+
+            // Animate both sections simultaneously for smooth synchronized transition
+            trackedRequestAnimationFrame(() => {
+                trackedRequestAnimationFrame(() => {
+                    // Animate target section in from the right
+                    targetSection.style.transform = 'translateX(0)';
+                    targetSection.style.opacity = '1';
+                    targetSection.style.pointerEvents = 'auto';
+                    targetSection.classList.add('active');
+
+                    // Hide current section after slide-out completes
+                    trackedSetTimeout(() => {
+                        currentActiveSection.style.display = 'none';
+                        currentActiveSection.style.visibility = 'hidden';
+                        currentActiveSection.style.pointerEvents = 'none';
+                    }, 400);
+
+                    // If switching to property-detail-section, enable scrolling
+                    if (isFromMyActionsToPropertyDetail) {
+                        if (typeof window.controlWebsiteScroll === 'function') {
+                            window.controlWebsiteScroll('enable');
+                        }
+                    }
+
+                    // Apply fade-in animation to content
+                    const sectionContent = targetSection.querySelector('.section-content');
+                    if (sectionContent) {
+                        sectionContent.style.opacity = '0';
+                        sectionContent.style.transform = 'translateX(20px)';
+                        sectionContent.style.visibility = 'hidden';
+                        sectionContent.style.transition = 'none';
+
+                        trackedSetTimeout(() => {
+                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
+                            trackedRequestAnimationFrame(() => {
+                                trackedRequestAnimationFrame(() => {
+                                    sectionContent.style.opacity = '1';
+                                    sectionContent.style.transform = 'translateX(0)';
+                                    sectionContent.style.visibility = 'visible';
+                                    // Release navigation lock after content is visible
+                                    trackedSetTimeout(() => {
+                                        isNavigating = false;
+                                        // Safety check: ensure content is visible
+                                        ensureSectionContentVisible(targetSection);
+                                    }, 100);
+                                });
+                            });
+                        }, 100);
+                    } else {
+                        // No section content, release lock immediately
+                        trackedSetTimeout(() => {
+                            isNavigating = false;
+                            ensureSectionContentVisible(targetSection);
+                        }, 100);
+                    }
+                });
+            });
+
+            // Update current section
+            currentSection = sectionId;
+
+            // Update active states on all navigation items
+            updateActiveNavItems(sectionId);
+
+            // Push navigation state to history
+            trackedSetTimeout(() => {
                 if (typeof window.pushNavigationState === 'function') {
                     window.pushNavigationState(false);
                 }

@@ -438,10 +438,7 @@
                 console.error('switchToSection function not available');
             }
 
-            // Scroll to top
-            if (typeof window.scrollToTop === 'function') {
-                window.scrollToTop();
-            }
+            // Scrolling is enabled in section-navigation.js when property-detail-section opens
 
         } catch (error) {
             console.error('Error opening property detail:', error);
