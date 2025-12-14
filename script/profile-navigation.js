@@ -517,9 +517,13 @@
         switch (action) {
             case 'install-app':
                 if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
-                    window.PWAInstaller.install();
+                    window.PWAInstaller.install().catch(error => {
+                        console.error('Error installing PWA:', error);
+                        alert('حدث خطأ أثناء محاولة التثبيت. يرجى المحاولة مرة أخرى.');
+                    });
                 } else {
-                    alert('التثبيت غير متاح حالياً. يرجى المحاولة لاحقاً.');
+                    // Fallback message if PWAInstaller is not loaded yet
+                    alert('جاري تحميل نظام التثبيت... يرجى المحاولة مرة أخرى بعد لحظة.');
                 }
                 break;
 

@@ -96,12 +96,12 @@
      */
     async function loadAllModules() {
         // Define all scripts in the correct loading order
+        // Note: pwa-installer.js is loaded directly in HTML head for early initialization
         const scripts = [
             'script/navigation-history.js',      // Browser history management
             'script/section-navigation.js',      // Section switching
             'script/property-data.js',         // Property detail page
             'script/banner-slider.js',           // Banner slider
-            'script/install-pwa.js',             // PWA install helper
             'script/profile-navigation.js',     // Profile navigation
             'script/user-acc-data.js',           // Account info tabs
             'script/user-actions-section.js',      // My actions section
@@ -120,23 +120,19 @@
         }
     }
 
-    /**
-     * Register Service Worker for PWA functionality
-     * This enables offline capabilities and PWA installation
-     */
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .catch((error) => {
-                        console.warn('Service Worker registration failed:', error);
-                    });
-            });
-        }
-    }
 
-    // Register service worker
-    registerServiceWorker();
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Start loading modules when DOM is ready
     if (document.readyState === 'loading') {
@@ -145,4 +141,15 @@
         // DOM is already ready, load modules immediately
         loadAllModules();
     }
+
+
+
+
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+
+
+
 })();
