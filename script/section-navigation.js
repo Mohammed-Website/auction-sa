@@ -411,6 +411,13 @@
                         toggleHomeSubsections(sectionId);
                     }
 
+                    // Disable website scrolling when switching to my-actions-section
+                    if (sectionId === 'my-actions-section') {
+                        if (typeof window.controlWebsiteScroll === 'function') {
+                            window.controlWebsiteScroll('disable');
+                        }
+                    }
+
                     // Apply fade-in animation to content
                     const sectionContent = targetSection.querySelector('.section-content');
                     if (sectionContent) {
@@ -928,6 +935,13 @@
                         currentActiveSection.style.pointerEvents = 'none';
                     }, 400);
 
+                    // Disable website scrolling when switching to my-actions-section
+                    if (isFromPropertyDetailToMyActions) {
+                        if (typeof window.controlWebsiteScroll === 'function') {
+                            window.controlWebsiteScroll('disable');
+                        }
+                    }
+
                     // If switching to property-detail-section, enable scrolling
                     if (isFromMyActionsToPropertyDetail) {
                         if (typeof window.controlWebsiteScroll === 'function') {
@@ -1226,6 +1240,13 @@
                 // If switching to home-section, ensure scroll containers are enabled
                 if (sectionId === 'home-section') {
                     targetSection.style.pointerEvents = 'auto';
+                }
+
+                // Disable website scrolling when switching to my-actions-section
+                if (sectionId === 'my-actions-section') {
+                    if (typeof window.controlWebsiteScroll === 'function') {
+                        window.controlWebsiteScroll('disable');
+                    }
                 }
 
                 // Clean up current section after animation completes

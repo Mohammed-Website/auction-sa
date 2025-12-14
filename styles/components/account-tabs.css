@@ -3,7 +3,6 @@
     display: flex;
     flex-direction: column;
     background: transparent;
-    padding: 0 var(--spacing-sm);
     gap: var(--spacing-xs);
     border-radius: 0;
     box-shadow: none;

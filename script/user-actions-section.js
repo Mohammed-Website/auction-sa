@@ -73,13 +73,13 @@
 
                 <div class="my-actions-content">
                     <div class="my-actions-tab-content active" id="pending-content">
-                        <div class="my-actions-empty-state">
+                        <div class="my-actions-empty-state scrollable-container">
                             <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
                         </div>
                     </div>
 
                     <div class="my-actions-tab-content" id="finished-content">
-                        <div class="my-actions-empty-state">
+                        <div class="my-actions-empty-state scrollable-container">
                             <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>
                         </div>
                     </div>
