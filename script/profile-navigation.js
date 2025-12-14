@@ -518,8 +518,8 @@
             case 'install-app':
                 // Check if PWA installer is available
                 if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
-                    // Check if already installed
-                    if (window.PWAInstaller.isInstalled()) {
+                    // Always do a fresh check if already installed (don't rely on cached value)
+                    if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
                         alert('التطبيق مثبت بالفعل على هذا الجهاز');
                         return;
                     }
@@ -528,6 +528,12 @@
                     if (!window.PWAInstaller.hasPrompt()) {
                         // Wait a moment and check again (sometimes the event fires late)
                         setTimeout(() => {
+                            // Check again if installed (in case it was installed during the wait)
+                            if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
+                                alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                                return;
+                            }
+
                             if (window.PWAInstaller.hasPrompt()) {
                                 window.PWAInstaller.install().catch(error => {
                                     console.error('PWA installation error:', error);
@@ -556,7 +562,12 @@
                             }
                         }, 500);
                     } else {
-                        // Prompt is available, install immediately
+                        // Prompt is available, but check if installed first
+                        if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
+                            alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                            return;
+                        }
+                        // Install immediately
                         window.PWAInstaller.install().catch(error => {
                             console.error('PWA installation error:', error);
                         });

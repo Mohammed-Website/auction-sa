@@ -190,19 +190,44 @@
         let deferredPrompt = null;
         let isInstalled = false;
         let installAttempted = false;
+        const INSTALL_FLAG_KEY = 'pwa-installed-flag';
 
         // Check if app is already installed
         function checkIfInstalled() {
-            // Check if running in standalone mode (installed PWA)
+            // First check: running in standalone mode (installed PWA)
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 isInstalled = true;
+                // Update localStorage flag
+                try {
+                    localStorage.setItem(INSTALL_FLAG_KEY, 'true');
+                } catch (e) {
+                    console.warn('Could not save install flag to localStorage:', e);
+                }
                 return true;
             }
-            // Check if running from home screen on iOS
+
+            // Second check: running from home screen on iOS
             if (window.navigator.standalone === true) {
                 isInstalled = true;
+                try {
+                    localStorage.setItem(INSTALL_FLAG_KEY, 'true');
+                } catch (e) {
+                    console.warn('Could not save install flag to localStorage:', e);
+                }
                 return true;
             }
+
+            // Third check: localStorage flag (for when app is installed but opened in browser)
+            try {
+                const installFlag = localStorage.getItem(INSTALL_FLAG_KEY);
+                if (installFlag === 'true') {
+                    isInstalled = true;
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Could not read install flag from localStorage:', e);
+            }
+
             return false;
         }
 
@@ -228,8 +253,20 @@
                 console.log('PWA: App was installed');
                 isInstalled = true;
                 deferredPrompt = null;
+                // Save installation flag to localStorage
+                try {
+                    localStorage.setItem(INSTALL_FLAG_KEY, 'true');
+                } catch (e) {
+                    console.warn('Could not save install flag to localStorage:', e);
+                }
                 window.dispatchEvent(new CustomEvent('pwa-installed'));
             });
+
+            // Check installation status on initialization
+            isInstalled = checkIfInstalled();
+            if (isInstalled) {
+                console.log('PWA: App is already installed (detected on init)');
+            }
 
             // Also listen for service worker registration
             window.addEventListener('sw-registered', () => {
@@ -356,6 +393,13 @@
 
                 if (outcome === 'accepted') {
                     console.log('PWA installation accepted');
+                    // Set installation flag immediately
+                    isInstalled = true;
+                    try {
+                        localStorage.setItem(INSTALL_FLAG_KEY, 'true');
+                    } catch (e) {
+                        console.warn('Could not save install flag to localStorage:', e);
+                    }
                     return true;
                 } else {
                     console.log('PWA installation dismissed');
@@ -377,7 +421,15 @@
 
         // Check if installation is available
         function isInstallable() {
-            return deferredPrompt !== null && !isInstalled && !checkIfInstalled();
+            // Re-check installation status to ensure it's up to date
+            const currentlyInstalled = checkIfInstalled();
+            return deferredPrompt !== null && !currentlyInstalled;
+        }
+
+        // Public method to check if installed (always fresh check)
+        function isInstalledCheck() {
+            // Always do a fresh check, don't rely on cached value
+            return checkIfInstalled();
         }
 
         // Initialize on load
@@ -387,7 +439,7 @@
         return {
             install: install,
             isInstallable: isInstallable,
-            isInstalled: () => isInstalled || checkIfInstalled(),
+            isInstalled: isInstalledCheck, // Always do fresh check
             hasPrompt: () => deferredPrompt !== null
         };
     })();
