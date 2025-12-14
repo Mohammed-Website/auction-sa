@@ -15,7 +15,7 @@
     }
 
     .menu-item {
-        padding: 0.6rem;
+        padding: 0.7rem;
     }
 
     .menu-item-text {
@@ -210,6 +210,10 @@
         padding-bottom: 0;
     }
 
+    .top-nav {
+        display: block;
+    }
+
     .profile-page-title,
     .account-tabs-header {
         background: transparent;
@@ -241,6 +245,10 @@
         margin-top: 0;
     }
 
+    .property-detail-container {
+        padding-top: 1rem;
+    }
+
     /* Ensure top-nav doesn't hide content - add padding to account for fixed nav */
     .profile-page-title {
         margin-top: 0;
@@ -269,22 +277,14 @@
         background: white;
         border-bottom: 1px solid #e8e8e8;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        position: fixed;
+        position: sticky;
         top: 70px;
-        right: 0;
-        left: 0;
-        width: 100%;
         z-index: 99;
         padding: 1rem 0;
-        margin-top: 0;
     }
 
     .section-content {
-        padding-top: 5rem;
-    }
-
-    .banner-section {
-        margin-top: var(--top-nav-height);
+        padding-top: 0.5rem;
     }
 
     .banner-content h2 {

@@ -60,7 +60,6 @@
     stroke-width: 2;
 }
 
-/* Unified Header Styling - Used by account-tabs-header, card-header, and settings-header */
 .account-tabs-header {
     background: transparent;
     display: none;
@@ -68,7 +67,6 @@
     justify-content: center;
     height: 50px;
     min-height: 50px;
-    padding: 0 var(--spacing-lg);
     border-radius: 0;
     position: fixed;
     top: 0;
@@ -84,11 +82,6 @@
 /* These rules provide fallback support for when inline styles are set */
 .account-tabs-header[style*="flex"],
 .account-tabs-header[style*="block"] {
-    display: flex !important;
-}
-
-.settings-header[style*="flex"],
-.settings-header[style*="block"] {
     display: flex !important;
 }
 
