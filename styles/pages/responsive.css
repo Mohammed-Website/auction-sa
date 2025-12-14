@@ -183,6 +183,10 @@
         font-size: var(--font-size-xxl);
     }
 
+    .profile-container {
+        padding-bottom: 20rem;
+    }
+
     .profile-stats {
         gap: 1.5rem;
     }
