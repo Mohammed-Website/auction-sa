@@ -22,8 +22,34 @@
 
     /**
      * Control website scrolling functionality
-     * @param {string} action - "disable" to disable scrolling, "enable" to enable scrolling
+     * @param {string} action - "disable" to disable scrolling down (but allow scrolling up), "enable" to enable scrolling
      */
+    // Store event handlers so they can be removed later
+    let scrollHandlers = {
+        scroll: null,
+        wheel: null,
+        touchstart: null,
+        touchmove: null
+    };
+
+    /**
+     * Check if an element or any of its parents has the scrollable-container class
+     * @param {Element} element - The element to check
+     * @returns {boolean} - True if element or parent has scrollable-container class
+     */
+    function isWithinScrollableContainer(element) {
+        if (!element) return false;
+
+        let current = element;
+        while (current && current !== document.body && current !== document.documentElement) {
+            if (current.classList && current.classList.contains('scrollable-container')) {
+                return true;
+            }
+            current = current.parentElement;
+        }
+        return false;
+    }
+
     window.controlWebsiteScroll = function (action) {
         const body = document.body;
         const html = document.documentElement;
@@ -33,27 +59,108 @@
             const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
             body.setAttribute('data-scroll-y', scrollY);
 
-            // Disable scrolling by setting overflow hidden
-            body.style.overflow = 'hidden';
-            html.style.overflow = 'hidden';
+            // Store the max scroll position (can't scroll below this)
+            const maxScrollY = scrollY;
+            body.setAttribute('data-max-scroll-y', maxScrollY);
+            body.setAttribute('data-scroll-disabled', 'true');
 
-            // Lock scroll position
-            body.style.position = 'fixed';
-            body.style.width = '100%';
-            body.style.top = `-${scrollY}px`;
+            // Create scroll handler that prevents scrolling down but allows scrolling up
+            scrollHandlers.scroll = function () {
+                if (body.getAttribute('data-scroll-disabled') !== 'true') {
+                    return; // Scroll is enabled, don't interfere
+                }
+
+                const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+                const storedMaxScrollY = parseFloat(body.getAttribute('data-max-scroll-y') || '0');
+
+                // If trying to scroll down past the stored position, prevent it
+                if (currentScrollY > storedMaxScrollY) {
+                    window.scrollTo(0, storedMaxScrollY);
+                }
+            };
+
+            // Create wheel handler to prevent mouse wheel scrolling down
+            scrollHandlers.wheel = function (e) {
+                if (body.getAttribute('data-scroll-disabled') !== 'true') {
+                    return; // Scroll is enabled, don't interfere
+                }
+
+                // Check if the wheel event is within a scrollable container
+                if (isWithinScrollableContainer(e.target)) {
+                    return; // Allow scrolling within scrollable containers
+                }
+
+                const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+                const storedMaxScrollY = parseFloat(body.getAttribute('data-max-scroll-y') || '0');
+
+                // If scrolling down and already at or past max position, prevent it
+                if (e.deltaY > 0 && currentScrollY >= storedMaxScrollY) {
+                    e.preventDefault();
+                }
+            };
+
+            // Store touch start position for mobile
+            let touchStartY = 0;
+            scrollHandlers.touchstart = function (e) {
+                touchStartY = e.touches[0].clientY;
+            };
+
+            // Create touch move handler to prevent touch scrolling down
+            scrollHandlers.touchmove = function (e) {
+                if (body.getAttribute('data-scroll-disabled') !== 'true') {
+                    return; // Scroll is enabled, don't interfere
+                }
+
+                // Check if the touch event is within a scrollable container
+                if (isWithinScrollableContainer(e.target)) {
+                    return; // Allow scrolling within scrollable containers
+                }
+
+                const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+                const storedMaxScrollY = parseFloat(body.getAttribute('data-max-scroll-y') || '0');
+                const touchCurrentY = e.touches[0].clientY;
+                const touchDeltaY = touchStartY - touchCurrentY; // Positive when scrolling down
+
+                // If scrolling down and already at or past max position, prevent it
+                if (touchDeltaY < 0 && currentScrollY >= storedMaxScrollY) {
+                    e.preventDefault();
+                }
+            };
+
+            // Add event listeners
+            window.addEventListener('scroll', scrollHandlers.scroll, { passive: false });
+            window.addEventListener('wheel', scrollHandlers.wheel, { passive: false });
+            window.addEventListener('touchstart', scrollHandlers.touchstart, { passive: true });
+            window.addEventListener('touchmove', scrollHandlers.touchmove, { passive: false });
+
         } else if (action === 'enable') {
+            // Remove the disabled flag
+            body.removeAttribute('data-scroll-disabled');
+
+            // Remove all event listeners
+            if (scrollHandlers.scroll) {
+                window.removeEventListener('scroll', scrollHandlers.scroll);
+                scrollHandlers.scroll = null;
+            }
+            if (scrollHandlers.wheel) {
+                window.removeEventListener('wheel', scrollHandlers.wheel);
+                scrollHandlers.wheel = null;
+            }
+            if (scrollHandlers.touchstart) {
+                window.removeEventListener('touchstart', scrollHandlers.touchstart);
+                scrollHandlers.touchstart = null;
+            }
+            if (scrollHandlers.touchmove) {
+                window.removeEventListener('touchmove', scrollHandlers.touchmove);
+                scrollHandlers.touchmove = null;
+            }
+
             // Get stored scroll position
             const scrollY = body.getAttribute('data-scroll-y') || '0';
 
-            // Re-enable scrolling
-            body.style.overflow = '';
-            html.style.overflow = '';
-            body.style.position = '';
-            body.style.width = '';
-            body.style.top = '';
-
-            // Remove stored scroll position
+            // Remove stored attributes
             body.removeAttribute('data-scroll-y');
+            body.removeAttribute('data-max-scroll-y');
 
             // Restore scroll position
             window.scrollTo(0, parseInt(scrollY, 10));
