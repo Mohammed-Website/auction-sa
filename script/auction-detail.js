@@ -431,11 +431,6 @@
                 header.style.display = 'flex';
             }
 
-            // Disable website scrolling down
-            if (typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('disable');
-            }
-
             // Navigate to property detail section
             if (typeof window.switchToSection === 'function') {
                 window.switchToSection('property-detail-section');
@@ -463,11 +458,6 @@
             backBtn.addEventListener('click', function () {
                 // Clean up countdown intervals
                 cleanupCountdowns();
-
-                // Enable website scrolling
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
 
                 // Hide header
                 const header = document.getElementById('property-detail-header');

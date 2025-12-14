@@ -295,7 +295,6 @@
         // Special handling for transitions between home-section and my-actions-section
         // Also handles transitions between subsections (auction-section, buy-section, rent-section) and my-actions-section
         // Also handles transitions between profile-section and my-actions-section
-        // Also handles transitions from property-detail-section to my-actions-section
         // This creates a smooth transition similar to profile-section
         const isFromHomeToMyActions = currentSection === 'home-section' && sectionId === 'my-actions-section';
         const isFromMyActionsToHome = currentSection === 'my-actions-section' && sectionId === 'home-section';
@@ -303,64 +302,15 @@
         const isFromMyActionsToSubsection = currentSection === 'my-actions-section' && (sectionId === 'auction-section' || sectionId === 'buy-section' || sectionId === 'rent-section');
         const isFromProfileToMyActions = currentSection === 'profile-section' && sectionId === 'my-actions-section';
         const isFromMyActionsToProfile = currentSection === 'my-actions-section' && sectionId === 'profile-section';
-        const isFromPropertyDetailToMyActions = currentSection === 'property-detail-section' && sectionId === 'my-actions-section';
 
-        if (isFromHomeToMyActions || isFromMyActionsToHome || isFromSubsectionToMyActions || isFromMyActionsToSubsection || isFromProfileToMyActions || isFromMyActionsToProfile || isFromPropertyDetailToMyActions) {
+        if (isFromHomeToMyActions || isFromMyActionsToHome || isFromSubsectionToMyActions || isFromMyActionsToSubsection || isFromProfileToMyActions || isFromMyActionsToProfile) {
             const homeSection = document.getElementById('home-section');
             const myActionsSection = document.getElementById('my-actions-section');
             const profileSection = document.getElementById('profile-section');
-            const propertyDetailSection = document.getElementById('property-detail-section');
             const currentActiveSection = document.querySelector('.tab-section.active');
 
             if (!homeSection || !myActionsSection || !currentActiveSection) {
                 isNavigating = false;
-                return;
-            }
-
-            // Special handling when coming from property-detail-section
-            if (isFromPropertyDetailToMyActions) {
-                // Enable website scrolling when leaving property-detail-section
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
-
-                // Prepare my-actions-section - position it off-screen from the left
-                myActionsSection.style.display = 'block';
-                myActionsSection.style.transform = 'translateX(-100%)';
-                myActionsSection.style.opacity = '0';
-                myActionsSection.style.visibility = 'visible';
-                myActionsSection.style.pointerEvents = 'none';
-                myActionsSection.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                myActionsSection.classList.remove('active');
-
-                // Force reflow
-                myActionsSection.offsetHeight;
-
-                // Animate my-actions-section in from the left
-                trackedRequestAnimationFrame(() => {
-                    trackedRequestAnimationFrame(() => {
-                        myActionsSection.style.transform = 'translateX(0)';
-                        myActionsSection.style.opacity = '1';
-                        myActionsSection.style.pointerEvents = 'auto';
-                        myActionsSection.classList.add('active');
-
-                        // Update current section
-                        currentSection = sectionId;
-
-                        // Update active states on all navigation items
-                        updateActiveNavItems(sectionId);
-
-                        // Release navigation lock
-                        trackedSetTimeout(() => {
-                            isNavigating = false;
-                            // Push navigation state to history
-                            if (typeof window.pushNavigationState === 'function') {
-                                window.pushNavigationState(false);
-                            }
-                        }, 100);
-                    });
-                });
-
                 return;
             }
 
@@ -818,9 +768,6 @@
         if (sectionId === 'profile-section') {
             ensureProfileOnlyVisible();
 
-            // Check if coming from property-detail-section - use left slide animation
-            const isComingFromPropertyDetail = currentSection === 'property-detail-section';
-
             // Prepare profile section - position it off-screen from the left
             targetSection.style.display = 'block';
             targetSection.style.transform = 'translateX(-100%)';
@@ -829,24 +776,15 @@
             targetSection.style.pointerEvents = 'none';
             targetSection.classList.remove('active');
 
-            // Set transition timing based on source
-            if (isComingFromPropertyDetail) {
-                targetSection.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
-            } else {
-                targetSection.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
-            }
-
             // Force reflow to ensure styles are applied
             targetSection.offsetHeight;
 
-            // Clean up current section first (unless it's property-detail-section which is handled above)
-            if (currentSection !== 'property-detail-section') {
-                currentActiveSection.classList.remove('active');
-                currentActiveSection.style.display = 'none';
-                currentActiveSection.style.opacity = '0';
-                currentActiveSection.style.visibility = 'hidden';
-                currentActiveSection.style.pointerEvents = 'none';
-            }
+            // Clean up current section first
+            currentActiveSection.classList.remove('active');
+            currentActiveSection.style.display = 'none';
+            currentActiveSection.style.opacity = '0';
+            currentActiveSection.style.visibility = 'hidden';
+            currentActiveSection.style.pointerEvents = 'none';
 
             // Animate profile section in from the left
             trackedRequestAnimationFrame(() => {
@@ -886,41 +824,21 @@
             return;
         }
 
-        // Check if we're coming from property-detail-section
+        // Check if we're coming from property-detail-section - handle zoom out (faster)
         if (currentSection === 'property-detail-section') {
             const propertyDetailSection = document.getElementById('property-detail-section');
             if (propertyDetailSection && propertyDetailSection.classList.contains('active')) {
-                // Enable website scrolling when leaving property-detail-section
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
+                // Zoom out animation (faster - 0.2s instead of 0.4s)
+                propertyDetailSection.style.transition = 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                propertyDetailSection.style.transform = 'scale(0.8)';
+                propertyDetailSection.style.opacity = '0';
 
-                // Check if navigating to profile-section or my-actions-section - use left slide animation
-                if (sectionId === 'profile-section' || sectionId === 'my-actions-section') {
-                    // Slide out to the right (left slide animation for target)
-                    propertyDetailSection.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                    propertyDetailSection.style.transform = 'translateX(100%)';
-                    propertyDetailSection.style.opacity = '0';
-
-                    setTimeout(() => {
-                        propertyDetailSection.classList.remove('active');
-                        propertyDetailSection.style.display = 'none';
-                        propertyDetailSection.style.visibility = 'hidden';
-                        propertyDetailSection.style.pointerEvents = 'none';
-                    }, 350);
-                } else {
-                    // For other sections, use zoom out animation (faster - 0.2s instead of 0.4s)
-                    propertyDetailSection.style.transition = 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                    propertyDetailSection.style.transform = 'scale(0.8)';
-                    propertyDetailSection.style.opacity = '0';
-
-                    setTimeout(() => {
-                        propertyDetailSection.classList.remove('active');
-                        propertyDetailSection.style.display = 'none';
-                        propertyDetailSection.style.visibility = 'hidden';
-                        propertyDetailSection.style.pointerEvents = 'none';
-                    }, 200);
-                }
+                setTimeout(() => {
+                    propertyDetailSection.classList.remove('active');
+                    propertyDetailSection.style.display = 'none';
+                    propertyDetailSection.style.visibility = 'hidden';
+                    propertyDetailSection.style.pointerEvents = 'none';
+                }, 200);
             }
         }
 
