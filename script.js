@@ -40,6 +40,19 @@
             // Track last scroll position to detect direction
             let lastScrollTop = scrollY;
 
+            // Helper function to check if element is inside a scrollable-container
+            const isInsideScrollableContainer = function (element) {
+                if (!element) return false;
+                let current = element;
+                while (current && current !== document.body && current !== document.documentElement) {
+                    if (current.classList && current.classList.contains('scrollable-container')) {
+                        return true;
+                    }
+                    current = current.parentElement;
+                }
+                return false;
+            };
+
             // Scroll handler - prevents scrolling down beyond max position
             const scrollHandler = function () {
                 const currentScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
@@ -54,8 +67,27 @@
                 }
             };
 
-            // Wheel handler - prevents mouse wheel scrolling down
+            // Wheel handler - prevents mouse wheel scrolling down (but allows scrolling in scrollable containers)
             const wheelHandler = function (e) {
+                // Check if the wheel event is inside a scrollable-container
+                const scrollableContainer = e.target.closest('.scrollable-container');
+                if (scrollableContainer) {
+                    // Check if the container can still scroll in the direction of the wheel
+                    const container = scrollableContainer;
+                    const isScrollingDown = e.deltaY > 0;
+                    const isScrollingUp = e.deltaY < 0;
+
+                    // If scrolling down and container can still scroll down, allow it
+                    if (isScrollingDown && container.scrollTop < container.scrollHeight - container.clientHeight) {
+                        return; // Allow the scroll
+                    }
+                    // If scrolling up and container can still scroll up, allow it
+                    if (isScrollingUp && container.scrollTop > 0) {
+                        return; // Allow the scroll
+                    }
+                    // If container is at its boundary, let the event bubble to window scroll prevention
+                }
+
                 const currentScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
                 const maxScrollValue = parseInt(body.getAttribute('data-max-scroll') || '0', 10);
 
@@ -70,11 +102,34 @@
 
             // Touch handlers for mobile - allows pull-to-refresh
             let touchStartY = 0;
+            let touchStartElement = null;
             const touchStartHandler = function (e) {
                 touchStartY = e.touches[0].clientY;
+                touchStartElement = e.target;
             };
 
             const touchMoveHandler = function (e) {
+                // Check if the touch event is inside a scrollable-container
+                const scrollableContainer = (touchStartElement && touchStartElement.closest('.scrollable-container')) ||
+                    (e.target && e.target.closest('.scrollable-container'));
+
+                if (scrollableContainer) {
+                    // Check if the container can still scroll in the touch direction
+                    const container = scrollableContainer;
+                    const touchY = e.touches[0].clientY;
+                    const deltaY = touchStartY - touchY; // Positive deltaY means scrolling down
+
+                    // If scrolling down and container can still scroll down, allow it
+                    if (deltaY > 0 && container.scrollTop < container.scrollHeight - container.clientHeight) {
+                        return; // Allow the scroll
+                    }
+                    // If scrolling up and container can still scroll up, allow it
+                    if (deltaY < 0 && container.scrollTop > 0) {
+                        return; // Allow the scroll
+                    }
+                    // If container is at its boundary, let the event bubble to window scroll prevention
+                }
+
                 const currentScroll = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
                 const maxScrollValue = parseInt(body.getAttribute('data-max-scroll') || '0', 10);
                 const touchY = e.touches[0].clientY;
