@@ -148,9 +148,16 @@
     // Register service worker
     let serviceWorkerRegistered = false;
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
+        // Get the current path to determine the scope
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+        const swPath = basePath + 'sw.js';
+        const swScope = basePath;
+
+        navigator.serviceWorker.register(swPath, { scope: swScope })
             .then((registration) => {
                 console.log('Service Worker registered successfully:', registration);
+                console.log('Service Worker scope:', swScope);
                 serviceWorkerRegistered = true;
                 // Notify installer that service worker is ready
                 if (window.PWAInstaller) {
@@ -159,6 +166,18 @@
             })
             .catch((error) => {
                 console.error('Service Worker registration failed:', error);
+                // Fallback: try registering without explicit scope
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered with fallback:', registration);
+                        serviceWorkerRegistered = true;
+                        if (window.PWAInstaller) {
+                            window.dispatchEvent(new CustomEvent('sw-registered'));
+                        }
+                    })
+                    .catch((fallbackError) => {
+                        console.error('Service Worker fallback registration also failed:', fallbackError);
+                    });
             });
     }
 
