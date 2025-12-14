@@ -96,7 +96,6 @@
      */
     async function loadAllModules() {
         // Define all scripts in the correct loading order
-        // Note: pwa-installer.js is loaded directly in HTML head for early initialization
         const scripts = [
             'script/navigation-history.js',      // Browser history management
             'script/section-navigation.js',      // Section switching
@@ -146,9 +145,233 @@
 
 
 
+    // Register service worker
+    let serviceWorkerRegistered = false;
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
+        navigator.serviceWorker.register('sw.js')
+            .then((registration) => {
+                console.log('Service Worker registered successfully:', registration);
+                serviceWorkerRegistered = true;
+                // Notify installer that service worker is ready
+                if (window.PWAInstaller) {
+                    window.dispatchEvent(new CustomEvent('sw-registered'));
+                }
+            })
+            .catch((error) => {
+                console.error('Service Worker registration failed:', error);
+            });
     }
+
+
+    /**
+     * PWA Installer Module
+     * Handles Progressive Web App installation
+     */
+    window.PWAInstaller = (function () {
+        let deferredPrompt = null;
+        let isInstalled = false;
+        let installAttempted = false;
+
+        // Check if app is already installed
+        function checkIfInstalled() {
+            // Check if running in standalone mode (installed PWA)
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                isInstalled = true;
+                return true;
+            }
+            // Check if running from home screen on iOS
+            if (window.navigator.standalone === true) {
+                isInstalled = true;
+                return true;
+            }
+            return false;
+        }
+
+        // Initialize installer
+        function init() {
+            // Check if already installed
+            if (checkIfInstalled()) {
+                console.log('PWA: App is already installed');
+                return;
+            }
+
+            // Capture the beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('PWA: beforeinstallprompt event fired');
+                e.preventDefault();
+                deferredPrompt = e;
+                // Dispatch custom event to notify that install is available
+                window.dispatchEvent(new CustomEvent('pwa-install-available'));
+            });
+
+            // Listen for app installed event
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA: App was installed');
+                isInstalled = true;
+                deferredPrompt = null;
+                window.dispatchEvent(new CustomEvent('pwa-installed'));
+            });
+
+            // Also listen for service worker registration
+            window.addEventListener('sw-registered', () => {
+                console.log('PWA: Service worker registered, waiting for install prompt...');
+            });
+
+            // Check PWA installability criteria
+            function checkInstallability() {
+                const checks = {
+                    secure: window.location.protocol === 'https:' ||
+                        window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1',
+                    manifest: document.querySelector('link[rel="manifest"]') !== null,
+                    serviceWorker: 'serviceWorker' in navigator
+                };
+
+                console.log('PWA Installability checks:', checks);
+                return checks;
+            }
+
+            // Run checks after a short delay
+            setTimeout(() => {
+                checkInstallability();
+            }, 1000);
+        }
+
+        // Install the PWA
+        async function install() {
+            // Check if already installed
+            if (isInstalled || checkIfInstalled()) {
+                alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                return false;
+            }
+
+            // For iOS devices, show instructions (they don't support beforeinstallprompt)
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                alert('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)');
+                return false;
+            }
+
+            // If prompt not available, wait a moment and check again
+            // (sometimes the event fires after user interaction)
+            if (!deferredPrompt) {
+                console.log('PWA: Prompt not available, waiting 300ms...');
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            // Check if install prompt is available
+            if (!deferredPrompt) {
+                console.log('PWA: Install prompt not available yet');
+
+                // Check if we're on a secure context (HTTPS or localhost)
+                const isSecure = window.location.protocol === 'https:' ||
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1';
+
+                if (!isSecure) {
+                    alert('التثبيت يتطلب اتصال آمن (HTTPS).\nيرجى فتح الموقع عبر رابط آمن.');
+                    return false;
+                }
+
+                // Check if service worker is registered
+                let swRegistered = serviceWorkerRegistered;
+                if (!swRegistered && 'serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        swRegistered = !!registration;
+                    } catch (error) {
+                        console.error('Service worker check failed:', error);
+                    }
+                }
+
+                // Detect browser type for better instructions
+                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+                const isEdge = /Edg/.test(navigator.userAgent);
+                const isFirefox = /Firefox/.test(navigator.userAgent);
+                const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+                let message = 'خيار التثبيت التلقائي غير متاح حالياً.\n\n';
+                message += 'يمكنك تثبيت التطبيق يدوياً:\n\n';
+
+                if (isChrome || isEdge) {
+                    message += 'في Chrome/Edge:\n';
+                    message += '1. ابحث عن أيقونة 📥 أو ⊕ في شريط العنوان (على اليمين)\n';
+                    message += '2. أو اضغط على قائمة المتصفح (⋮) → "تثبيت التطبيق"\n';
+                    message += '3. أو انتظر قليلاً - قد يظهر خيار التثبيت بعد تفاعل أكثر مع الموقع';
+                } else if (isFirefox) {
+                    message += 'في Firefox:\n';
+                    message += '1. اضغط على قائمة المتصفح (☰)\n';
+                    message += '2. ابحث عن "تثبيت" أو "Install"\n';
+                    message += '3. أو ابحث عن أيقونة التثبيت في شريط العنوان';
+                } else if (isSafari) {
+                    message += 'في Safari:\n';
+                    message += '1. اضغط على زر المشاركة (Share)\n';
+                    message += '2. اختر "إضافة إلى الشاشة الرئيسية"';
+                } else {
+                    message += 'استخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"';
+                }
+
+                if (!swRegistered) {
+                    message += '\n\nملاحظة: جاري إعداد التطبيق للتثبيت... قد تحتاج للمحاولة مرة أخرى بعد بضع ثوانٍ.';
+                }
+
+                alert(message);
+                return false;
+            }
+
+            try {
+                installAttempted = true;
+                console.log('PWA: Showing install prompt');
+
+                // Show the install prompt
+                deferredPrompt.prompt();
+
+                // Wait for user's response
+                const { outcome } = await deferredPrompt.userChoice;
+
+                console.log('PWA: User choice:', outcome);
+
+                // Clear the deferred prompt
+                deferredPrompt = null;
+                installAttempted = false;
+
+                if (outcome === 'accepted') {
+                    console.log('PWA installation accepted');
+                    return true;
+                } else {
+                    console.log('PWA installation dismissed');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error during PWA installation:', error);
+                installAttempted = false;
+
+                // If prompt() fails, the prompt might have been used already
+                if (error.message && error.message.includes('prompt')) {
+                    alert('تم استخدام خيار التثبيت مسبقاً.\nيرجى استخدام قائمة المتصفح لتثبيت التطبيق.');
+                } else {
+                    alert('حدث خطأ أثناء التثبيت.\nيرجى المحاولة مرة أخرى أو استخدام قائمة المتصفح.');
+                }
+                return false;
+            }
+        }
+
+        // Check if installation is available
+        function isInstallable() {
+            return deferredPrompt !== null && !isInstalled && !checkIfInstalled();
+        }
+
+        // Initialize on load
+        init();
+
+        // Return public API
+        return {
+            install: install,
+            isInstallable: isInstallable,
+            isInstalled: () => isInstalled || checkIfInstalled(),
+            hasPrompt: () => deferredPrompt !== null
+        };
+    })();
 
 
 

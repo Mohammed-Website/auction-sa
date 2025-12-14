@@ -516,14 +516,59 @@
         // Use a switch statement to handle different actions
         switch (action) {
             case 'install-app':
+                // Check if PWA installer is available
                 if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
-                    window.PWAInstaller.install().catch(error => {
-                        console.error('Error installing PWA:', error);
-                        alert('حدث خطأ أثناء محاولة التثبيت. يرجى المحاولة مرة أخرى.');
-                    });
+                    // Check if already installed
+                    if (window.PWAInstaller.isInstalled()) {
+                        alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                        return;
+                    }
+
+                    // Check if prompt is available, if not wait a bit
+                    if (!window.PWAInstaller.hasPrompt()) {
+                        // Wait a moment and check again (sometimes the event fires late)
+                        setTimeout(() => {
+                            if (window.PWAInstaller.hasPrompt()) {
+                                window.PWAInstaller.install().catch(error => {
+                                    console.error('PWA installation error:', error);
+                                });
+                            } else {
+                                // Still not available, show helpful message
+                                const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+                                const isEdge = /Edg/.test(navigator.userAgent);
+                                const isFirefox = /Firefox/.test(navigator.userAgent);
+
+                                let message = 'لتثبيت التطبيق:\n\n';
+
+                                if (isChrome || isEdge) {
+                                    message += '1. ابحث عن أيقونة التثبيت في شريط العنوان (على اليمين)\n';
+                                    message += '2. أو اضغط على قائمة المتصفح (⋮) واختر "تثبيت التطبيق"\n';
+                                    message += '3. أو انتظر قليلاً ثم حاول مرة أخرى';
+                                } else if (isFirefox) {
+                                    message += '1. اضغط على قائمة المتصفح (☰)\n';
+                                    message += '2. اختر "تثبيت" أو "Install"\n';
+                                    message += '3. أو ابحث عن أيقونة التثبيت في شريط العنوان';
+                                } else {
+                                    message += 'استخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"';
+                                }
+
+                                alert(message);
+                            }
+                        }, 500);
+                    } else {
+                        // Prompt is available, install immediately
+                        window.PWAInstaller.install().catch(error => {
+                            console.error('PWA installation error:', error);
+                        });
+                    }
                 } else {
-                    // Fallback message if PWAInstaller is not loaded yet
-                    alert('جاري تحميل نظام التثبيت... يرجى المحاولة مرة أخرى بعد لحظة.');
+                    // Fallback for browsers that don't support PWA installation
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOS) {
+                        alert('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)');
+                    } else {
+                        alert('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"');
+                    }
                 }
                 break;
 
