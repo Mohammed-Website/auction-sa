@@ -34,6 +34,11 @@
     margin-bottom: var(--spacing-md);
 }
 
+.info-item {
+    display: flex;
+    justify-content: center;
+}
+
 .info-icon {
     width: 20px;
     height: 20px;
@@ -41,6 +46,7 @@
     stroke: var(--primary-color);
     stroke-width: 2;
     flex-shrink: 0;
+    margin-left: 0.5rem;
 }
 
 .info-value {

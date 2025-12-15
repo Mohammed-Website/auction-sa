@@ -70,14 +70,6 @@
         }
     }
 
-    /**
-     * Format number with Arabic-Indic digits
-     */
-    function formatNumber(num) {
-        if (num === undefined || num === null) return '٠';
-        const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-        return num.toString().replace(/\d/g, (digit) => arabicDigits[parseInt(digit)]);
-    }
 
     /**
      * Render countdown timer HTML
@@ -89,22 +81,22 @@
         const html = `
             <div class="countdown-timer">
                 <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="days">${formatNumber(countdown.days)}</div>
+                    <div class="countdown-box" data-unit="days">${countdown.days}</div>
                     <div class="countdown-label-small">يوم</div>
                 </div>
                 <span class="countdown-separator">:</span>
                 <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="hours">${formatNumber(countdown.hours)}</div>
+                    <div class="countdown-box" data-unit="hours">${countdown.hours}</div>
                     <div class="countdown-label-small">ساعة</div>
                 </div>
                 <span class="countdown-separator">:</span>
                 <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="minutes">${formatNumber(countdown.minutes)}</div>
+                    <div class="countdown-box" data-unit="minutes">${countdown.minutes}</div>
                     <div class="countdown-label-small">دقيقة</div>
                 </div>
                 <span class="countdown-separator">:</span>
                 <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="seconds">${formatNumber(countdown.seconds)}</div>
+                    <div class="countdown-box" data-unit="seconds">${countdown.seconds}</div>
                     <div class="countdown-label-small">ثانية</div>
                 </div>
             </div>
@@ -152,11 +144,11 @@
             if (newValue !== oldValue) {
                 box.classList.add('flip');
                 setTimeout(() => {
-                    box.textContent = formatNumber(newValue);
+                    box.textContent = newValue;
                     box.classList.remove('flip');
                 }, 300);
             } else {
-                box.textContent = formatNumber(newValue);
+                box.textContent = newValue;
             }
         });
     }
@@ -229,8 +221,8 @@
         }
 
         return `
-            <div class="asset-card">
-                <div class="asset-card-header">
+            <div class="auction-property-main-page-detail-asset-card">
+                <div class="auction-property-main-page-detail-asset-card-header">
                     <i data-lucide="more-vertical" class="asset-menu-icon"></i>
                     <div class="asset-title-wrapper">
                         <h3 class="asset-title">${titleLine1}${titleLine2 ? '<br>' + titleLine2 : ''}</h3>
@@ -262,12 +254,12 @@
                 
                 <div class="asset-pricing-box">
                     <div class="pricing-row">
-                        <span class="pricing-label">قيمة التزايد</span>
-                        <span class="pricing-value">${formatNumber(asset.bidAmount || '0')} ر.س</span>
+                        <span class="auction-property-main-page-detail-pricing-label">قيمة التزايد</span>
+                        <span class="pricing-value">${asset.bidAmount || '0'} ر.س</span>
                     </div>
                     <div class="pricing-row">
-                        <span class="pricing-label">السعر الافتتاحي</span>
-                        <span class="pricing-value">${formatNumber(asset.startingPrice || '0')} ر.س</span>
+                        <span class="auction-property-main-page-detail-pricing-label">السعر الافتتاحي</span>
+                        <span class="pricing-value">${asset.startingPrice || '0'} ر.س</span>
                     </div>
                 </div>
                 
@@ -276,16 +268,16 @@
                     <div id="${containerId}"></div>
                 </div>
                 
-                <button class="btn-participate">المشاركة في المزاد</button>
+                <button class="property-detail-btn-participate">المشاركة في المزاد</button>
                 
                 <div class="asset-footer">
                     <div class="footer-item">
                         <i data-lucide="eye" class="footer-icon"></i>
-                        <span>${formatNumber(asset.viewCount || 0)}</span>
+                        <span>${asset.viewCount || 0}</span>
                     </div>
                     <div class="footer-item">
-                        <i data-lucide="bookmark" class="footer-icon"></i>
-                        <span>${formatNumber(0)}</span>
+                        <span>${0}</span>
+                        <i data-lucide="hammer" class="footer-icon"></i>
                     </div>
                 </div>
             </div>
@@ -295,7 +287,7 @@
     /**
      * Render the property detail page
      */
-    function renderPropertyDetail(auction) {
+    function renderPropertyDetail(auction, badgeStatus) {
         if (!auction) {
             console.error('No auction data provided');
             return;
@@ -303,7 +295,7 @@
 
         currentAuctionData = auction;
 
-        const container = document.querySelector('#property-detail-section .property-detail-container');
+        const container = document.querySelector('.auction-property-main-page-detail-container');
         if (!container) {
             console.error('Property detail container not found');
             return;
@@ -314,27 +306,45 @@
         const assets = auction.assets || [];
         const assetCount = assets.length;
 
+        // Determine status label and class for category tab based on badge status
+        let categoryStatusLabel = 'قادم قريباً';
+        let categoryStatusClass = 'status-upcoming';
+        const statusClassName = badgeStatus && badgeStatus.className ? badgeStatus.className : '';
+
+        if (statusClassName.includes('live')) {
+            categoryStatusLabel = 'جاري الآن';
+            categoryStatusClass = 'property-detail-status-live';
+        } else if (statusClassName.includes('upcoming')) {
+            categoryStatusLabel = 'قادم قريباً';
+            categoryStatusClass = 'property-detail-status-upcoming';
+        }
+
+        // Get company logo for category icon
+        const categoryIcon = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="category-icon-image">` : '';
+
         const html = `
             <!-- Category Section -->
-            <div class="property-detail-category-section">
-                <div class="category-header">
-                    <h3 class="category-title">مزاد التجارية</h3>
-                    <div class="category-icon-placeholder"></div>
+            <div class="auction-property-main-page-detail-category-header">
+                <div class="auction-property-main-page-detail-category-header-right">
+                    <div class="category-icon-placeholder">${categoryIcon}</div>
+                    <h3 class="category-title">${auction.compName}</h3>
                 </div>
-                <div class="category-tabs">
-                    <button class="category-tab active">عقارات</button>
-                    <button class="category-tab">افناذ - إلكتروني</button>
-                    <button class="category-tab">قادم</button>
-                </div>
+                <i data-lucide="chevron-left" class="info-icon" style="cursor: pointer;" onclick="window.switchToSection('company-details-section')"></i>
             </div>
 
+
+            <button class="auction-property-main-page-detail-category-tab">عقارات</button>
+            <button class="auction-property-main-page-detail-category-tab" style="background: #eaf3ff; color: #2c5aa0;">إلكتروني - انفاذ</button>
+            <button class="auction-property-main-page-detail-category-tab ${categoryStatusClass}">${categoryStatusLabel}</button>
+
+
             <!-- Auction Main Card -->
-            <div class="auction-main-card">
-                <div class="auction-main-logo">
-                    <span class="logo-placeholder">إنفاذ</span>
-                </div>
-                <h2 class="auction-main-title">${auction.title || 'مزاد'}</h2>
-                <p class="auction-main-subtitle">المعمارية - ${auction.location || 'الدرعية'}</p>
+            <div class="auction-property-main-page-detail-top-image">
+            <img src="${auction.image}" alt="${auction.title || 'مزادنا للعقارات السعودية'}">
+            </div>
+
+            <div>
+                <h3 class="property-detail-auction-title">${auction.title}</h3>
             </div>
 
             <!-- Info Section -->
@@ -352,11 +362,12 @@
                     <span class="info-label">المدينة: ${auction.location || 'غير محدد'}</span>
                 </div>
             </div>
+            
 
             <!-- Buttons -->
-            <div class="property-detail-buttons">
-                <button class="btn-primary">بروشور المزاد</button>
-                <button class="btn-secondary">الشروط والأحكام</button>
+            <div class="auction-property-main-page-detail-buttons">
+                <button class="auction-property-main-page-detail-btn-primary">بروشور المزاد</button>
+                <button class="auction-property-main-page-detail-btn-secondary">الشروط والأحكام</button>
             </div>
 
             <!-- Assets Section -->
@@ -405,7 +416,7 @@
     /**
      * Open property detail page
      */
-    window.openPropertyDetail = async function (auctionId) {
+    window.openPropertyDetail = async function (auctionId, badgeStatus) {
         try {
             // Fetch auction data from JSON
             const response = await fetch('json-data/auction-property.json');
@@ -423,10 +434,10 @@
             }
 
             // Render the detail page
-            renderPropertyDetail(auction);
+            renderPropertyDetail(auction, badgeStatus);
 
             // Show header
-            const header = document.getElementById('property-detail-header');
+            const header = document.getElementById('auction-property-main-page-detail-header');
             if (header) {
                 header.style.display = 'flex';
             }
@@ -457,7 +468,7 @@
                 cleanupCountdowns();
 
                 // Hide header
-                const header = document.getElementById('property-detail-header');
+                const header = document.getElementById('auction-property-main-page-detail-header');
                 if (header) {
                     header.style.display = 'none';
                 }

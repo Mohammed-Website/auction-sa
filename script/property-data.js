@@ -53,21 +53,13 @@
         }
     };
 
-    /**
-     * Format number with thousand separators
-     * Example: 1000000 becomes "1,000,000"
-     */
-    function formatNumber(num) {
-        if (!num) return '0';
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
 
     /**
      * Format price for display
      * Adds "ريال" (Riyal) to the number
      */
     function formatPrice(price) {
-        return formatNumber(price) + ' ريال';
+        return price + ' ريال';
     }
 
     /**
@@ -75,7 +67,7 @@
      * Adds "ريال / شهرياً" (Riyal / Monthly) to the number
      */
     function formatRentalPrice(price) {
-        return formatNumber(price) + ' ريال / شهرياً';
+        return price + ' ريال / شهرياً';
     }
 
     /**
@@ -402,7 +394,7 @@
         if (property.area) {
             // Handle area format - could be "450 م²" or just "450"
             const areaValue = property.area.toString().replace(/[^\d]/g, '');
-            const areaText = areaValue ? `${formatNumber(areaValue)} م²` : property.area;
+            const areaText = areaValue ? `${areaValue} م²` : property.area;
             features.push(`<i data-lucide="maximize" class="property-feature-icon-home-page"></i> ${areaText}`);
         }
 
@@ -514,7 +506,7 @@
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${property.viewCount ? formatNumber(property.viewCount) : '0'}</span>
+                            <span class="property-view-number-home-page">${property.viewCount ? property.viewCount : '0'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             اشتري الآن
@@ -569,7 +561,7 @@
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${property.viewCount ? formatNumber(property.viewCount) : '0'}</span>
+                            <span class="property-view-number-home-page">${property.viewCount ? property.viewCount : '0'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             استأجر الآن
@@ -743,11 +735,11 @@
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${auction.viewCount ? formatNumber(auction.viewCount) : '0'}</span>
+                            <span class="property-view-number-home-page">${auction.viewCount ? auction.viewCount : '0'}</span>
                         </div>
                         <div class="auction-property-count-home-page">
                             <span class="property-view-number-home-page">عدد الأصول</span>
-                            <span class="property-view-number-home-page">${auction.viewCount ? formatNumber(auction.viewCount) : '1'}</span>
+                            <span class="property-view-number-home-page">${auction.viewCount ? auction.viewCount : '1'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             شارك الآن
@@ -824,9 +816,12 @@
                         const auctionId = property.id;
                         console.log('Auction card clicked, ID:', auctionId, 'Property:', property);
 
+                        // Determine status badge to pass to detail page for dynamic category tab
+                        const badgeStatus = getAuctionBadgeStatus(property.bidStartDate, property.bidEndDate);
+
                         if (auctionId) {
                             if (typeof window.openPropertyDetail === 'function') {
-                                window.openPropertyDetail(auctionId);
+                                window.openPropertyDetail(auctionId, badgeStatus);
                             } else {
                                 console.error('openPropertyDetail function not available');
                             }

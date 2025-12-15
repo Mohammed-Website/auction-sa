@@ -23,7 +23,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     align-self: center;
 }
 
@@ -168,7 +168,7 @@
     width: 2rem;
     height: 2.5rem;
     background-color: #E6E6E6;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     position: relative;
     overflow: hidden;
     display: flex;

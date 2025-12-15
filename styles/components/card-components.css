@@ -10,7 +10,7 @@
     background: #005081;
     color: white;
     padding: 3px 6px;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     font-size: 0.7rem;
     font-weight: 600;
     z-index: 2;

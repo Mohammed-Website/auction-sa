@@ -26,7 +26,7 @@
     width: fit-content;
     padding: var(--spacing-xs) var(--spacing-md);
     border: none;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     background-color: var(--bg-white);
     color: var(--text-secondary);
     font-size: var(--font-size-base);

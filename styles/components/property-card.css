@@ -51,7 +51,7 @@
 .property-features-home-page span {
     background: #f0f4f8;
     padding: 0.25rem 0.5rem;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
 }

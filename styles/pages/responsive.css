@@ -106,11 +106,6 @@
         flex-shrink: 0;
     }
 
-    .info-icon {
-        width: 18px;
-        height: 18px;
-    }
-
     .info-value {
         font-size: var(--font-size-sm) !important;
         margin-top: 0;
@@ -153,6 +148,12 @@
 
     .banner-content p {
         font-size: 1.2rem;
+    }
+
+    .profile-view,
+    #property-detail-section {
+        width: 70%;
+        justify-self: center;
     }
 
     .access-box {
@@ -224,7 +225,7 @@
         max-width: none;
         box-shadow: none;
         z-index: auto;
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-sm);
         margin-left: 0;
         margin-right: 0;
         margin-bottom: 0.5rem;
@@ -232,7 +233,7 @@
     }
 
     .account-tabs-header {
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-sm);
     }
 
     /* Remove padding adjustments on desktop */
@@ -245,7 +246,7 @@
         margin-top: 0;
     }
 
-    .property-detail-container {
+    .auction-property-main-page-detail-container {
         padding-top: 1rem;
     }
 
@@ -256,7 +257,7 @@
     }
 
     .top-header {
-        padding: 1.25rem 2rem;
+        padding: 0.9rem 0;
     }
 
     .header-content {
@@ -278,9 +279,9 @@
         border-bottom: 1px solid #e8e8e8;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         position: sticky;
-        top: 70px;
+        top: 68px;
         z-index: 99;
-        padding: 1rem 0;
+        padding: 0.5rem 0;
     }
 
     .section-content {
@@ -351,6 +352,10 @@
 @media (min-width: 1440px) {
     .banner-slider {
         height: 300px;
+    }
+
+    .top-nav {
+        top: 74px;
     }
 
     .top-nav-container {
