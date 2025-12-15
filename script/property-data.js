@@ -479,7 +479,7 @@
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
         const specialWordBadge = property.specialWord ?
-            `<div class="special-word-badge">${property.specialWord}</div>` : '';
+            `<div class="home-page-special-word-badge">${property.specialWord}</div>` : '';
 
         return `
             <div class="property-card-home-page">
@@ -528,7 +528,7 @@
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
         const specialWordBadge = property.specialWord ?
-            `<div class="special-word-badge">${property.specialWord}</div>` : '';
+            `<div class="home-page-special-word-badge">${property.specialWord}</div>` : '';
 
         // Handle price - check if it already includes "/ شهرياً" or "/ سنوياً"
         let priceText = property.price || '';
@@ -667,7 +667,7 @@
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
         const companyLogo = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="company-logo">` : '';
         const specialWordBadge = auction.specialWord ?
-            `<div class="special-word-badge">${auction.specialWord}</div>` : '';
+            `<div class="home-page-special-word-badge">${auction.specialWord}</div>` : '';
 
         // Handle timer - use 'timer' from JSON or fallback to 'timeRemaining'
         const timeRemaining = auction.bidStartDate || 'غير محدد';
