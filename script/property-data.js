@@ -739,7 +739,7 @@
                         </div>
                         <div class="auction-property-count-home-page">
                             <span class="property-view-number-home-page">عدد الأصول</span>
-                            <span class="property-view-number-home-page">${auction.viewCount ? auction.viewCount : '1'}</span>
+                            <span class="property-view-number-home-page">${auction.numberOfAssets ? auction.numberOfAssets : '1'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             شارك الآن

@@ -763,9 +763,9 @@
                     targetSection.style.pointerEvents = 'auto';
                     targetSection.classList.add('active');
 
-                    // Enable website scrolling when property-detail-section is opened
+                    // Disable website scrolling when property-detail-section is opened
                     if (typeof window.controlWebsiteScroll === 'function') {
-                        window.controlWebsiteScroll('enable');
+                        window.controlWebsiteScroll('disable');
                     }
                 });
             });

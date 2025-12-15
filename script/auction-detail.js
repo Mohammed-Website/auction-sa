@@ -79,7 +79,7 @@
         if (!container) return;
 
         const html = `
-            <div class="countdown-timer">
+            <div class="auction-property-main-page-detail-countdown-timer">
                 <div class="countdown-unit">
                     <div class="countdown-box" data-unit="days">${countdown.days}</div>
                     <div class="countdown-label-small">يوم</div>
@@ -233,10 +233,12 @@
                     </div>
                 </div>
                 
-                <div class="asset-tags">
-                    ${tags.map(tag => `<span class="asset-tag ${tag.class}">${tag.text}</span>`).join('')}
-                </div>
+
+                <button class="auction-property-main-page-detail-category-tab">عقارات</button>
+                <button class="auction-property-main-page-detail-category-tab" style="background: #eaf3ff; color: #2c5aa0;">إلكتروني - انفاذ</button>
+                <button class="auction-property-main-page-detail-category-tab">جاري الآن</button>
                 
+
                 <div class="asset-metadata">
                     <div class="metadata-item">
                         <i data-lucide="map-pin" class="metadata-icon"></i>
@@ -252,14 +254,21 @@
                     </div>
                 </div>
                 
-                <div class="asset-pricing-box">
-                    <div class="pricing-row">
+                <div class="auction-property-main-page-detail-asset-pricing-box">
+                    <div class="auction-property-main-page-detail-pricing-row">
                         <span class="auction-property-main-page-detail-pricing-label">قيمة التزايد</span>
-                        <span class="pricing-value">${asset.bidAmount || '0'} ر.س</span>
+                        <span class="pricing-value">
+                            ${asset.bidAmount || '0'}
+                            <span class="currency-symbol">⃁</span>
+                        </span>
+
                     </div>
-                    <div class="pricing-row">
+                    <div class="auction-property-main-page-detail-pricing-row">
                         <span class="auction-property-main-page-detail-pricing-label">السعر الافتتاحي</span>
-                        <span class="pricing-value">${asset.startingPrice || '0'} ر.س</span>
+                        <span class="pricing-value">
+                            ${asset.startingPrice || '0'}
+                            <span class="currency-symbol">⃁</span>
+                        </span>
                     </div>
                 </div>
                 
@@ -268,17 +277,18 @@
                     <div id="${containerId}"></div>
                 </div>
                 
-                <button class="property-detail-btn-participate">المشاركة في المزاد</button>
-                
-                <div class="asset-footer">
-                    <div class="footer-item">
-                        <i data-lucide="eye" class="footer-icon"></i>
-                        <span>${asset.viewCount || 0}</span>
+                <div class="property-cta-container-home-page">
+                    <div class="property-view-count-home-page">
+                        <i data-lucide="eye" class="property-view-icon-home-page"></i>
+                        <span class="property-view-number-home-page">${asset.viewCount ? asset.viewCount : '0'}</span>
                     </div>
-                    <div class="footer-item">
-                        <span>${0}</span>
-                        <i data-lucide="hammer" class="footer-icon"></i>
+                    <div class="auction-property-count-home-page">
+                        <span class="property-view-number-home-page">عدد المزايدين</span>
+                        <span class="property-view-number-home-page">${asset.numberOfAssets ? asset.numberOfAssets : '1'}</span>
                     </div>
+                    <button class="property-cta-btn-home-page">
+                        المشاركة في المزاد
+                    </button>
                 </div>
             </div>
         `;

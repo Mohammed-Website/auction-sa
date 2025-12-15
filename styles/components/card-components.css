@@ -6,7 +6,7 @@
 }
 
 /* Special Word Badge */
-.special-word-badge {
+.home-page-special-word-badge {
     background: #005081;
     color: white;
     padding: 3px 6px;
@@ -152,7 +152,7 @@
         font-size: 0.75rem;
     }
 
-    .special-word-badge {
+    .home-page-special-word-badge {
         font-size: 0.7rem;
         padding: 2px 8px;
     }
