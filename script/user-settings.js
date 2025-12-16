@@ -7,81 +7,8 @@
     let eventListenersAttached = false;
     let settingsRendered = false;
 
-    // Functions to disable/enable body scrolling
-    let scrollHandler = null;
-    let touchHandler = null;
-    let initialScrollY = 0;
 
-    function disableBodyScroll() {
-        const body = document.body;
-        initialScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
 
-        // Store scroll position for restoration
-        body.setAttribute('data-scroll-y', initialScrollY);
-
-        // Create scroll handler that prevents downward scrolling but allows upward
-        scrollHandler = function () {
-            const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-
-            // If trying to scroll down past initial position, prevent it
-            if (currentScrollY > initialScrollY) {
-                window.scrollTo(0, initialScrollY);
-            }
-        };
-
-        // Add scroll event listener
-        window.addEventListener('scroll', scrollHandler, { passive: true });
-
-        // Prevent touchmove events that would cause downward scrolling on body
-        // But allow scrolling within settings-content and profile-section's section-content
-        touchHandler = function (e) {
-            // Check if the touch is within settings-content - if so, allow it
-            const settingsContent = document.querySelector('.settings-content');
-            if (settingsContent && settingsContent.contains(e.target)) {
-                return; // Allow scrolling within settings-content
-            }
-
-            // Check if the touch is within profile-section's section-content - if so, allow it
-            const profileSection = document.getElementById('profile-section');
-            if (profileSection && profileSection.classList.contains('active')) {
-                const sectionContent = profileSection.querySelector('.section-content');
-                if (sectionContent && sectionContent.contains(e.target)) {
-                    return; // Allow scrolling within profile-section's section-content
-                }
-            }
-
-            // For body scrolling, check if it would cause downward scroll
-            const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-            if (currentScrollY > initialScrollY) {
-                e.preventDefault();
-                return false;
-            }
-        };
-
-        document.addEventListener('touchmove', touchHandler, { passive: false });
-    }
-
-    function enableBodyScroll() {
-        const body = document.body;
-        const scrollY = body.getAttribute('data-scroll-y') || '0';
-
-        // Remove scroll event listener
-        if (scrollHandler) {
-            window.removeEventListener('scroll', scrollHandler);
-            scrollHandler = null;
-        }
-
-        // Remove touch handler
-        if (touchHandler) {
-            document.removeEventListener('touchmove', touchHandler);
-            touchHandler = null;
-        }
-
-        body.removeAttribute('data-scroll-y');
-
-        // Restore scroll position
-        window.scrollTo(0, parseInt(scrollY, 10));
-    }
 
     // Build settings view markup
     function renderSettingsView() {
@@ -156,49 +83,26 @@
         // Allow listeners to attach on fresh markup
         eventListenersAttached = false;
         settingsRendered = true;
-    }
 
-    // Initialize settings page
-    function initSettings() {
-        // Prevent duplicate event listeners
-        if (eventListenersAttached) {
-            return;
-        }
+        
 
         // Back button handler
         const settingsBackBtn = document.getElementById('settings-back-btn');
-        if (settingsBackBtn && !settingsBackBtn.hasAttribute('data-listener-attached')) {
-            settingsBackBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
+        settingsBackBtn.onclick = function () {
 
-                // Scroll to top for better UX
-                if (typeof window.scrollToTop === 'function') {
-                    window.scrollToTop();
+            // Navigate back to profile menu
+            if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
+                window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+            } else {
+                // Fallback: navigate to profile section
+                if (typeof window.switchToSection === 'function') {
+                    window.switchToSection('profile-section');
                 }
-
-                // Navigate back to profile menu
-                if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
-                    window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
-                } else {
-                    // Fallback: navigate to profile section
-                    if (typeof window.switchToSection === 'function') {
-                        window.switchToSection('profile-section');
-                    }
-                }
-            });
-            settingsBackBtn.setAttribute('data-listener-attached', 'true');
-        }
-
-
-
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-
-        eventListenersAttached = true;
+            }
+        };
     }
+
+
 
     // Initialize when DOM is ready
     function init() {
@@ -210,45 +114,11 @@
         // Build view markup once
         renderSettingsView();
 
-        // Initialize settings
-        initSettings();
-
-        // Use MutationObserver to re-initialize when settings view becomes active
-        const observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function (mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const isActive = settingsView.classList.contains('active');
-                    if (isActive) {
-                        // Scroll settings-content to top
-                        setTimeout(() => {
-                            const settingsContent = document.querySelector('.settings-content');
-                            if (settingsContent) {
-                                settingsContent.scrollTop = 0;
-                            }
-                        }, 50);
-                        // Re-initialize when settings view becomes active
-                        setTimeout(() => {
-                            initSettings();
-                        }, 100);
-                    }
-                }
-            });
-        });
 
         observer.observe(settingsView, {
             attributes: true,
             attributeFilter: ['class']
         });
-
-        // Also initialize if already active
-        if (settingsView.classList.contains('active')) {
-            // Scroll settings-content to top
-            const settingsContent = document.querySelector('.settings-content');
-            if (settingsContent) {
-                settingsContent.scrollTop = 0;
-            }
-            initSettings();
-        }
     }
 
     // Initialize on DOM ready
@@ -257,11 +127,4 @@
     } else {
         init();
     }
-
-    // Export for external use
-    window.SettingsPage = {
-        init: initSettings,
-        disableBodyScroll: disableBodyScroll,
-        enableBodyScroll: enableBodyScroll
-    };
 })();

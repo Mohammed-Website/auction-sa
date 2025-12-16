@@ -112,7 +112,7 @@
      * Save current state to browser history
      * This allows the back button to work correctly
      */
-    function pushHistoryState(state, skipPush = false) {
+    function pushHistoryState(skipPush = false) {
         // Don't push if we're handling back navigation or navigating within profile
         if (isHandlingBackNavigation || skipPush || isNavigatingWithinProfile) {
             return;

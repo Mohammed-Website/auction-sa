@@ -188,10 +188,6 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Scroll to top for better UX
-                if (typeof window.scrollToTop === 'function') {
-                    window.scrollToTop();
-                }
 
                 // Navigate to profile menu (not home-section)
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {
@@ -212,10 +208,6 @@
 
     // Switch to a specific tab
     function switchTab(tabId) {
-        // Scroll to top for better UX
-        if (typeof window.scrollToTop === 'function') {
-            window.scrollToTop();
-        }
 
         // Hide account tabs header
         const accountTabsHeader = document.getElementById('account-tabs-header');
@@ -300,10 +292,6 @@
 
     // Go back to tabs view (from detail view)
     function goBackToTabs() {
-        // Scroll to top for better UX
-        if (typeof window.scrollToTop === 'function') {
-            window.scrollToTop();
-        }
 
         // Show account tabs header
         const accountTabsHeader = document.getElementById('account-tabs-header');

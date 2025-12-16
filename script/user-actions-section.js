@@ -7,7 +7,7 @@
 
     // Create and append filter buttons to finished content
     function createFilterButtons() {
-        const finishedContent = document.getElementById('finished-content');
+        const finishedContent = document.querySelector('.my-actions-tabs');
         if (!finishedContent || document.querySelector('.finished-filters')) return;
 
         const filterContainer = document.createElement('div');
@@ -15,7 +15,7 @@
         filterContainer.style.display = 'flex';
         filterContainer.style.justifyContent = 'flex-start';
         filterContainer.style.gap = '8px';
-        filterContainer.style.marginBottom = '16px';
+        filterContainer.style.margin = '1rem 0';
         filterContainer.style.width = '100%';
 
         const buttons = [
@@ -71,7 +71,7 @@
                     </button>
                 </div>
 
-                <div class="my-actions-content">
+                <div class="my-actions-content scrollable-container">
                     <div class="my-actions-tab-content active" id="pending-content">
                         <div class="my-actions-empty-state scrollable-container">
                             <p class="my-actions-empty-text">لا يوجد بيانات لعرضها</p>

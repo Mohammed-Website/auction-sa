@@ -16,14 +16,14 @@
 
 /* Tab Switching Section */
 .my-actions-tabs {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--spacing-sm);
-    justify-content: center;
-    align-items: center;
+    width: 100%;
 }
 
 .my-actions-tab {
-    width: fit-content;
+    width: 100%;
     padding: var(--spacing-xs) var(--spacing-md);
     border: none;
     border-radius: var(--radius-sm);

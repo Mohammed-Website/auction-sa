@@ -202,8 +202,6 @@
         // Set navigation lock
         isNavigating = true;
 
-        // Scroll to the top of the page when switching sections
-        window.scrollToTop();
 
 
         // Handle case: switching from subsection (buy-section, rent-section, auction-section) to home-section
@@ -411,12 +409,6 @@
                         toggleHomeSubsections(sectionId);
                     }
 
-                    // Disable website scrolling when switching to my-actions-section
-                    if (sectionId === 'my-actions-section') {
-                        if (typeof window.controlWebsiteScroll === 'function') {
-                            window.controlWebsiteScroll('disable');
-                        }
-                    }
 
                     // Apply fade-in animation to content
                     const sectionContent = targetSection.querySelector('.section-content');
@@ -562,13 +554,6 @@
                     // If switching to home-section or a subsection, show appropriate subsections
                     if (sectionId === 'home-section' || isTargetingSubsection) {
                         toggleHomeSubsections(sectionId);
-
-                        // Enable website scrolling when switching from profile to home/subsection
-                        if (isFromProfileToHome || isFromProfileToSubsection) {
-                            if (typeof window.controlWebsiteScroll === 'function') {
-                                window.controlWebsiteScroll('enable');
-                            }
-                        }
                     }
 
                     // Apply fade-in animation to content
@@ -847,11 +832,6 @@
                 targetSection.style.pointerEvents = 'auto';
                 targetSection.classList.add('active');
 
-                // Disable website scrolling when property-detail-section is opened
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('disable');
-                }
-
                 // Clean up will-change after animation completes (performance optimization)
                 setTimeout(() => {
                     targetSection.style.willChange = 'auto';
@@ -934,10 +914,6 @@
 
                     // Scroll section-content to top
                     trackedSetTimeout(() => {
-                        const sectionContent = profileSection.querySelector('.section-content');
-                        if (sectionContent) {
-                            sectionContent.scrollTop = 0;
-                        }
                         // Release navigation lock
                         isNavigating = false;
                         // Safety check: ensure content is visible
@@ -1030,19 +1006,7 @@
                         currentActiveSection.style.pointerEvents = 'none';
                     }, 400);
 
-                    // Disable website scrolling when switching to my-actions-section
-                    if (isFromPropertyDetailToMyActions) {
-                        if (typeof window.controlWebsiteScroll === 'function') {
-                            window.controlWebsiteScroll('disable');
-                        }
-                    }
 
-                    // If switching to property-detail-section, enable scrolling
-                    if (isFromMyActionsToPropertyDetail) {
-                        if (typeof window.controlWebsiteScroll === 'function') {
-                            window.controlWebsiteScroll('enable');
-                        }
-                    }
 
                     // Apply fade-in animation to content
                     const sectionContent = targetSection.querySelector('.section-content');
@@ -1193,11 +1157,6 @@
                     homeSection.style.opacity = '1';
                     homeSection.style.visibility = 'visible';
                 }
-            }
-
-            // Enable website scrolling when switching to home-section (especially from profile)
-            if (isComingFromProfile && typeof window.controlWebsiteScroll === 'function') {
-                window.controlWebsiteScroll('enable');
             }
         }
 
@@ -1442,11 +1401,6 @@
     function handleNavClick(e) {
         e.preventDefault();
 
-        // Enable website scrolling when clicking navigation links
-        if (typeof window.controlWebsiteScroll === 'function') {
-            window.controlWebsiteScroll('enable');
-        }
-
         const sectionId = this.getAttribute('data-section');
         if (sectionId) {
             switchToSection(sectionId);
@@ -1595,23 +1549,12 @@
             headerProfileBtn.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                // Disable website scrolling when opening profile
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('disable');
-                }
-
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 const sectionId = this.getAttribute('data-section');
                 if (sectionId) {
                     switchToSection(sectionId);
                 }
-
-                // Scroll to top of profile-menu-view
-                setTimeout(() => {
-                    const menuView = document.getElementById('profile-menu-view');
-                    if (menuView) {
-                        menuView.scrollTop = 0;
-                    }
-                }, 100);
+                scrollScrollableContainersToTop();
             });
         }
 

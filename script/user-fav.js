@@ -64,10 +64,6 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Scroll to top for better UX
-                if (typeof window.scrollToTop === 'function') {
-                    window.scrollToTop();
-                }
 
                 // Navigate back to profile menu
                 if (typeof window.ProfileNavigation !== 'undefined' && window.ProfileNavigation.navigateTo) {

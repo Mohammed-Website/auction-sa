@@ -812,6 +812,10 @@
                             return;
                         }
 
+                        /* scroll to the of the "property-detail-section" page */
+                        scrollScrollableContainersToTop();
+
+                        console.log('Good')
                         // Open property detail page
                         const auctionId = property.id;
 

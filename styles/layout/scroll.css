@@ -38,19 +38,6 @@
     padding-bottom: 0.5rem;
 }
 
-/* Add additional space at the end using pseudo-element */
-.horizontal-scroll-grid::after {
-    content: '';
-    flex-shrink: 0;
-    width: 1rem;
-}
-
-.horizontal-scroll-grid::before {
-    content: '';
-    flex-shrink: 0;
-    width: 0.7rem;
-}
-
 .horizontal-scroll-grid .property-card-home-page {
     scroll-snap-align: center;
     scroll-snap-stop: always;

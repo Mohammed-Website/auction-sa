@@ -496,10 +496,6 @@
                     header.style.display = 'none';
                 }
 
-                // Enable website scrolling when going back
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('enable');
-                }
 
                 // Navigate back to previous section (use stored previous section, or home-section by default)
                 if (typeof window.switchToSection === 'function') {

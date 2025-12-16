@@ -633,8 +633,6 @@
             return;
         }
 
-        // Scroll to the top of the page when navigating
-        window.scrollToTop();
 
         // Get the profile section element (we'll use it in multiple places)
         const profileSection = document.getElementById('profile-section');
@@ -951,31 +949,6 @@
             attributes: true,
             attributeFilter: ['class']
         });
-
-        // Step 5: Listen for clicks on the profile button in the header
-        const profileBtn = document.querySelector('.header-profile-btn');
-        if (profileBtn) {
-            profileBtn.addEventListener('click', function () {
-                // Disable website scrolling when opening profile
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('disable');
-                }
-
-                // Reset to menu view when opening profile
-                if (currentProfileRoute !== ProfileRoutes.MENU) {
-                    navigateToProfileRoute(ProfileRoutes.MENU);
-                }
-                // Re-render menu after a short delay
-                setTimeout(() => {
-                    renderProfileMenu();
-                    // Scroll to top of profile-menu-view
-                    const menuView = document.getElementById('profile-menu-view');
-                    if (menuView) {
-                        menuView.scrollTop = 0;
-                    }
-                }, 200);
-            });
-        }
     }
 
     // ============================================================================
