@@ -646,8 +646,29 @@
             // Check if we need to switch sections (coming from a different section)
             const needsSectionSwitch = currentActiveSection && currentActiveSection.id !== 'home-section';
             const isComingFromProfile = currentActiveSection && currentActiveSection.id === 'profile-section';
+            const isComingFromPropertyDetail = currentActiveSection && currentActiveSection.id === 'property-detail-section';
 
-            if (needsSectionSwitch) {
+            // Handle property-detail-section slide down and fade out animation
+            if (isComingFromPropertyDetail && currentActiveSection) {
+                const propertyDetailSection = currentActiveSection;
+                propertyDetailSection.style.transition = 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                propertyDetailSection.style.transform = 'translateY(20px)';
+                propertyDetailSection.style.opacity = '0';
+
+                setTimeout(() => {
+                    propertyDetailSection.classList.remove('active');
+                    propertyDetailSection.style.display = 'none';
+                    propertyDetailSection.style.visibility = 'hidden';
+                    propertyDetailSection.style.pointerEvents = 'none';
+                    // Remove overlay positioning if it was set
+                    propertyDetailSection.style.removeProperty('position');
+                    propertyDetailSection.style.removeProperty('top');
+                    propertyDetailSection.style.removeProperty('right');
+                    propertyDetailSection.style.removeProperty('left');
+                    propertyDetailSection.style.removeProperty('width');
+                    propertyDetailSection.style.removeProperty('z-index');
+                }, 300);
+            } else if (needsSectionSwitch) {
                 currentActiveSection.classList.remove('active');
                 currentActiveSection.style.display = 'none';
                 currentActiveSection.style.opacity = '0';
@@ -655,13 +676,37 @@
                 currentActiveSection.style.pointerEvents = 'none';
             }
 
-            // Show home-section
-            homeSection.style.display = 'block';
-            homeSection.style.visibility = 'visible';
-            homeSection.style.opacity = '1';
-            homeSection.style.pointerEvents = 'auto';
-            homeSection.style.transform = 'translateX(0)';
-            homeSection.classList.add('active');
+            // Show home-section without slide animation when coming from property-detail-section
+            // Only property-detail-section should animate, not home-section or its children
+            if (isComingFromPropertyDetail) {
+                // Show home-section with just fade in (no slide to avoid affecting banner-section and other elements)
+                homeSection.style.display = 'block';
+                homeSection.style.visibility = 'visible';
+                homeSection.style.opacity = '0';
+                homeSection.style.transform = 'translateX(0)'; // No translateY to avoid affecting children
+                homeSection.style.pointerEvents = 'none';
+                homeSection.style.transition = 'opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)'; // Only opacity transition
+                homeSection.classList.add('active');
+
+                // Force reflow
+                homeSection.offsetHeight;
+
+                // Animate fade in only (no slide)
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        homeSection.style.opacity = '1';
+                        homeSection.style.pointerEvents = 'auto';
+                    });
+                });
+            } else {
+                // Show home-section normally for other transitions
+                homeSection.style.display = 'block';
+                homeSection.style.visibility = 'visible';
+                homeSection.style.opacity = '1';
+                homeSection.style.pointerEvents = 'auto';
+                homeSection.style.transform = 'translateX(0)';
+                homeSection.classList.add('active');
+            }
 
             // Hide content initially for fade-in animation (same as home-section)
             const sectionContent = homeSection.querySelector('.section-content');
@@ -673,7 +718,7 @@
             }
 
             // Fade in content after brief delay (same timing as home-section)
-            const fadeInDelay = isComingFromProfile ? 100 : 150;
+            const fadeInDelay = isComingFromProfile ? 100 : (isComingFromPropertyDetail ? 200 : 150);
             trackedSetTimeout(() => {
                 if (sectionContent) {
                     sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
@@ -733,13 +778,16 @@
             return;
         }
 
-        // Special handling for property-detail-section with zoom animation
+        // Special handling for property-detail-section with optimized slide animation
         if (sectionId === 'property-detail-section') {
             const isFromHomeSection = currentActiveSection.id === 'home-section';
 
+            // Batch DOM reads first (before any writes)
+            const targetSectionComputed = window.getComputedStyle(targetSection);
+
             // If coming from home-section, keep it visible; otherwise hide current section
             if (!isFromHomeSection) {
-                // Hide current section
+                // Hide current section immediately (no animation needed)
                 currentActiveSection.classList.remove('active');
                 currentActiveSection.style.display = 'none';
                 currentActiveSection.style.opacity = '0';
@@ -749,35 +797,33 @@
                 // Disable pointer events immediately to prevent interaction
                 currentActiveSection.style.pointerEvents = 'none';
 
-                // Delay hiding home-section with fade-out transition so it's not visible to the user
-                // Use will-change for better performance on low-end devices
-                currentActiveSection.style.willChange = 'opacity, visibility';
-                currentActiveSection.style.transition = 'opacity 0.3s ease-out, visibility 0.3s ease-out';
+                // Optimized fade-out: use compositor-only properties
+                currentActiveSection.style.willChange = 'opacity';
+                currentActiveSection.style.transition = 'opacity 0.25s ease-out';
 
-                // Delay the fade-out to happen after the property-detail-section animation starts
-                setTimeout(() => {
+                // Use single RAF for better performance
+                requestAnimationFrame(() => {
                     currentActiveSection.style.opacity = '0';
-                    currentActiveSection.style.visibility = 'hidden';
 
-                    // After fade-out completes, hide it completely
+                    // Clean up after animation
                     setTimeout(() => {
                         currentActiveSection.style.display = 'none';
                         currentActiveSection.classList.remove('active');
-                        // Remove will-change after animation completes
                         currentActiveSection.style.willChange = 'auto';
-                    }, 300); // Wait for transition to complete
-                }, 100); // Small delay to let property-detail-section animation start first
+                        currentActiveSection.style.removeProperty('transition');
+                    }, 250);
+                });
             }
 
-            // Prepare property-detail-section - start with zoom out
-            // Use will-change for better performance on low-end devices
-            targetSection.style.willChange = 'transform, opacity';
+            // Prepare property-detail-section with GPU-accelerated properties
+            // Use transform3d for better GPU acceleration on low-end devices
             targetSection.style.display = 'block';
-            targetSection.style.transform = 'scale(0.9)';
+            targetSection.style.transform = 'translate3d(0, 20px, 0)'; // GPU acceleration
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
-            targetSection.style.transition = 'transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            targetSection.style.willChange = 'transform, opacity'; // Hint for browser optimization
+            targetSection.style.transition = 'transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
 
             // If coming from home-section, position property-detail-section as overlay
@@ -790,27 +836,26 @@
                 targetSection.style.zIndex = '10';
             }
 
-            // Force reflow
+            // Single reflow before animation
             targetSection.offsetHeight;
 
-            // Animate zoom in
+            // Optimized animation: use single RAF with transform3d
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    targetSection.style.transform = 'scale(1)';
-                    targetSection.style.opacity = '1';
-                    targetSection.style.pointerEvents = 'auto';
-                    targetSection.classList.add('active');
+                // Use transform3d for GPU acceleration
+                targetSection.style.transform = 'translate3d(0, 0, 0)';
+                targetSection.style.opacity = '1';
+                targetSection.style.pointerEvents = 'auto';
+                targetSection.classList.add('active');
 
-                    // Disable website scrolling when property-detail-section is opened
-                    if (typeof window.controlWebsiteScroll === 'function') {
-                        window.controlWebsiteScroll('disable');
-                    }
+                // Disable website scrolling when property-detail-section is opened
+                if (typeof window.controlWebsiteScroll === 'function') {
+                    window.controlWebsiteScroll('disable');
+                }
 
-                    // Remove will-change after animation completes for better performance
-                    setTimeout(() => {
-                        targetSection.style.willChange = 'auto';
-                    }, 400);
-                });
+                // Clean up will-change after animation completes (performance optimization)
+                setTimeout(() => {
+                    targetSection.style.willChange = 'auto';
+                }, 350);
             });
 
             // Update current section
@@ -1094,9 +1139,9 @@
             const homeSection = document.getElementById('home-section');
 
             if (propertyDetailSection && propertyDetailSection.classList.contains('active')) {
-                // Zoom out animation (faster - 0.2s instead of 0.4s)
-                propertyDetailSection.style.transition = 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                propertyDetailSection.style.transform = 'scale(0.9)';
+                // Slide down and fade out animation
+                propertyDetailSection.style.transition = 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                propertyDetailSection.style.transform = 'translateY(20px)';
                 propertyDetailSection.style.opacity = '0';
 
                 setTimeout(() => {
@@ -1111,7 +1156,7 @@
                     propertyDetailSection.style.removeProperty('left');
                     propertyDetailSection.style.removeProperty('width');
                     propertyDetailSection.style.removeProperty('z-index');
-                }, 200);
+                }, 300);
             }
 
             // If switching back to home-section, restore its pointer events

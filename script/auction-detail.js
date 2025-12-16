@@ -12,10 +12,6 @@
     'use strict';
 
     let currentAuctionData = null;
-    let auctionsCache = null; // Cache for JSON data
-    let isOpening = false; // Flag to prevent multiple simultaneous opens
-    let countdownTimer = null; // Single global countdown timer
-    let countdownAssets = []; // Array of assets that need countdown updates
 
     /**
      * Format date string for display
@@ -76,56 +72,46 @@
 
 
     /**
-     * Render countdown timer HTML (optimized - no Lucide init here)
+     * Render countdown timer HTML
      */
     function renderCountdown(countdown, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // Use DocumentFragment for better performance
-        const fragment = document.createDocumentFragment();
-        const timerDiv = document.createElement('div');
-        timerDiv.className = 'auction-property-main-page-detail-countdown-timer';
+        const html = `
+            <div class="auction-property-main-page-detail-countdown-timer">
+                <div class="countdown-unit">
+                    <div class="countdown-box" data-unit="days">${countdown.days}</div>
+                    <div class="countdown-label-small">يوم</div>
+                </div>
+                <span class="countdown-separator">:</span>
+                <div class="countdown-unit">
+                    <div class="countdown-box" data-unit="hours">${countdown.hours}</div>
+                    <div class="countdown-label-small">ساعة</div>
+                </div>
+                <span class="countdown-separator">:</span>
+                <div class="countdown-unit">
+                    <div class="countdown-box" data-unit="minutes">${countdown.minutes}</div>
+                    <div class="countdown-label-small">دقيقة</div>
+                </div>
+                <span class="countdown-separator">:</span>
+                <div class="countdown-unit">
+                    <div class="countdown-box" data-unit="seconds">${countdown.seconds}</div>
+                    <div class="countdown-label-small">ثانية</div>
+                </div>
+            </div>
+        `;
 
-        const units = [
-            { value: countdown.days, label: 'يوم', unit: 'days' },
-            { value: countdown.hours, label: 'ساعة', unit: 'hours' },
-            { value: countdown.minutes, label: 'دقيقة', unit: 'minutes' },
-            { value: countdown.seconds, label: 'ثانية', unit: 'seconds' }
-        ];
+        container.innerHTML = html;
 
-        units.forEach((unit, index) => {
-            if (index > 0) {
-                const separator = document.createElement('span');
-                separator.className = 'countdown-separator';
-                separator.textContent = ':';
-                timerDiv.appendChild(separator);
-            }
-
-            const unitDiv = document.createElement('div');
-            unitDiv.className = 'countdown-unit';
-
-            const box = document.createElement('div');
-            box.className = 'countdown-box';
-            box.setAttribute('data-unit', unit.unit);
-            box.textContent = unit.value;
-
-            const label = document.createElement('div');
-            label.className = 'countdown-label-small';
-            label.textContent = unit.label;
-
-            unitDiv.appendChild(box);
-            unitDiv.appendChild(label);
-            timerDiv.appendChild(unitDiv);
-        });
-
-        fragment.appendChild(timerDiv);
-        container.innerHTML = ''; // Clear first
-        container.appendChild(fragment);
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 
     /**
-     * Update countdown timer with flip animation (optimized)
+     * Update countdown timer with flip animation
      */
     function updateCountdown(asset, containerId) {
         const countdown = calculateCountdown(asset.bidStartDate);
@@ -133,80 +119,38 @@
         if (!container) return;
 
         const boxes = container.querySelectorAll('.countdown-box');
-        if (!boxes.length) return;
-
-        // Batch DOM reads
         const prevValues = {};
         boxes.forEach(box => {
             const unit = box.getAttribute('data-unit');
-            prevValues[unit] = parseInt(box.textContent) || 0;
+            prevValues[unit] = parseInt(box.textContent.replace(/[٠-٩]/g, (char) => {
+                const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                return arabicDigits.indexOf(char).toString();
+            })) || 0;
         });
 
-        // Batch DOM writes using requestAnimationFrame
-        requestAnimationFrame(() => {
-            const newValues = {
-                days: countdown.days,
-                hours: countdown.hours,
-                minutes: countdown.minutes,
-                seconds: countdown.seconds
-            };
+        // Update values
+        const newValues = {
+            days: countdown.days,
+            hours: countdown.hours,
+            minutes: countdown.minutes,
+            seconds: countdown.seconds
+        };
 
-            boxes.forEach(box => {
-                const unit = box.getAttribute('data-unit');
-                const newValue = newValues[unit];
-                const oldValue = prevValues[unit];
+        boxes.forEach(box => {
+            const unit = box.getAttribute('data-unit');
+            const newValue = newValues[unit];
+            const oldValue = prevValues[unit];
 
-                if (newValue !== oldValue) {
-                    box.classList.add('flip');
-                    // Use requestAnimationFrame for smoother animation
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            box.textContent = newValue;
-                            box.classList.remove('flip');
-                        }, 300);
-                    });
-                } else {
+            if (newValue !== oldValue) {
+                box.classList.add('flip');
+                setTimeout(() => {
                     box.textContent = newValue;
-                }
-            });
-        });
-    }
-
-    /**
-     * Start unified countdown timer for all assets
-     */
-    function startUnifiedCountdown() {
-        // Clear existing timer
-        if (countdownTimer) {
-            clearInterval(countdownTimer);
-        }
-
-        // Update all countdowns every second
-        countdownTimer = setInterval(() => {
-            if (countdownAssets.length === 0) {
-                clearInterval(countdownTimer);
-                countdownTimer = null;
-                return;
+                    box.classList.remove('flip');
+                }, 300);
+            } else {
+                box.textContent = newValue;
             }
-
-            // Use requestAnimationFrame to batch updates
-            requestAnimationFrame(() => {
-                countdownAssets.forEach(({ asset, containerId }) => {
-                    updateCountdown(asset, containerId);
-                });
-            });
-        }, 1000);
-    }
-
-    /**
-     * Stop unified countdown timer
-     */
-    function stopUnifiedCountdown() {
-        if (countdownTimer) {
-            clearInterval(countdownTimer);
-            countdownTimer = null;
-        }
-        countdownAssets = [];
+        });
     }
 
     /**
@@ -285,7 +229,7 @@
                         <p class="asset-subtitle">${asset.location ? `في ${asset.location}` : ''}</p>
                     </div>
                     <div class="asset-thumbnail">
-                        <img src="${asset.image || asset.propertyImages?.[0] || ''}" alt="${asset.title || 'عقار'}" loading="lazy" onerror="this.style.display='none'">
+                        <img src="${asset.image || asset.propertyImages?.[0] || ''}" alt="${asset.title || 'عقار'}" onerror="this.style.display='none'">
                     </div>
                 </div>
                 
@@ -388,170 +332,151 @@
         // Get company logo for category icon
         const categoryIcon = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="category-icon-image">` : '';
 
-        // Use DocumentFragment for better performance on low-end devices
-        const fragment = document.createDocumentFragment();
-        const tempDiv = document.createElement('div');
+        const html = `
+            <!-- Category Section -->
+            <div class="auction-property-main-page-detail-category-header">
+                <div class="auction-property-main-page-detail-category-header-right">
+                    <div class="category-icon-placeholder">${categoryIcon}</div>
+                    <h3 class="category-title">${auction.compName}</h3>
+                </div>
+                <i data-lucide="chevron-left" class="info-icon" style="cursor: pointer;" onclick="window.switchToSection('company-details-section')"></i>
+            </div>
 
-        // Build HTML string efficiently using array join
-        const htmlParts = [
-            '<!-- Category Section -->',
-            '<div class="auction-property-main-page-detail-category-header">',
-            '<div class="auction-property-main-page-detail-category-header-right">',
-            '<div class="category-icon-placeholder">', categoryIcon, '</div>',
-            '<h3 class="category-title">', auction.compName, '</h3>',
-            '</div>',
-            '<i data-lucide="chevron-left" class="info-icon" style="cursor: pointer;" onclick="window.switchToSection(\'company-details-section\')"></i>',
-            '</div>',
-            '<button class="auction-property-main-page-detail-category-tab">عقارات</button>',
-            '<button class="auction-property-main-page-detail-category-tab" style="background: #eaf3ff; color: #2c5aa0;">إلكتروني - انفاذ</button>',
-            '<button class="auction-property-main-page-detail-category-tab ', categoryStatusClass, '">', categoryStatusLabel, '</button>',
-            '<!-- Auction Main Card -->',
-            '<div class="auction-property-main-page-detail-top-image">',
-            '<img src="', auction.image, '" alt="', (auction.title || 'مزادنا للعقارات السعودية'), '" loading="eager">',
-            '</div>',
-            '<div>',
-            '<h3 class="property-detail-auction-title">', auction.title, '</h3>',
-            '</div>',
-            '<!-- Info Section -->',
-            '<div class="property-detail-info-card">',
-            '<div class="info-item">',
-            '<i data-lucide="calendar" class="info-icon"></i>',
-            '<span class="info-label">تاريخ البدء: ', startDate, '</span>',
-            '</div>',
-            '<div class="info-item">',
-            '<i data-lucide="package" class="info-icon"></i>',
-            '<span class="info-label">عدد المنتجات: ', assetCount, '</span>',
-            '</div>',
-            '<div class="info-item">',
-            '<i data-lucide="map-pin" class="info-icon"></i>',
-            '<span class="info-label">المدينة: ', (auction.location || 'غير محدد'), '</span>',
-            '</div>',
-            '</div>',
-            '<!-- Buttons -->',
-            '<div class="auction-property-main-page-detail-buttons">',
-            '<button class="auction-property-main-page-detail-btn-primary">بروشور المزاد</button>',
-            '<button class="auction-property-main-page-detail-btn-secondary">الشروط والأحكام</button>',
-            '</div>',
-            '<!-- Assets Section -->'
-        ];
 
-        htmlParts.push(...assets.map((asset, index) => renderAssetCard(asset, index)));
+            <button class="auction-property-main-page-detail-category-tab">عقارات</button>
+            <button class="auction-property-main-page-detail-category-tab" style="background: #eaf3ff; color: #2c5aa0;">إلكتروني - انفاذ</button>
+            <button class="auction-property-main-page-detail-category-tab ${categoryStatusClass}">${categoryStatusLabel}</button>
 
-        tempDiv.innerHTML = htmlParts.join('');
 
-        // Move all nodes to fragment
-        while (tempDiv.firstChild) {
-            fragment.appendChild(tempDiv.firstChild);
-        }
+            <!-- Auction Main Card -->
+            <div class="auction-property-main-page-detail-top-image">
+            <img src="${auction.image}" alt="${auction.title || 'مزادنا للعقارات السعودية'}">
+            </div>
 
-        // Clear container and append fragment in one operation
-        container.innerHTML = '';
-        container.appendChild(fragment);
+            <div>
+                <h3 class="property-detail-auction-title">${auction.title}</h3>
+            </div>
 
-        // Stop any existing countdown timer
-        stopUnifiedCountdown();
+            <!-- Info Section -->
+            <div class="property-detail-info-card">
+                <div class="info-item">
+                    <i data-lucide="calendar" class="info-icon"></i>
+                    <span class="info-label">تاريخ البدء: ${startDate}</span>
+                </div>
+                <div class="info-item">
+                    <i data-lucide="package" class="info-icon"></i>
+                    <span class="info-label">عدد المنتجات: ${assetCount}</span>
+                </div>
+                <div class="info-item">
+                    <i data-lucide="map-pin" class="info-icon"></i>
+                    <span class="info-label">المدينة: ${auction.location || 'غير محدد'}</span>
+                </div>
+            </div>
+            
 
-        // Initialize countdown timers using unified approach
-        countdownAssets = [];
-        assets.forEach((asset, index) => {
-            const containerId = `asset-countdown-${asset.id || index}`;
-            const countdown = calculateCountdown(asset.bidStartDate);
-            renderCountdown(countdown, containerId);
+            <!-- Buttons -->
+            <div class="auction-property-main-page-detail-buttons">
+                <button class="auction-property-main-page-detail-btn-primary">بروشور المزاد</button>
+                <button class="auction-property-main-page-detail-btn-secondary">الشروط والأحكام</button>
+            </div>
 
-            // Add to unified countdown array
-            countdownAssets.push({ asset, containerId });
+            <!-- Assets Section -->
+            ${assets.map((asset, index) => renderAssetCard(asset, index)).join('')}
+        `;
+
+        // Batch DOM write operation
+        container.innerHTML = html;
+
+        // Defer heavy operations until after initial render for better performance
+        // Use requestIdleCallback if available, otherwise use setTimeout
+        const deferHeavyOperations = (callback) => {
+            if (typeof requestIdleCallback !== 'undefined') {
+                requestIdleCallback(callback, { timeout: 500 });
+            } else {
+                setTimeout(callback, 0);
+            }
+        };
+
+        // Initialize countdown timers (deferred for better initial animation performance)
+        deferHeavyOperations(() => {
+            assets.forEach((asset, index) => {
+                const containerId = `asset-countdown-${asset.id || index}`;
+                const countdown = calculateCountdown(asset.bidStartDate);
+                renderCountdown(countdown, containerId);
+
+                // Update countdown every second
+                const intervalId = setInterval(() => {
+                    updateCountdown(asset, containerId);
+                }, 1000);
+
+                // Store interval ID for cleanup
+                asset._countdownInterval = intervalId;
+            });
         });
 
-        // Start unified countdown timer (single timer instead of multiple)
-        if (countdownAssets.length > 0) {
-            startUnifiedCountdown();
-        }
-
-        // Defer Lucide icons initialization to avoid blocking
-        // Use requestIdleCallback if available, otherwise setTimeout
+        // Initialize Lucide icons (deferred for better initial animation performance)
         if (typeof lucide !== 'undefined') {
-            const initIcons = () => {
+            deferHeavyOperations(() => {
                 lucide.createIcons();
-            };
-
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(initIcons, { timeout: 500 });
-            } else {
-                setTimeout(initIcons, 100);
-            }
+            });
         }
     }
 
     /**
-     * Clean up countdown intervals (optimized - uses unified timer)
+     * Clean up countdown intervals
      */
     function cleanupCountdowns() {
-        stopUnifiedCountdown();
+        if (currentAuctionData && currentAuctionData.assets) {
+            currentAuctionData.assets.forEach(asset => {
+                if (asset._countdownInterval) {
+                    clearInterval(asset._countdownInterval);
+                    delete asset._countdownInterval;
+                }
+            });
+        }
     }
 
     /**
-     * Open property detail page (optimized for low-end devices)
+     * Open property detail page
      */
     window.openPropertyDetail = async function (auctionId, badgeStatus) {
-        // Prevent multiple simultaneous opens (debouncing)
-        if (isOpening) {
-            return;
-        }
-
-        isOpening = true;
-
         try {
-            // Use cached data if available
-            let auctions = auctionsCache;
-
-            if (!auctions) {
-                // Fetch auction data from JSON
-                const response = await fetch('json-data/auction-property.json');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch auction data');
-                }
-                auctions = await response.json();
-                // Cache the data
-                auctionsCache = auctions;
+            // Fetch auction data from JSON
+            const response = await fetch('json-data/auction-property.json');
+            if (!response.ok) {
+                throw new Error('Failed to fetch auction data');
             }
 
+            const auctions = await response.json();
             const auction = auctions.find(a => a.id === parseInt(auctionId));
 
             if (!auction) {
                 console.error('Auction not found:', auctionId);
                 alert('المزاد غير موجود');
-                isOpening = false;
                 return;
             }
 
-            // Use requestAnimationFrame to batch DOM operations
-            requestAnimationFrame(() => {
-                // Render the detail page
-                renderPropertyDetail(auction, badgeStatus);
+            // Render the detail page (optimized: render before navigation for smoother transition)
+            renderPropertyDetail(auction, badgeStatus);
 
-                // Show header (batch with other DOM operations)
-                const header = document.getElementById('auction-property-main-page-detail-header');
-                if (header) {
-                    header.style.display = 'flex';
-                }
+            // Show header
+            const header = document.getElementById('auction-property-main-page-detail-header');
+            if (header) {
+                header.style.display = 'flex';
+            }
 
-                // Navigate to property detail section
-                if (typeof window.switchToSection === 'function') {
-                    window.switchToSection('property-detail-section');
-                } else {
-                    console.error('switchToSection function not available');
-                }
+            // Navigate to property detail section
+            if (typeof window.switchToSection === 'function') {
+                window.switchToSection('property-detail-section');
+            } else {
+                console.error('switchToSection function not available');
+            }
 
-                // Reset flag after a short delay to allow navigation to complete
-                setTimeout(() => {
-                    isOpening = false;
-                }, 300);
-            });
+            // Scrolling is enabled in section-navigation.js when property-detail-section opens
 
         } catch (error) {
             console.error('Error opening property detail:', error);
             alert('حدث خطأ أثناء تحميل تفاصيل المزاد');
-            isOpening = false;
         }
     };
 
