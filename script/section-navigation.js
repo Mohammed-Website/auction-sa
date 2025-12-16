@@ -750,7 +750,8 @@
                 currentActiveSection.style.pointerEvents = 'none';
 
                 // Delay hiding home-section with fade-out transition so it's not visible to the user
-                // Add transition for smooth fade-out
+                // Use will-change for better performance on low-end devices
+                currentActiveSection.style.willChange = 'opacity, visibility';
                 currentActiveSection.style.transition = 'opacity 0.3s ease-out, visibility 0.3s ease-out';
 
                 // Delay the fade-out to happen after the property-detail-section animation starts
@@ -762,11 +763,15 @@
                     setTimeout(() => {
                         currentActiveSection.style.display = 'none';
                         currentActiveSection.classList.remove('active');
+                        // Remove will-change after animation completes
+                        currentActiveSection.style.willChange = 'auto';
                     }, 300); // Wait for transition to complete
                 }, 100); // Small delay to let property-detail-section animation start first
             }
 
             // Prepare property-detail-section - start with zoom out
+            // Use will-change for better performance on low-end devices
+            targetSection.style.willChange = 'transform, opacity';
             targetSection.style.display = 'block';
             targetSection.style.transform = 'scale(0.9)';
             targetSection.style.opacity = '0';
@@ -800,6 +805,11 @@
                     if (typeof window.controlWebsiteScroll === 'function') {
                         window.controlWebsiteScroll('disable');
                     }
+
+                    // Remove will-change after animation completes for better performance
+                    setTimeout(() => {
+                        targetSection.style.willChange = 'auto';
+                    }, 400);
                 });
             });
 
