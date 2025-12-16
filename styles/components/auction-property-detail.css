@@ -4,7 +4,7 @@
 #property-detail-section {
     display: none;
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.9);
     visibility: hidden;
     pointer-events: none;
     transform-origin: center center;
@@ -292,7 +292,8 @@
 }
 
 .currency-symbol {
-    font-size: 1rem;        /* slightly bigger */
+    font-size: 1rem;
+    /* slightly bigger */
     margin-inline-start: 2px;
     line-height: 1;
     vertical-align: baseline;

@@ -814,7 +814,6 @@
 
                         // Open property detail page
                         const auctionId = property.id;
-                        console.log('Auction card clicked, ID:', auctionId, 'Property:', property);
 
                         // Determine status badge to pass to detail page for dynamic category tab
                         const badgeStatus = getAuctionBadgeStatus(property.bidStartDate, property.bidEndDate);

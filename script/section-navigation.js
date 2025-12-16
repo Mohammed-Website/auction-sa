@@ -735,22 +735,55 @@
 
         // Special handling for property-detail-section with zoom animation
         if (sectionId === 'property-detail-section') {
+            const isFromHomeSection = currentActiveSection.id === 'home-section';
 
-            // Hide current section
-            currentActiveSection.classList.remove('active');
-            currentActiveSection.style.display = 'none';
-            currentActiveSection.style.opacity = '0';
-            currentActiveSection.style.visibility = 'hidden';
-            currentActiveSection.style.pointerEvents = 'none';
+            // If coming from home-section, keep it visible; otherwise hide current section
+            if (!isFromHomeSection) {
+                // Hide current section
+                currentActiveSection.classList.remove('active');
+                currentActiveSection.style.display = 'none';
+                currentActiveSection.style.opacity = '0';
+                currentActiveSection.style.visibility = 'hidden';
+                currentActiveSection.style.pointerEvents = 'none';
+            } else {
+                // Disable pointer events immediately to prevent interaction
+                currentActiveSection.style.pointerEvents = 'none';
+
+                // Delay hiding home-section with fade-out transition so it's not visible to the user
+                // Add transition for smooth fade-out
+                currentActiveSection.style.transition = 'opacity 0.3s ease-out, visibility 0.3s ease-out';
+
+                // Delay the fade-out to happen after the property-detail-section animation starts
+                setTimeout(() => {
+                    currentActiveSection.style.opacity = '0';
+                    currentActiveSection.style.visibility = 'hidden';
+
+                    // After fade-out completes, hide it completely
+                    setTimeout(() => {
+                        currentActiveSection.style.display = 'none';
+                        currentActiveSection.classList.remove('active');
+                    }, 300); // Wait for transition to complete
+                }, 100); // Small delay to let property-detail-section animation start first
+            }
 
             // Prepare property-detail-section - start with zoom out
             targetSection.style.display = 'block';
-            targetSection.style.transform = 'scale(0.8)';
+            targetSection.style.transform = 'scale(0.9)';
             targetSection.style.opacity = '0';
             targetSection.style.visibility = 'visible';
             targetSection.style.pointerEvents = 'none';
             targetSection.style.transition = 'transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
             targetSection.classList.remove('active');
+
+            // If coming from home-section, position property-detail-section as overlay
+            if (isFromHomeSection) {
+                targetSection.style.position = 'absolute';
+                targetSection.style.top = '0';
+                targetSection.style.right = '0';
+                targetSection.style.left = '0';
+                targetSection.style.width = '100%';
+                targetSection.style.zIndex = '10';
+            }
 
             // Force reflow
             targetSection.offsetHeight;
@@ -1028,28 +1061,6 @@
             currentActiveSection.style.visibility = 'hidden';
             currentActiveSection.style.pointerEvents = 'none';
 
-            // Animate profile section in from the left
-            trackedRequestAnimationFrame(() => {
-                trackedRequestAnimationFrame(() => {
-                    targetSection.style.transform = 'translateX(0)';
-                    targetSection.style.opacity = '1';
-                    targetSection.style.pointerEvents = 'auto';
-                    targetSection.classList.add('active');
-
-                    // Scroll section-content to top
-                    trackedSetTimeout(() => {
-                        const sectionContent = targetSection.querySelector('.section-content');
-                        if (sectionContent) {
-                            sectionContent.scrollTop = 0;
-                        }
-                        // Release navigation lock
-                        isNavigating = false;
-                        // Safety check: ensure content is visible
-                        ensureSectionContentVisible(targetSection);
-                    }, 100);
-                });
-            });
-
             // Update current section
             currentSection = sectionId;
 
@@ -1067,12 +1078,15 @@
         }
 
         // Check if we're coming from property-detail-section - handle zoom out (faster)
-        if (currentSection === 'property-detail-section') {
+        const isComingFromPropertyDetail = currentSection === 'property-detail-section';
+        if (isComingFromPropertyDetail) {
             const propertyDetailSection = document.getElementById('property-detail-section');
+            const homeSection = document.getElementById('home-section');
+
             if (propertyDetailSection && propertyDetailSection.classList.contains('active')) {
                 // Zoom out animation (faster - 0.2s instead of 0.4s)
                 propertyDetailSection.style.transition = 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                propertyDetailSection.style.transform = 'scale(0.8)';
+                propertyDetailSection.style.transform = 'scale(0.9)';
                 propertyDetailSection.style.opacity = '0';
 
                 setTimeout(() => {
@@ -1080,7 +1094,19 @@
                     propertyDetailSection.style.display = 'none';
                     propertyDetailSection.style.visibility = 'hidden';
                     propertyDetailSection.style.pointerEvents = 'none';
+                    // Remove overlay positioning if it was set
+                    propertyDetailSection.style.removeProperty('position');
+                    propertyDetailSection.style.removeProperty('top');
+                    propertyDetailSection.style.removeProperty('right');
+                    propertyDetailSection.style.removeProperty('left');
+                    propertyDetailSection.style.removeProperty('width');
+                    propertyDetailSection.style.removeProperty('z-index');
                 }, 200);
+            }
+
+            // If switching back to home-section, restore its pointer events
+            if (sectionId === 'home-section' && homeSection) {
+                homeSection.style.pointerEvents = 'auto';
             }
         }
 
@@ -1098,13 +1124,20 @@
             profileSection.style.pointerEvents = 'none';
         }
 
-        // If switching back to home-section from profile, ensure it's fully restored
+        // If switching back to home-section from profile or property-detail, ensure it's fully restored
         if (sectionId === 'home-section') {
             const homeSection = document.getElementById('home-section');
             if (homeSection) {
                 // Remove any styles that might block interaction
                 homeSection.style.removeProperty('pointer-events');
                 homeSection.style.pointerEvents = 'auto';
+                // Ensure home-section is visible and active
+                if (!homeSection.classList.contains('active')) {
+                    homeSection.classList.add('active');
+                    homeSection.style.display = 'block';
+                    homeSection.style.opacity = '1';
+                    homeSection.style.visibility = 'visible';
+                }
             }
 
             // Enable website scrolling when switching to home-section (especially from profile)
@@ -1120,13 +1153,6 @@
 
         // Remove active class from current section (will trigger exit animation)
         currentActiveSection.classList.remove('active');
-
-        // Add appropriate slide-out class based on direction
-        if (direction === 'right') {
-            currentActiveSection.classList.add('slide-out-left');
-        } else {
-            currentActiveSection.classList.add('slide-out-right');
-        }
 
         // Ensure target section is visible before animation
         targetSection.style.display = 'block';
@@ -1157,14 +1183,6 @@
             }
         }
 
-        // Prepare target section - position it off-screen in opposite direction
-        if (direction === 'right') {
-            targetSection.classList.remove('slide-in-left');
-            targetSection.classList.add('slide-in-right');
-        } else {
-            targetSection.classList.remove('slide-in-right');
-            targetSection.classList.add('slide-in-left');
-        }
 
         // For my-actions-section, ensure it's visible and ready for animation
         if (sectionId === 'my-actions-section') {
@@ -1177,108 +1195,6 @@
         // Force reflow to ensure classes are applied
         targetSection.offsetHeight;
 
-        // Small delay to ensure exit animation starts
-        trackedRequestAnimationFrame(() => {
-            trackedRequestAnimationFrame(() => {
-                // Remove slide-in class and add active to trigger enter animation
-                targetSection.classList.remove('slide-in-left', 'slide-in-right');
-                targetSection.classList.add('active');
-
-                // For my-actions-section, ensure CSS transitions work properly
-                if (sectionId === 'my-actions-section') {
-                    // Clear any remaining inline styles that might override CSS
-                    // The .active class in CSS will handle the animation
-                    trackedRequestAnimationFrame(() => {
-                        targetSection.style.removeProperty('opacity');
-                        targetSection.style.removeProperty('transform');
-                        // Force reflow to ensure CSS classes take effect
-                        targetSection.offsetHeight;
-                    });
-                }
-
-                // For home-section, apply fade-in animation to section content after slide completes
-                // Use the same smooth animation pattern regardless of source section
-                if (sectionId === 'home-section') {
-                    // When coming from profile or subsection, use immediate fade-in (like profile-to-home)
-                    // When coming from other sections, wait for slide animation to complete
-                    const animationDelay = (isComingFromProfile || isComingFromSubsection) ? 100 : 400;
-
-                    trackedSetTimeout(() => {
-                        const sectionContent = targetSection.querySelector('.section-content');
-                        if (sectionContent) {
-                            // Ensure content is hidden before fade-in (only if not already hidden)
-                            const currentOpacity = window.getComputedStyle(sectionContent).opacity;
-                            if (parseFloat(currentOpacity) > 0) {
-                                sectionContent.style.opacity = '0';
-                                sectionContent.style.transform = 'translateX(20px)';
-                                sectionContent.style.visibility = 'hidden';
-                            }
-                            // Enable transition and animate in
-                            sectionContent.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.4s';
-                            trackedRequestAnimationFrame(() => {
-                                trackedRequestAnimationFrame(() => {
-                                    sectionContent.style.opacity = '1';
-                                    sectionContent.style.transform = 'translateX(0)';
-                                    sectionContent.style.visibility = 'visible';
-                                    // Release navigation lock after content is visible
-                                    trackedSetTimeout(() => {
-                                        isNavigating = false;
-                                        // Safety check: ensure content is visible
-                                        ensureSectionContentVisible(targetSection);
-                                    }, 100);
-                                });
-                            });
-                        } else {
-                            // No section content, release lock immediately
-                            trackedSetTimeout(() => {
-                                isNavigating = false;
-                                ensureSectionContentVisible(targetSection);
-                            }, 100);
-                        }
-                    }, animationDelay);
-                } else {
-                    // For other sections, apply fade-in animation
-                    const animationDelay = isComingFromProfile ? 100 : 200;
-                    trackedSetTimeout(() => {
-                        animateSectionContentFadeIn(targetSection);
-                        // Release navigation lock after animation
-                        trackedSetTimeout(() => {
-                            isNavigating = false;
-                            ensureSectionContentVisible(targetSection);
-                        }, 100);
-                    }, animationDelay);
-                }
-
-                // If switching to home-section, ensure scroll containers are enabled
-                if (sectionId === 'home-section') {
-                    targetSection.style.pointerEvents = 'auto';
-
-                    // Enable website scrolling when switching to home-section (especially from profile)
-                    if (typeof window.controlWebsiteScroll === 'function') {
-                        window.controlWebsiteScroll('enable');
-                    }
-                }
-
-                // Disable website scrolling when switching to my-actions-section
-                if (sectionId === 'my-actions-section') {
-                    if (typeof window.controlWebsiteScroll === 'function') {
-                        window.controlWebsiteScroll('disable');
-                    }
-                }
-
-                // Clean up current section after animation completes
-                trackedSetTimeout(() => {
-                    currentActiveSection.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-left', 'slide-in-right', 'active');
-                    currentActiveSection.style.display = 'none';
-
-                    // For my-actions-section, ensure it's properly positioned when active
-                    if (sectionId === 'my-actions-section') {
-                        // Ensure the section is fully visible and interactive
-                        targetSection.style.pointerEvents = 'auto';
-                    }
-                }, 350); // Match CSS transition duration
-            });
-        });
 
         // Save previous section before updating
         const previousSection = currentSection;

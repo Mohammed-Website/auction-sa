@@ -67,13 +67,11 @@
         function init() {
             // Check if already installed
             if (checkIfInstalled()) {
-                console.log('PWA: App is already installed');
                 return;
             }
 
             // Capture the beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
-                console.log('PWA: beforeinstallprompt event fired');
                 e.preventDefault();
                 deferredPrompt = e;
                 // Dispatch custom event to notify that install is available
@@ -82,7 +80,6 @@
 
             // Listen for app installed event
             window.addEventListener('appinstalled', () => {
-                console.log('PWA: App was installed');
                 isInstalled = true;
                 deferredPrompt = null;
                 // Save installation flag to localStorage
@@ -96,14 +93,7 @@
 
             // Check installation status on initialization
             isInstalled = checkIfInstalled();
-            if (isInstalled) {
-                console.log('PWA: App is already installed (detected on init)');
-            }
 
-            // Also listen for service worker registration
-            window.addEventListener('sw-registered', () => {
-                console.log('PWA: Service worker registered, waiting for install prompt...');
-            });
 
             // Check PWA installability criteria
             function checkInstallability() {
@@ -115,7 +105,6 @@
                     serviceWorker: 'serviceWorker' in navigator
                 };
 
-                console.log('PWA Installability checks:', checks);
                 return checks;
             }
 
@@ -143,13 +132,11 @@
             // If prompt not available, wait a moment and check again
             // (sometimes the event fires after user interaction)
             if (!deferredPrompt) {
-                console.log('PWA: Prompt not available, waiting 300ms...');
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
 
             // Check if install prompt is available
             if (!deferredPrompt) {
-                console.log('PWA: Install prompt not available yet');
 
                 // Check if we're on a secure context (HTTPS or localhost)
                 const isSecure = window.location.protocol === 'https:' ||
@@ -209,7 +196,6 @@
 
             try {
                 installAttempted = true;
-                console.log('PWA: Showing install prompt');
 
                 // Show the install prompt
                 deferredPrompt.prompt();
@@ -217,14 +203,12 @@
                 // Wait for user's response
                 const { outcome } = await deferredPrompt.userChoice;
 
-                console.log('PWA: User choice:', outcome);
 
                 // Clear the deferred prompt
                 deferredPrompt = null;
                 installAttempted = false;
 
                 if (outcome === 'accepted') {
-                    console.log('PWA installation accepted');
                     // Set installation flag immediately
                     isInstalled = true;
                     try {
@@ -234,7 +218,6 @@
                     }
                     return true;
                 } else {
-                    console.log('PWA installation dismissed');
                     return false;
                 }
             } catch (error) {

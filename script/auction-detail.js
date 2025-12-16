@@ -483,9 +483,18 @@
                     header.style.display = 'none';
                 }
 
-                // Navigate back to previous section (home-section by default)
+                // Enable website scrolling when going back
+                if (typeof window.controlWebsiteScroll === 'function') {
+                    window.controlWebsiteScroll('enable');
+                }
+
+                // Navigate back to previous section (use stored previous section, or home-section by default)
                 if (typeof window.switchToSection === 'function') {
-                    window.switchToSection('home-section');
+                    // Get the section we came from (could be auction-section, home-section, etc.)
+                    const previousSection = (typeof window.getPreviousSectionBeforePropertyDetail === 'function')
+                        ? window.getPreviousSectionBeforePropertyDetail()
+                        : 'home-section';
+                    window.switchToSection(previousSection);
                 }
             });
         }

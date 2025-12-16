@@ -50,34 +50,6 @@
     transform: scale(1) !important;
 }
 
-.tab-section.slide-out-left {
-    transform: translateX(-100%) translateZ(0);
-    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-        opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
-    will-change: transform, opacity;
-}
-
-.tab-section.slide-out-right {
-    transform: translateX(100%) translateZ(0);
-    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-        opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
-    will-change: transform, opacity;
-}
-
-.tab-section.slide-in-left {
-    transform: translateX(-100%) translateZ(0);
-    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-        opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
-    will-change: transform, opacity;
-}
-
-.tab-section.slide-in-right {
-    transform: translateX(100%) translateZ(0);
-    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-        opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
-    will-change: transform, opacity;
-}
-
 /* Profile Section Content - Scrollable Container */
 #profile-section.active .scrollable-container {
     height: calc(100vh - 60px);

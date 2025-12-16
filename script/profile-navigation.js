@@ -527,10 +527,6 @@
                 break;
 
             case 'favorites':
-                // Disable website scrolling when opening favorites
-                if (typeof window.controlWebsiteScroll === 'function') {
-                    window.controlWebsiteScroll('disable');
-                }
                 navigateActionToRoute(ProfileRoutes.FAVORITES);
                 break;
 
