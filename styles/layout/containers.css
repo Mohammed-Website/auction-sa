@@ -17,8 +17,6 @@
     margin-top: 0;
 }
 
-/* Headers are now outside containers, no padding needed */
-
 /* Wrapper for tabs and tab content to occupy same space */
 .account-tabs-wrapper {
     position: relative;

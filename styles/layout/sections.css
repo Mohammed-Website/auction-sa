@@ -60,26 +60,11 @@
 
 /* Profile Section Content - Scrollable Container */
 .scrollable-container {
-    height: calc(100vh - 60px);
+    height: 85vh;
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-    padding: 0 var(--spacing-sm) 6.5rem;
-}
-
-.scrollable-container:has(#profile-favorites-view.active),
-.scrollable-container:has(#profile-settings-view.active) {
-    overflow: hidden !important;
-    overflow-y: hidden !important;
-    overflow-x: hidden !important;
-}
-
-@media (max-width: 768px) {
-    /* Home section scrollable container: accounts for bottom-nav only */
-    .scrollable-container {
-        height: calc(100vh - 75px);
-        max-height: calc(100vh - 75px);
-    }
+    padding: 0 var(--spacing-md);
 }
 
 /* Home Section Horizontal Scroll Sections */
@@ -124,4 +109,21 @@
     height: 2px;
     background: #cacaca;
     border-radius: 2px;
+}
+
+/* Optimize section content animations for smooth performance */
+.section-content {
+    will-change: transform, opacity;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    contain: layout style paint;
+}
+
+/* Ensure smooth transitions for section content */
+.section-content {
+    transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+        visibility 0.3s;
 }

@@ -232,16 +232,6 @@
         border-radius: var(--radius-sm);
     }
 
-    /* Remove padding adjustments on desktop */
-    .account-info-container:has(.account-tabs-header),
-    .account-info-container:has(.profile-page-title),
-    .account-card:has(.account-tabs-header),
-    .profile-container:has(.profile-page-title),
-    .account-tabs {
-        padding-top: 0;
-        margin-top: 0;
-    }
-
     .auction-property-main-page-detail-container {
         padding-top: 1rem;
     }
