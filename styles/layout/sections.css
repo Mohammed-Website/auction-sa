@@ -63,6 +63,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
+    /* Allow vertical touch scrolling within scrollable containers */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 #profile-section.active .scrollable-container:has(#profile-favorites-view.active),
