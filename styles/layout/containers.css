@@ -7,12 +7,6 @@
     position: relative;
 }
 
-/* Headers are now outside containers, no padding needed */
-
-#profile-account-info-view .profile-container {
-    padding-top: 0;
-}
-
 /* Account Info Container */
 .account-info-container {
     width: 100%;

@@ -134,10 +134,6 @@
     .empty-text {
         font-size: var(--font-size-base);
     }
-
-    .section-content {
-        padding-bottom: 5rem;
-    }
 }
 
 /* Tablet Styles */
@@ -186,10 +182,6 @@
 
     .home-page-property-section-title {
         font-size: var(--font-size-xxl);
-    }
-
-    .profile-container {
-        padding-bottom: 3rem;
     }
 
     .profile-stats {
@@ -286,10 +278,6 @@
         top: 68px;
         z-index: 99;
         padding: 0.5rem 0;
-    }
-
-    .section-content {
-        padding-top: 0.5rem;
     }
 
     .banner-content h2 {
