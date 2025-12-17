@@ -24,10 +24,10 @@
 
 /* Settings Content - Scrollable Container */
 .scrollable-container {
-    height: 75vh;
+    height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 0 var(--spacing-sm);
+    padding: 0 var(--spacing-sm) 10rem;
     box-sizing: border-box;
 }
 
@@ -219,7 +219,7 @@
 
     /* Mobile: Extend height to bottom-nav for native app feel */
     .scrollable-container {
-        height: calc(100vh - 50px - 75px);
+        height: calc(100vh);
         position: relative;
         padding-bottom: calc(100px + var(--spacing-2xl) + var(--spacing-2xl));
     }
