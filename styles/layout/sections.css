@@ -1,9 +1,10 @@
 /* Tab Sections */
 #app-content {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
     position: relative;
     overflow: hidden;
-    min-height: 100vh;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
 .tab-section {
