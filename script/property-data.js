@@ -827,7 +827,7 @@
                                 if (typeof window.scrollScrollableContainersToTop === 'function') {
                                     setTimeout(() => {
                                         window.scrollScrollableContainersToTop('property-detail-section');
-                                    }, 300); // Wait for section to open
+                                    }, 15); // Wait for section to open
                                 }
                             } else {
                                 console.error('openPropertyDetail function not available');
