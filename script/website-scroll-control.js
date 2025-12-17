@@ -81,7 +81,7 @@ function initializeScrollableContainers() {
     });
 }
 
-// Prevent downward scrolling on the main window - completely disabled
+// Prevent downward scrolling on the main window
 function preventScrollDown(e) {
     const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
@@ -91,13 +91,10 @@ function preventScrollDown(e) {
         return;
     }
 
-    // Completely prevent any downward scrolling - immediately reset position
+    // If user tries to scroll DOWN on the main window, prevent it
     if (currentScrollTop > lastScrollTop) {
-        // Immediately prevent and reset - no delay to prevent lag
-        e.preventDefault();
-        e.stopPropagation();
         window.scrollTo(0, lastScrollTop);
-        return false;
+        e.preventDefault();
     } else {
         // Allow scroll UP
         lastScrollTop = currentScrollTop;
@@ -105,8 +102,7 @@ function preventScrollDown(e) {
 }
 
 // Desktop (mouse / trackpad) - prevent downward window scroll
-// Use capture phase for immediate prevention
-window.addEventListener("scroll", preventScrollDown, { passive: false, capture: true });
+window.addEventListener("scroll", preventScrollDown, { passive: false });
 
 // Handle wheel events on window to prevent downward scrolling
 window.addEventListener("wheel", (e) => {
@@ -118,14 +114,12 @@ window.addEventListener("wheel", (e) => {
         return;
     }
 
-    // Completely prevent downward scrolling - immediate prevention
+    // If trying to scroll down on the main window, prevent it
     if (e.deltaY > 0) {
         e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
     // Allow scrolling up
-}, { passive: false, capture: true });
+}, { passive: false });
 
 
 // Mobile (touch)
@@ -156,13 +150,11 @@ window.addEventListener("touchmove", (e) => {
         return;
     }
 
-    // Completely prevent swiping UP (scroll down) on main window - immediate prevention
+    // Swiping UP (scroll down) on main window
     if (touchCurrentY < touchStartY) {
         e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
-}, { passive: false, capture: true });
+}, { passive: false });
 
 // Initialize scrollable containers when DOM is ready
 if (document.readyState === 'loading') {

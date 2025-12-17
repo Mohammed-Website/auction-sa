@@ -11,20 +11,11 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 *:focus {
     outline: none !important;
-}
-
-html {
-    /* Completely disable scroll down - prevent lag on mobile */
-    overflow: hidden;
-    height: 100%;
-    /* Prevent touch scrolling */
-    touch-action: none;
-    -webkit-overflow-scrolling: none;
 }
 
 body {
@@ -34,10 +25,4 @@ body {
     line-height: 1.6;
     padding-bottom: 80px;
     direction: rtl;
-    /* Completely disable scroll down - prevent lag on mobile */
-    overflow: hidden;
-    height: 100%;
-    /* Prevent touch scrolling on body */
-    touch-action: none;
-    -webkit-overflow-scrolling: none;
 }
