@@ -134,6 +134,10 @@
     .empty-text {
         font-size: var(--font-size-base);
     }
+
+    .section-content {
+        padding-bottom: 5rem;
+    }
 }
 
 /* Tablet Styles */
