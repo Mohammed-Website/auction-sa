@@ -60,7 +60,6 @@
 
 /* Profile Section Content - Scrollable Container */
 .scrollable-container {
-    /* Height is set dynamically via JavaScript */
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;

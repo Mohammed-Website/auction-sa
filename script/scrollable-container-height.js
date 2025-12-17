@@ -46,8 +46,8 @@
         const top = rect.top;
         const bottomBoundary = getBottomBoundary();
 
-        // Calculate available height
-        const availableHeight = bottomBoundary - top;
+        // Calculate available height (subtract 20px for extra scrolling space)
+        const availableHeight = bottomBoundary - top - 20;
 
         // Set the height (ensure minimum height of 100px)
         container.style.height = Math.max(100, availableHeight) + 'px';
