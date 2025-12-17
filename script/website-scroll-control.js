@@ -176,91 +176,29 @@ observer.observe(document.body, {
 /**
  * Global function to instantly scroll all scrollable containers to the top
  * This function is unnoticeable to the user as it uses direct property assignment
- * @param {HTMLElement|string} container - Optional: specific container element or selector. If not provided, scrolls all containers.
+ * @param {string} elementId - Optional: ID of the parent element. If provided, only scrolls scrollable-container divs inside that element. If not provided, scrolls all containers.
  */
-window.scrollScrollableContainersToTop = function (container) {
-    // If a specific container is provided
-    if (container) {
-        const targetContainer = typeof container === 'string'
-            ? document.querySelector(container)
-            : container;
+window.scrollScrollableContainersToTop = function (elementId) {
+    // If a specific parent element ID is provided
+    if (elementId) {
+        const parentElement = document.getElementById(elementId);
 
-        if (targetContainer && targetContainer.classList.contains('scrollable-container')) {
-            // Instantly scroll to top using direct property assignment (unnoticeable)
-            targetContainer.scrollTop = 0;
+        if (parentElement) {
+            // Find all scrollable-container divs within the parent element
+            const containers = parentElement.querySelectorAll('.scrollable-container');
+            containers.forEach(container => {
+                // Instantly scroll to top using direct property assignment (unnoticeable)
+                // Setting scrollTop directly is instant and happens synchronously
+                container.scrollTop = 0;
+            });
         }
         return;
     }
 
-    // Scroll all scrollable containers to top
+    // Scroll all scrollable containers to top (when no elementId is provided)
     const containers = document.querySelectorAll('.scrollable-container');
     containers.forEach(container => {
         // Instantly scroll to top using direct property assignment (unnoticeable)
         container.scrollTop = 0;
     });
 };
-
-/**
- * Setup event listeners to scroll scrollable containers to top on navigation clicks
- */
-function setupScrollToTopOnNavigation() {
-    // Helper function to scroll to top
-    const scrollToTop = () => {
-        if (typeof window.scrollScrollableContainersToTop === 'function') {
-            window.scrollScrollableContainersToTop();
-        }
-    };
-
-    // 1. Bottom navigation links
-    document.addEventListener('click', (e) => {
-        const bottomNavLink = e.target.closest('.bottom-nav a');
-        if (bottomNavLink) {
-            scrollToTop();
-        }
-    });
-
-    // 2. Top navigation container links
-    document.addEventListener('click', (e) => {
-        const topNavLink = e.target.closest('.top-nav-container a');
-        if (topNavLink) {
-            scrollToTop();
-        }
-    });
-
-    // 3. Buttons inside account-tabs div
-    document.addEventListener('click', (e) => {
-        const accountTabsButton = e.target.closest('.account-tabs button');
-        if (accountTabsButton) {
-            scrollToTop();
-        }
-    });
-
-    // 4. المفضلة (Favorites) menu item
-    document.addEventListener('click', (e) => {
-        const menuItem = e.target.closest('.menu-item');
-        if (menuItem) {
-            const menuItemText = menuItem.querySelector('.menu-item-text');
-            if (menuItemText && menuItemText.textContent.trim() === 'المفضلة') {
-                scrollToTop();
-            }
-        }
-    });
-
-    // 5. الإعدادات (Settings) menu item
-    document.addEventListener('click', (e) => {
-        const menuItem = e.target.closest('.menu-item');
-        if (menuItem) {
-            const menuItemText = menuItem.querySelector('.menu-item-text');
-            if (menuItemText && menuItemText.textContent.trim() === 'الإعدادات') {
-                scrollToTop();
-            }
-        }
-    });
-}
-
-// Initialize scroll-to-top on navigation when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupScrollToTopOnNavigation);
-} else {
-    setupScrollToTopOnNavigation();
-}

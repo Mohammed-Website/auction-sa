@@ -812,8 +812,6 @@
                             return;
                         }
 
-                        /* scroll to the of the "property-detail-section" page */
-                        scrollScrollableContainersToTop();
 
                         console.log('Good')
                         // Open property detail page
@@ -825,6 +823,12 @@
                         if (auctionId) {
                             if (typeof window.openPropertyDetail === 'function') {
                                 window.openPropertyDetail(auctionId, badgeStatus);
+                                // Scroll scrollable containers within property-detail-section to top
+                                if (typeof window.scrollScrollableContainersToTop === 'function') {
+                                    setTimeout(() => {
+                                        window.scrollScrollableContainersToTop('property-detail-section');
+                                    }, 300); // Wait for section to open
+                                }
                             } else {
                                 console.error('openPropertyDetail function not available');
                             }

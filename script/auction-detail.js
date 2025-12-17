@@ -504,6 +504,12 @@
                         ? window.getPreviousSectionBeforePropertyDetail()
                         : 'home-section';
                     window.switchToSection(previousSection);
+                    // Scroll scrollable containers within home-section to top
+                    if (typeof window.scrollScrollableContainersToTop === 'function') {
+                        setTimeout(() => {
+                            window.scrollScrollableContainersToTop('home-section');
+                        }, 300); // Wait for section switch to complete
+                    }
                 }
             });
         }

@@ -163,6 +163,19 @@
             currentProfileRoute = route;
             window.location.hash = config.hash;
 
+            // Scroll scrollable containers to top immediately (synchronously, before any rendering)
+            // This ensures the scroll happens before the browser paints, making it invisible
+            if (typeof window.scrollScrollableContainersToTop === 'function') {
+                // Scroll immediately (synchronously) - this happens before browser paint
+                window.scrollScrollableContainersToTop(config.viewId);
+
+                // Also scroll in the next frame to catch any containers that become visible
+                // This is still invisible because it happens before paint
+                requestAnimationFrame(() => {
+                    window.scrollScrollableContainersToTop(config.viewId);
+                });
+            }
+
             // Run page initializer if provided
             if (typeof config.init === 'function') {
                 config.init();
@@ -528,10 +541,12 @@
 
             case 'favorites':
                 navigateActionToRoute(ProfileRoutes.FAVORITES);
+                // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
 
             case 'settings':
                 navigateActionToRoute(ProfileRoutes.SETTINGS);
+                // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
 
             // These actions are not implemented yet (TODO)

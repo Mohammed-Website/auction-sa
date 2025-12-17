@@ -1404,6 +1404,15 @@
         const sectionId = this.getAttribute('data-section');
         if (sectionId) {
             switchToSection(sectionId);
+
+            // Scroll scrollable containers to top based on section
+            if (typeof window.scrollScrollableContainersToTop === 'function') {
+                if (sectionId === 'home-section' || sectionId === 'buy-section' || sectionId === 'rent-section' || sectionId === 'auction-section') {
+                    window.scrollScrollableContainersToTop('home-section');
+                } else if (sectionId === 'my-actions-section') {
+                    window.scrollScrollableContainersToTop('my-actions-section');
+                }
+            }
         }
     }
 
@@ -1540,7 +1549,16 @@
 
         // Quick access boxes
         quickAccessBoxes.forEach(box => {
-            box.addEventListener('click', handleQuickAccessClick);
+            box.addEventListener('click', function (e) {
+                handleQuickAccessClick.call(this, e);
+                // Scroll scrollable containers to top for home-section subsections
+                const sectionId = this.getAttribute('data-section');
+                if (sectionId && typeof window.scrollScrollableContainersToTop === 'function') {
+                    if (sectionId === 'home-section' || sectionId === 'buy-section' || sectionId === 'rent-section' || sectionId === 'auction-section') {
+                        window.scrollScrollableContainersToTop('home-section');
+                    }
+                }
+            });
         });
 
         // Header profile button
@@ -1553,8 +1571,26 @@
                 const sectionId = this.getAttribute('data-section');
                 if (sectionId) {
                     switchToSection(sectionId);
+                    // Scroll all scrollable containers within profile-section to top
+                    if (typeof window.scrollScrollableContainersToTop === 'function') {
+                        window.scrollScrollableContainersToTop('profile-section');
+                    }
+
+                    // Always ensure profile-menu-view has the active class when opening profile section
+                    // Use a small delay to ensure section switch completes first
+                    setTimeout(() => {
+                        const profileMenuView = document.getElementById('profile-menu-view');
+                        if (profileMenuView) {
+                            profileMenuView.classList.add('active');
+                            // Also navigate to menu route to ensure proper state
+                            if (typeof window.ProfileNavigation !== 'undefined' &&
+                                typeof window.ProfileNavigation.navigateTo === 'function') {
+                                window.ProfileNavigation.navigateTo(window.ProfileNavigation.routes.MENU);
+                            }
+                        }
+                        window.scrollScrollableContainersToTop('profile-section');
+                    }, 100);
                 }
-                scrollScrollableContainersToTop();
             });
         }
 
