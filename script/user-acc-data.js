@@ -159,7 +159,6 @@
         }
 
         const tabs = document.querySelectorAll('.account-tab');
-        const tabViews = document.querySelectorAll('.tab-view');
 
         // Tab click handlers
         tabs.forEach(tab => {
@@ -269,6 +268,16 @@
 
         currentTab = tabId;
         isInDetailView = true;
+
+        // Scroll scrollable containers within profile-account-info-view to top
+        if (typeof window.scrollScrollableContainersToTop === 'function') {
+            // Scroll immediately (synchronously) - this happens before browser paint
+            window.scrollScrollableContainersToTop('profile-account-info-view');
+            // Also scroll in the next frame to catch any containers that become visible
+            requestAnimationFrame(() => {
+                window.scrollScrollableContainersToTop('profile-account-info-view');
+            });
+        }
 
         // Push navigation state to history
         setTimeout(() => {
