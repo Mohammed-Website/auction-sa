@@ -205,14 +205,15 @@
                 // Check if Web Share API is available
                 if (navigator.share) {
                     try {
-                        // Use Web Share API to open iOS share sheet
+                        // Share only the URL - this makes iOS show "Add to Home Screen" option
+                        // Note: Sharing with text/title can hide the "Add to Home Screen" option
                         await navigator.share({
-                            title: 'مزادنا للعقارات السعودية',
-                            text: 'ثبت التطبيق على الشاشة الرئيسية',
                             url: window.location.href
                         });
                         // After sharing, show instructions to add to home screen
-                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)', 6000);
+                        setTimeout(() => {
+                            showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
+                        }, 500);
                         return false;
                     } catch (error) {
                         // User cancelled or error occurred
@@ -375,12 +376,11 @@
             }
 
             // Use Web Share API to open iOS share sheet automatically
+            // Note: Only sharing URL (without text) ensures "Add to Home Screen" appears
             if (navigator.share) {
                 try {
-                    // Open the share sheet - user will see "Add to Home Screen" option
+                    // Share only the URL - this makes iOS show "Add to Home Screen" option
                     await navigator.share({
-                        title: 'مزادنا للعقارات السعودية',
-                        text: 'ثبت التطبيق على الشاشة الرئيسية',
                         url: window.location.href
                     });
                     // After share sheet closes, show reminder
@@ -439,14 +439,12 @@
                         if (isIOS) {
                             // For iOS, try to use Web Share API if available
                             if (navigator.share) {
-                                // Try to open share sheet
+                                // Share only the URL - this makes iOS show "Add to Home Screen" option
                                 navigator.share({
-                                    title: 'مزادنا للعقارات السعودية',
-                                    text: 'ثبت التطبيق على الشاشة الرئيسية',
                                     url: window.location.href
                                 }).then(() => {
                                     setTimeout(() => {
-                                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)', 6000);
+                                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
                                     }, 500);
                                 }).catch((error) => {
                                     if (error.name !== 'AbortError') {
