@@ -355,3 +355,122 @@ window.scrollScrollableContainersToTop = function (elementId) {
         container.scrollTop = 0;
     });
 };
+
+// Track which horizontal scroll containers have been initialized for mouse drag
+const initializedHorizontalScrolls = new WeakSet();
+
+// Initialize mouse drag scrolling for horizontal scroll containers
+function initializeHorizontalScrollDrag() {
+    const containers = document.querySelectorAll('.horizontal-scroll-container');
+
+    containers.forEach(container => {
+        // Skip if already initialized
+        if (initializedHorizontalScrolls.has(container)) {
+            return;
+        }
+
+        // Mark as initialized
+        initializedHorizontalScrolls.add(container);
+
+        let isDragging = false;
+        let startX = 0;
+        let scrollLeft = 0;
+        let startY = 0;
+        let hasMovedHorizontally = false;
+        let dragStartTime = 0;
+        const DRAG_THRESHOLD = 5; // Minimum pixels of horizontal movement to consider it a drag
+
+        // Store drag state on container
+        container.dataset.isDragging = 'false';
+        container.dataset.hasDragged = 'false';
+
+        // Mouse down
+        container.addEventListener('mousedown', (e) => {
+            // Only handle left mouse button
+            if (e.button !== 0) return;
+
+            isDragging = true;
+            startX = e.pageX - container.offsetLeft;
+            startY = e.pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            hasMovedHorizontally = false;
+            dragStartTime = Date.now();
+
+            // Store drag state
+            container.dataset.isDragging = 'true';
+            container.dataset.hasDragged = 'false';
+
+            // Change cursor to grabbing
+            container.style.cursor = 'grabbing';
+            container.style.userSelect = 'none';
+        });
+
+        // Mouse move
+        container.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const x = e.pageX - container.offsetLeft;
+            const y = e.pageY - container.offsetTop;
+            const walkX = (x - startX) * 2; // Scroll speed multiplier
+            const walkY = Math.abs(y - startY);
+            const deltaX = Math.abs(x - startX);
+
+            // Check if horizontal movement exceeds threshold
+            if (deltaX > DRAG_THRESHOLD && Math.abs(walkX) > walkY) {
+                hasMovedHorizontally = true;
+                container.dataset.hasDragged = 'true';
+                e.preventDefault();
+
+                // Scroll horizontally
+                container.scrollLeft = scrollLeft - walkX;
+            }
+        });
+
+        // Mouse up
+        container.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                container.style.cursor = 'grab';
+                container.style.userSelect = '';
+                container.dataset.isDragging = 'false';
+
+                // If we dragged, set flag and clear it after click event would have fired
+                if (hasMovedHorizontally) {
+                    container.dataset.hasDragged = 'true';
+                    // Clear flag after click event has had time to check it
+                    setTimeout(() => {
+                        container.dataset.hasDragged = 'false';
+                    }, 100);
+                } else {
+                    container.dataset.hasDragged = 'false';
+                }
+            }
+        });
+
+        // Mouse leave (release drag if mouse leaves container)
+        container.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                isDragging = false;
+                container.style.cursor = 'grab';
+                container.style.userSelect = '';
+            }
+        });
+    });
+}
+
+// Initialize horizontal scroll drag when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeHorizontalScrollDrag);
+} else {
+    initializeHorizontalScrollDrag();
+}
+
+// Reinitialize when new horizontal scroll containers are added dynamically
+const horizontalScrollObserver = new MutationObserver(() => {
+    initializeHorizontalScrollDrag();
+});
+
+horizontalScrollObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});

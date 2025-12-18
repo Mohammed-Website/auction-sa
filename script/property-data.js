@@ -812,6 +812,14 @@
                             return;
                         }
 
+                        // Check if a drag occurred in the parent horizontal-scroll-container
+                        const horizontalContainer = cardElement.closest('.horizontal-scroll-container');
+                        if (horizontalContainer && horizontalContainer.dataset.hasDragged === 'true') {
+                            // A drag occurred, prevent click
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
 
                         console.log('Good')
                         // Open property detail page

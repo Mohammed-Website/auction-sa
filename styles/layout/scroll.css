@@ -13,6 +13,7 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     pointer-events: auto !important;
+    cursor: grab;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar {

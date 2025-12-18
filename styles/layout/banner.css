@@ -1,7 +1,7 @@
 /* Banner Slider */
 .banner-section {
     width: 100vw;
-    justify-self: center;
+    justify-self: center !important;
     position: relative;
     margin-bottom: 1.5rem;
     opacity: 1;
