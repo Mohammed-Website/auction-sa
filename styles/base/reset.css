@@ -1,4 +1,4 @@
-/* Reset and Base Styles */
+﻿/* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -20,7 +20,6 @@
 
 html {
     height: 100vh;
-    overflow-y: auto;
 }
 
 body {
@@ -28,6 +27,8 @@ body {
     background-color: #e8e8e8;
     color: #333;
     line-height: 1.6;
+    height: 100vh;
+    overflow: hidden;
     padding: 0;
     margin: 0;
     direction: rtl;
