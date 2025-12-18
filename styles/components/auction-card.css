@@ -11,6 +11,8 @@
     flex-shrink: 0;
     cursor: pointer;
     margin-left: 0.9rem;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
 }
 
 .property-image-home-page {

@@ -294,11 +294,6 @@
         max-width: 380px;
     }
 
-    .horizontal-scroll-grid .property-card-home-page {
-        min-width: 320px;
-        max-width: 380px;
-    }
-
     #app-content {
         max-width: 1200px;
         margin: 0 auto;
@@ -348,11 +343,6 @@
     }
 
     .property-card-home-page {
-        min-width: 360px;
-        max-width: 420px;
-    }
-
-    .horizontal-scroll-grid .property-card-home-page {
         min-width: 360px;
         max-width: 420px;
     }

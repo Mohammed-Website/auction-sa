@@ -37,8 +37,3 @@
     display: flex;
     padding-bottom: 0.5rem;
 }
-
-.horizontal-scroll-grid .property-card-home-page {
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-}
