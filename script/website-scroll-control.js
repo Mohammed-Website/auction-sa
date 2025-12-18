@@ -136,6 +136,7 @@ window.addEventListener("touchstart", (e) => {
 window.addEventListener("touchmove", (e) => {
     const touchCurrentY = e.touches[0].clientY;
     const touch = e.touches[0];
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     // Check if touch started within a scrollable container
     if (isWithinScrollableContainer(touchStartElement)) {
@@ -147,6 +148,12 @@ window.addEventListener("touchmove", (e) => {
     const currentElement = document.elementFromPoint(touch.clientX, touch.clientY);
     if (isWithinScrollableContainer(currentElement)) {
         // Allow scrolling within scrollable containers
+        return;
+    }
+
+    // Allow pull-to-refresh when at the top of the page (swiping down)
+    if (scrollTop === 0 && touchCurrentY > touchStartY) {
+        // Allow pull-to-refresh to handle this
         return;
     }
 
