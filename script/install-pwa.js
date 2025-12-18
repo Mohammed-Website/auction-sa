@@ -12,6 +12,80 @@
     'use strict';
 
     /**
+     * Show iOS installation guide overlay
+     * Creates a visual guide pointing to Safari's share button
+     */
+    function showIOSInstallGuide() {
+        // Remove existing guide if any
+        const existingGuide = document.querySelector('.ios-install-guide');
+        if (existingGuide) {
+            existingGuide.remove();
+        }
+
+        // Create overlay
+        const guideOverlay = document.createElement('div');
+        guideOverlay.className = 'ios-install-guide';
+        guideOverlay.innerHTML = `
+            <div class="ios-install-guide-content">
+                <div class="ios-install-guide-header">
+                    <h3>تثبيت التطبيق على iOS</h3>
+                    <button class="ios-install-guide-close" aria-label="إغلاق">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="ios-install-guide-steps">
+                    <div class="ios-install-step">
+                        <span class="step-number">1</span>
+                        <p>اضغط على زر المشاركة <span class="share-icon">⎋</span> في أسفل المتصفح</p>
+                    </div>
+                    <div class="ios-install-step">
+                        <span class="step-number">2</span>
+                        <p>اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</p>
+                    </div>
+                    <div class="ios-install-step">
+                        <span class="step-number">3</span>
+                        <p>اضغط "إضافة" (Add)</p>
+                    </div>
+                </div>
+                <div class="ios-install-guide-arrow">
+                    <svg width="40" height="60" viewBox="0 0 40 60" fill="none">
+                        <path d="M20 0 L20 50 M10 40 L20 50 L30 40" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(guideOverlay);
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 50);
+        }
+
+        // Show with animation
+        setTimeout(() => {
+            guideOverlay.classList.add('show');
+        }, 10);
+
+        // Close handlers
+        const closeGuide = () => {
+            guideOverlay.classList.remove('show');
+            setTimeout(() => {
+                guideOverlay.remove();
+            }, 300);
+        };
+
+        guideOverlay.querySelector('.ios-install-guide-close').addEventListener('click', closeGuide);
+        guideOverlay.addEventListener('click', (e) => {
+            if (e.target === guideOverlay) {
+                closeGuide();
+            }
+        });
+    }
+
+    /**
      * Show floating message/toast notification
      * @param {string} message - The message to display
      * @param {number} duration - Duration in milliseconds (default: 5000)
@@ -199,36 +273,13 @@
                 return false;
             }
 
-            // For iOS devices, use Web Share API to open share sheet
+            // For iOS devices, show visual guide pointing to Safari's native share button
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) {
-                // Check if Web Share API is available
-                if (navigator.share) {
-                    try {
-                        // Share only the URL - this makes iOS show "Add to Home Screen" option
-                        // Note: Sharing with text/title can hide the "Add to Home Screen" option
-                        await navigator.share({
-                            url: window.location.href
-                        });
-                        // After sharing, show instructions to add to home screen
-                        setTimeout(() => {
-                            showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
-                        }, 500);
-                        return false;
-                    } catch (error) {
-                        // User cancelled or error occurred
-                        if (error.name !== 'AbortError') {
-                            console.error('Error sharing:', error);
-                            // Fallback to instructions
-                            showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-                        }
-                        return false;
-                    }
-                } else {
-                    // Web Share API not available, show instructions
-                    showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-                    return false;
-                }
+                // Show visual guide instead of using navigator.share()
+                // navigator.share() doesn't reliably show "Add to Home Screen" on iOS
+                showIOSInstallGuide();
+                return false;
             }
 
             // If prompt not available, wait a moment and check again
@@ -375,34 +426,11 @@
                 return;
             }
 
-            // Use Web Share API to open iOS share sheet automatically
-            // Note: Only sharing URL (without text) ensures "Add to Home Screen" appears
-            if (navigator.share) {
-                try {
-                    // Share only the URL - this makes iOS show "Add to Home Screen" option
-                    await navigator.share({
-                        url: window.location.href
-                    });
-                    // After share sheet closes, show reminder
-                    setTimeout(() => {
-                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
-                    }, 500);
-                    return;
-                } catch (error) {
-                    // User cancelled share sheet
-                    if (error.name === 'AbortError') {
-                        return; // User cancelled, don't show message
-                    }
-                    // Other error - fallback to instructions
-                    console.error('Error sharing:', error);
-                    showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-                    return;
-                }
-            } else {
-                // Web Share API not available, show instructions
-                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-                return;
-            }
+            // Show visual guide pointing to Safari's native share button
+            // Note: navigator.share() doesn't reliably show "Add to Home Screen" on iOS
+            // So we show a visual guide instead that points to Safari's native share button
+            showIOSInstallGuide();
+            return;
         }
 
         // Check if PWA installer is available
@@ -437,29 +465,9 @@
                         let message = 'لتثبيت التطبيق:\n\n';
 
                         if (isIOS) {
-                            // For iOS, try to use Web Share API if available
-                            if (navigator.share) {
-                                // Share only the URL - this makes iOS show "Add to Home Screen" option
-                                navigator.share({
-                                    url: window.location.href
-                                }).then(() => {
-                                    setTimeout(() => {
-                                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
-                                    }, 500);
-                                }).catch((error) => {
-                                    if (error.name !== 'AbortError') {
-                                        message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
-                                        message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
-                                        message += '3. اضغط "إضافة" (Add)';
-                                        showFloatingMessage(message, 8000);
-                                    }
-                                });
-                                return; // Don't show the fallback message if share was attempted
-                            } else {
-                                message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
-                                message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
-                                message += '3. اضغط "إضافة" (Add)';
-                            }
+                            // For iOS, show visual guide instead of using navigator.share()
+                            showIOSInstallGuide();
+                            return; // Don't show the fallback message
                         } else if (isChrome || isEdge) {
                             message += '1. ابحث عن أيقونة التثبيت في شريط العنوان (على اليمين)\n';
                             message += '2. أو اضغط على قائمة المتصفح (⋮) واختر "تثبيت التطبيق"\n';
