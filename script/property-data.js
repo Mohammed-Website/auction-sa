@@ -270,12 +270,12 @@
      * Update countdown timer for a single element with flip clock
      * Also updates the label dynamically based on auction status
      * @param {HTMLElement} element - The container element
-     * @param {string} bidStartDate - The bid start date string
-     * @param {string} bidEndDate - The bid end date string
+     * @param {string} auction_bidStartDate - The bid start date string
+     * @param {string} auction_bidEndDate - The bid end date string
      */
-    function updateCountdownTimer(element, bidStartDate, bidEndDate) {
+    function updateCountdownTimer(element, auction_bidStartDate, auction_bidEndDate) {
         // Get remaining time info to determine which date to use and what label to show
-        const remainingTimeInfo = getRemainingTimeInfo(bidStartDate, bidEndDate);
+        const remainingTimeInfo = getRemainingTimeInfo(auction_bidStartDate, auction_bidEndDate);
 
         // Update the label (it's a sibling element within the same parent)
         const parentSection = element.parentElement;
@@ -347,18 +347,18 @@
 
         // Set up interval for each countdown
         countdownElements.forEach(element => {
-            const bidStartDate = element.getAttribute('data-bid-start-date');
-            const bidEndDate = element.getAttribute('data-bid-end-date');
+            const auction_bidStartDate = element.getAttribute('data-bid-start-date');
+            const auction_bidEndDate = element.getAttribute('data-bid-end-date');
 
             // Need at least one date to proceed
-            if (!bidStartDate && !bidEndDate) return;
+            if (!auction_bidStartDate && !auction_bidEndDate) return;
 
             // Update immediately
-            updateCountdownTimer(element, bidStartDate, bidEndDate);
+            updateCountdownTimer(element, auction_bidStartDate, auction_bidEndDate);
 
             // Update every second
             const interval = setInterval(() => {
-                updateCountdownTimer(element, bidStartDate, bidEndDate);
+                updateCountdownTimer(element, auction_bidStartDate, auction_bidEndDate);
             }, 1000);
 
             window.auctionCountdownIntervals.push(interval);
@@ -423,7 +423,7 @@
      * Handles different image URL formats and optimizes Unsplash URLs
      */
     function getImageUrl(property) {
-        const imageUrl = property.image || property.imageUrl || null;
+        const imageUrl = property.auction_image || property.buy_image || property.rent_image || 'default-auction-main-image.jpg';
         if (!imageUrl) return null;
 
         // If it's an Unsplash URL without proper dimensions, add them
@@ -574,17 +574,17 @@
 
     /**
      * Determine auction badge status based on dates
-     * @param {string} bidStartDate - The bid start date string
-     * @param {string} bidEndDate - The bid end date string
+     * @param {string} auction_bidStartDate - The bid start date string
+     * @param {string} auction_bidEndDate - The bid end date string
      * @returns {Object} Object with text and className for the badge
      */
-    function getAuctionBadgeStatus(bidStartDate, bidEndDate) {
+    function getAuctionBadgeStatus(auction_bidStartDate, auction_bidEndDate) {
         const now = new Date();
-        const startDate = parseArabicDate(bidStartDate);
-        const endDate = parseArabicDate(bidEndDate);
+        const auction_startDate = parseArabicDate(auction_bidStartDate);
+        const auction_endDate = parseArabicDate(auction_bidEndDate);
 
         // If dates can't be parsed, default to "جاري الآن"
-        if (!startDate || !endDate) {
+        if (!auction_startDate || !auction_endDate) {
             return {
                 text: 'جاري الآن',
                 className: 'live-badge-home-page'
@@ -592,7 +592,7 @@
         }
 
         // If current date is before start date -> "قادم" (Upcoming) with green bg
-        if (now < startDate) {
+        if (now < auction_startDate) {
             return {
                 text: 'قادم',
                 className: 'upcoming-badge-home-page'
@@ -600,7 +600,7 @@
         }
 
         // If current date is after end date -> "انتهى" (Ended) with dark blue bg
-        if (now > endDate) {
+        if (now > auction_endDate) {
             return {
                 text: 'انتهى',
                 className: 'ended-badge-home-page'
@@ -616,33 +616,33 @@
 
     /**
      * Get remaining time label and target date for countdown
-     * @param {string} bidStartDate - The bid start date string
-     * @param {string} bidEndDate - The bid end date string
+     * @param {string} auction_bidStartDate - The bid start date string
+     * @param {string} auction_bidEndDate - The bid end date string
      * @returns {Object} Object with label text and target date string for countdown
      */
-    function getRemainingTimeInfo(bidStartDate, bidEndDate) {
+    function getRemainingTimeInfo(auction_bidStartDate, auction_bidEndDate) {
         const now = new Date();
-        const startDate = parseArabicDate(bidStartDate);
-        const endDate = parseArabicDate(bidEndDate);
+        const auction_startDate = parseArabicDate(auction_bidStartDate);
+        const auction_endDate = parseArabicDate(auction_bidEndDate);
 
         // If dates can't be parsed, default to showing end date
-        if (!startDate || !endDate) {
+        if (!auction_startDate || !auction_endDate) {
             return {
                 label: 'ينتهي المزاد بعد:',
-                targetDate: bidEndDate
+                targetDate: auction_bidEndDate
             };
         }
 
         // If current date is before start date -> show countdown to start date
-        if (now < startDate) {
+        if (now < auction_startDate) {
             return {
                 label: 'يبدأ المزاد بعد:',
-                targetDate: bidStartDate
+                targetDate: auction_bidStartDate
             };
         }
 
         // If current date is after end date -> auction has ended
-        if (now > endDate) {
+        if (now > auction_endDate) {
             return {
                 label: 'انتهى المزاد',
                 targetDate: null // No countdown needed
@@ -652,7 +652,7 @@
         // If current date is between start and end date -> show countdown to end date
         return {
             label: 'ينتهي المزاد بعد:',
-            targetDate: bidEndDate
+            targetDate: auction_bidEndDate
         };
     }
 
@@ -665,34 +665,26 @@
 
         const imageUrl = getImageUrl(auction);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
-        const companyLogo = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = auction.specialWord ?
-            `<div class="home-page-special-word-badge">${auction.specialWord}</div>` : '';
+        const companyLogo = auction.auction_compLogo ? `<img src="${auction.auction_compLogo}" alt="${auction.auction_compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = auction.auction_specialWord ?
+            `<div class="home-page-special-word-badge">${auction.auction_specialWord}</div>` : '';
 
         // Handle timer - use 'timer' from JSON or fallback to 'timeRemaining'
-        const timeRemaining = auction.bidStartDate || 'غير محدد';
+        const timeRemaining = auction.auction_bidStartDate || 'غير محدد';
 
-        // Get start date (if available in JSON)
-        const startDate = auction.startDate || auction.date || '';
-
-        // Format starting bid/current bid - check if it already includes "ريال"
-        let startingBid = auction.currentBid || auction.startingBid || '';
-        if (startingBid && !startingBid.includes('ريال')) {
-            startingBid = formatPrice(startingBid);
-        }
 
         // Get dynamic badge status
-        const badgeStatus = getAuctionBadgeStatus(auction.bidStartDate, auction.bidEndDate);
+        const badgeStatus = getAuctionBadgeStatus(auction.auction_bidStartDate, auction.auction_bidEndDate);
 
         // Get remaining time info (label and target date)
-        const remainingTimeInfo = getRemainingTimeInfo(auction.bidStartDate, auction.bidEndDate);
+        const remainingTimeInfo = getRemainingTimeInfo(auction.auction_bidStartDate, auction.auction_bidEndDate);
 
         return `
             <div class="property-card-home-page auction-card-home-page">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
-                        <span class="company-name">${auction.compName || ''}</span>
+                        <span class="company-name">${auction.auction_compName || ''}</span>
                     </div>
                     ${specialWordBadge}
                 </div>
@@ -709,9 +701,8 @@
                     </div>
                 </div>
                 <div class="property-content-home-page">
-                    <h3 class="property-title-home-page">${auction.title || 'عقار في المزاد'}</h3>
+                    <h3 class="property-title-home-page">${auction.auction_title || 'عقار في المزاد'}</h3>
                     <div class="auction-meta-home-page">
-                        ${startDate ? `<div class="auction-date"><i data-lucide="calendar" class="meta-icon"></i> ${startDate}</div>` : ''}
                         <div class="auction-timer-home-page">
                             <i data-lucide="clock" class="meta-icon"></i>
                             <span class="bid-start-date-text">بدأ المزاد: <strong>${timeRemaining}</strong></span>
@@ -721,15 +712,15 @@
                         <div class="bid-section-top">
                             <div class="location-wrapper">
                                 <i data-lucide="map-pin" class="property-card-location-icon"></i>
-                                <span>${auction.location || 'غير محدد'}</span>
+                                <span>${auction.auction_location || 'غير محدد'}</span>
                             </div>
                             <i data-lucide="heart" class="property-card-heart-icon"></i>
                         </div>
                         <div class="bid-section-bottom">
                             <div class="remaining-time-label">${remainingTimeInfo.label}</div>
                             <div class="remaining-time-counter" 
-                                ${auction.bidStartDate ? `data-bid-start-date="${auction.bidStartDate}"` : ''}
-                                ${auction.bidEndDate ? `data-bid-end-date="${auction.bidEndDate}"` : ''}></div>
+                                ${auction.auction_bidStartDate ? `data-bid-start-date="${auction.auction_bidStartDate}"` : ''}
+                                ${auction.auction_bidEndDate ? `data-bid-end-date="${auction.auction_bidEndDate}"` : ''}></div>
                         </div>
                     </div>
                     <div class="property-cta-container-home-page">
@@ -826,7 +817,7 @@
                         const auctionId = property.id;
 
                         // Determine status badge to pass to detail page for dynamic category tab
-                        const badgeStatus = getAuctionBadgeStatus(property.bidStartDate, property.bidEndDate);
+                        const badgeStatus = getAuctionBadgeStatus(property.auction_bidStartDate, property.auction_bidEndDate);
 
                         if (auctionId) {
                             if (typeof window.openPropertyDetail === 'function') {

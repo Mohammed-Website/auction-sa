@@ -157,13 +157,13 @@
      * Render asset card HTML
      */
     function renderAssetCard(asset, index) {
-        const countdown = calculateCountdown(asset.bidStartDate);
+        const countdown = calculateCountdown(asset.auctionAsset_bidStartDate);
         const containerId = `asset-countdown-${asset.id || index}`;
 
         // Determine tags based on asset data
         const tags = [];
-        if (asset.location) tags.push({ text: 'محلي', class: 'tag-green' });
-        if (asset.bidStartDate) {
+        if (asset.auctionAsset_location) tags.push({ text: 'محلي', class: 'tag-green' });
+        if (asset.auctionAsset_bidStartDate) {
             try {
                 // Try to parse the date to check if it's in the future
                 const dateStr = asset.bidStartDate.replace('—', '-').replace('/', '-');
@@ -193,43 +193,16 @@
         }
         tags.push({ text: 'الكتروني - انفاذ', class: 'tag-blue' });
 
-        // Format title - split into two lines if it contains property number
-        // Expected format: "أرض زراعية في العمارية/ رقم الصك 815703003212"
-        let titleLine1 = asset.title || 'عقار';
-        let titleLine2 = '';
-
-        // Check if title contains property number pattern
-        if (titleLine1.includes('رقم') || titleLine1.includes('الصك')) {
-            // Try to split at "/" or extract property number
-            const parts = titleLine1.split(/\s*\/\s*رقم\s*/);
-            if (parts.length > 1) {
-                titleLine1 = parts[0].trim();
-                titleLine2 = `الصك ${parts[1].trim()}`;
-            } else {
-                // Try to extract property number from anywhere in the title
-                const propertyNumberMatch = titleLine1.match(/رقم\s*الصك\s*(\d+)/);
-                if (propertyNumberMatch) {
-                    titleLine2 = `الصك ${propertyNumberMatch[1]}`;
-                    titleLine1 = titleLine1.replace(/\s*\/?\s*رقم\s*الصك\s*\d+.*$/, '').trim();
-                }
-            }
-        }
-
-        // If no property number found, use title as-is on one line
-        if (!titleLine2) {
-            titleLine2 = '';
-        }
 
         return `
             <div class="auction-property-main-page-detail-asset-card">
                 <div class="auction-property-main-page-detail-asset-card-header">
                     <i data-lucide="more-vertical" class="asset-menu-icon"></i>
                     <div class="asset-title-wrapper">
-                        <h3 class="asset-title">${titleLine1}${titleLine2 ? '<br>' + titleLine2 : ''}</h3>
-                        <p class="asset-subtitle">${asset.location ? `في ${asset.location}` : ''}</p>
+                        <h3 class="asset-title">${asset.auctionAsset_title || 'عقار'} بصك ${asset.auctionAsset_deedNumber || ''}</h3>
                     </div>
                     <div class="asset-thumbnail">
-                        <img src="${asset.image || asset.propertyImages?.[0] || ''}" alt="${asset.title || 'عقار'}" onerror="this.style.display='none'">
+                        <img src="${asset.auctionAsset_image || asset.auctionAsset_propertyImages?.[0] || ''}" alt="${asset.auctionAsset_title || 'عقار'}" onerror="this.style.display='none'">
                     </div>
                 </div>
                 
@@ -242,7 +215,7 @@
                 <div class="asset-metadata">
                     <div class="metadata-item">
                         <i data-lucide="map-pin" class="metadata-icon"></i>
-                        <span>${asset.location || 'غير محدد'}</span>
+                        <span>${asset.auctionAsset_location || 'غير محدد'}</span>
                     </div>
                     <span class="metadata-divider">•</span>
                     <div class="metadata-item">
@@ -258,7 +231,7 @@
                     <div class="auction-property-main-page-detail-pricing-row">
                         <span class="auction-property-main-page-detail-pricing-label">قيمة التزايد</span>
                         <span class="pricing-value">
-                            ${asset.bidAmount || '0'}
+                            ${asset.auctionAsset_bidAmount || '0'}
                             <span class="currency-symbol">⃁</span>
                         </span>
 
@@ -266,7 +239,7 @@
                     <div class="auction-property-main-page-detail-pricing-row">
                         <span class="auction-property-main-page-detail-pricing-label">السعر الافتتاحي</span>
                         <span class="pricing-value">
-                            ${asset.startingPrice || '0'}
+                            ${asset.auctionAsset_startingPrice || '0'}
                             <span class="currency-symbol">⃁</span>
                         </span>
                     </div>
@@ -280,11 +253,11 @@
                 <div class="property-cta-container-home-page">
                     <div class="property-view-count-home-page">
                         <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                        <span class="property-view-number-home-page">${asset.viewCount ? asset.viewCount : '0'}</span>
+                        <span class="property-view-number-home-page">${asset.auctionAsset_viewCount}</span>
                     </div>
                     <div class="auction-property-count-home-page">
                         <span class="property-view-number-home-page">عدد المزايدين</span>
-                        <span class="property-view-number-home-page">${asset.numberOfAssets ? asset.numberOfAssets : '1'}</span>
+                        <span class="property-view-number-home-page">${asset.auctionAsset_numberOfBidders}</span>
                     </div>
                     <button class="property-cta-btn-home-page">
                         المشاركة في المزاد
@@ -312,7 +285,7 @@
         }
 
         // Parse bid start date
-        const startDate = formatDate(auction.bidStartDate);
+        const startDate = formatDate(auction.auction_bidStartDate);
         const assets = auction.assets || [];
         const assetCount = assets.length;
 
@@ -330,14 +303,14 @@
         }
 
         // Get company logo for category icon
-        const categoryIcon = auction.compLogo ? `<img src="${auction.compLogo}" alt="${auction.compName || 'شركة'}" class="category-icon-image">` : '';
+        const categoryIcon = auction.auction_compLogo ? `<img src="${auction.auction_compLogo}" alt="${auction.auction_compName || 'شركة'}" class="category-icon-image">` : '';
 
         const html = `
             <!-- Category Section -->
             <div class="auction-property-main-page-detail-category-header">
                 <div class="auction-property-main-page-detail-category-header-right">
                     <div class="category-icon-placeholder">${categoryIcon}</div>
-                    <h3 class="category-title">${auction.compName}</h3>
+                    <h3 class="category-title">${auction.auction_compName}</h3>
                 </div>
                 <i data-lucide="chevron-left" class="info-icon" style="cursor: pointer;" onclick="window.switchToSection('company-details-section')"></i>
             </div>
@@ -350,11 +323,11 @@
 
             <!-- Auction Main Card -->
             <div class="auction-property-main-page-detail-top-image">
-            <img src="${auction.image}" alt="${auction.title || 'مزادنا للعقارات السعودية'}">
+            <img src="${auction.auction_image}" alt="${auction.auction_title || 'مزادنا للعقارات السعودية'}">
             </div>
 
             <div>
-                <h3 class="property-detail-auction-title">${auction.title}</h3>
+                <h3 class="property-detail-auction-title">${auction.auction_title}</h3>
             </div>
 
             <!-- Info Section -->
@@ -369,7 +342,7 @@
                 </div>
                 <div class="info-item">
                     <i data-lucide="map-pin" class="info-icon"></i>
-                    <span class="info-label">المدينة: ${auction.location || 'غير محدد'}</span>
+                    <span class="info-label">المدينة: ${auction.auction_location || 'غير محدد'}</span>
                 </div>
             </div>
             
@@ -401,7 +374,7 @@
         deferHeavyOperations(() => {
             assets.forEach((asset, index) => {
                 const containerId = `asset-countdown-${asset.id || index}`;
-                const countdown = calculateCountdown(asset.bidStartDate);
+                const countdown = calculateCountdown(asset.auction_bidStartDate);
                 renderCountdown(countdown, containerId);
 
                 // Update countdown every second
