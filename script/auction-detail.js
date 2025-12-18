@@ -452,7 +452,7 @@
 
             if (!auction) {
                 console.error('Auction not found:', auctionId);
-                alert('المزاد غير موجود');
+                alert('المزاد غير متوفرة حالياً');
                 return;
             }
 

@@ -11,6 +11,83 @@
 (function () {
     'use strict';
 
+    /**
+     * Show floating message/toast notification
+     * @param {string} message - The message to display
+     * @param {number} duration - Duration in milliseconds (default: 5000)
+     */
+    function showFloatingMessage(message, duration = 5000) {
+        // Remove existing floating message if any
+        const existingMessage = document.querySelector('.floating-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        // Create floating message element
+        const floatingMessage = document.createElement('div');
+        floatingMessage.className = 'floating-message';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'floating-message-content';
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'floating-message-text';
+        textDiv.textContent = message; // Use textContent for security (preserves newlines)
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'floating-message-close';
+        closeBtn.setAttribute('aria-label', 'إغلاق');
+        closeBtn.innerHTML = '<i data-lucide="x" style="width: 18px; height: 18px;"></i>';
+
+        contentDiv.appendChild(textDiv);
+        contentDiv.appendChild(closeBtn);
+        floatingMessage.appendChild(contentDiv);
+
+        // Append to body
+        document.body.appendChild(floatingMessage);
+
+        // Initialize Lucide icons if available
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 50);
+        }
+
+        // Show message with animation
+        setTimeout(() => {
+            floatingMessage.classList.add('show');
+        }, 10);
+
+        // Close button handler
+        const closeMessage = () => {
+            floatingMessage.classList.remove('show');
+            setTimeout(() => {
+                floatingMessage.remove();
+            }, 300);
+        };
+
+        closeBtn.addEventListener('click', closeMessage);
+
+        // Auto-dismiss after duration
+        let timeoutId;
+        if (duration > 0) {
+            timeoutId = setTimeout(closeMessage, duration);
+        }
+
+        // Pause auto-dismiss on hover
+        floatingMessage.addEventListener('mouseenter', () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        });
+
+        floatingMessage.addEventListener('mouseleave', () => {
+            if (duration > 0) {
+                timeoutId = setTimeout(closeMessage, duration);
+            }
+        });
+    }
+
     // Track service worker registration status (set by script.js)
     let serviceWorkerRegistered = false;
 
@@ -118,14 +195,14 @@
         async function install() {
             // Check if already installed
             if (isInstalled || checkIfInstalled()) {
-                alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
                 return false;
             }
 
             // For iOS devices, show instructions (they don't support beforeinstallprompt)
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) {
-                alert('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)');
+                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
                 return false;
             }
 
@@ -144,7 +221,7 @@
                     window.location.hostname === '127.0.0.1';
 
                 if (!isSecure) {
-                    alert('التثبيت يتطلب اتصال آمن (HTTPS).\nيرجى فتح الموقع عبر رابط آمن.');
+                    showFloatingMessage('التثبيت يتطلب اتصال آمن (HTTPS).\nيرجى فتح الموقع عبر رابط آمن.');
                     return false;
                 }
 
@@ -190,7 +267,7 @@
                     message += '\n\nملاحظة: جاري إعداد التطبيق للتثبيت... قد تحتاج للمحاولة مرة أخرى بعد بضع ثوانٍ.';
                 }
 
-                alert(message);
+                showFloatingMessage(message, 10000);
                 return false;
             }
 
@@ -226,9 +303,9 @@
 
                 // If prompt() fails, the prompt might have been used already
                 if (error.message && error.message.includes('prompt')) {
-                    alert('تم استخدام خيار التثبيت مسبقاً.\nيرجى استخدام قائمة المتصفح لتثبيت التطبيق.');
+                    showFloatingMessage('تم استخدام خيار التثبيت مسبقاً.\nيرجى استخدام قائمة المتصفح لتثبيت التطبيق.');
                 } else {
-                    alert('حدث خطأ أثناء التثبيت.\nيرجى المحاولة مرة أخرى أو استخدام قائمة المتصفح.');
+                    showFloatingMessage('حدث خطأ أثناء التثبيت.\nيرجى المحاولة مرة أخرى أو استخدام قائمة المتصفح.');
                 }
                 return false;
             }
@@ -268,7 +345,7 @@
         if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
             // Always do a fresh check if already installed (don't rely on cached value)
             if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
                 return;
             }
 
@@ -278,7 +355,7 @@
                 setTimeout(() => {
                     // Check again if installed (in case it was installed during the wait)
                     if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                        alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                        showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
                         return;
                     }
 
@@ -306,13 +383,13 @@
                             message += 'استخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"';
                         }
 
-                        alert(message);
+                        showFloatingMessage(message, 8000);
                     }
                 }, 500);
             } else {
                 // Prompt is available, but check if installed first
                 if (window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
-                    alert('التطبيق مثبت بالفعل على هذا الجهاز');
+                    showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
                     return;
                 }
                 // Install immediately
@@ -324,9 +401,9 @@
             // Fallback for browsers that don't support PWA installation
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) {
-                alert('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)');
+                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
             } else {
-                alert('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"');
+                showFloatingMessage('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"', 7000);
             }
         }
     };
