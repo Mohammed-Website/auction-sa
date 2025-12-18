@@ -25,29 +25,60 @@ function isWithinScrollableContainer(element) {
 // Track which containers have been initialized to avoid duplicate listeners
 const initializedContainers = new WeakSet();
 
-// Create pull-to-refresh spinner for a container
-function createPullToRefreshSpinner(container) {
-    if (container.querySelector('.pull-to-refresh-spinner')) {
-        return container.querySelector('.pull-to-refresh-spinner');
+// Global pull-to-refresh spinner (one for all containers)
+let globalPullToRefreshSpinner = null;
+
+// Create or get pull-to-refresh spinner
+function getPullToRefreshSpinner() {
+    if (globalPullToRefreshSpinner) {
+        return globalPullToRefreshSpinner;
+    }
+
+    // Check if spinner already exists in body
+    const existingSpinner = document.querySelector('.pull-to-refresh-spinner');
+    if (existingSpinner) {
+        globalPullToRefreshSpinner = existingSpinner;
+        return existingSpinner;
     }
 
     const spinner = document.createElement('div');
     spinner.className = 'pull-to-refresh-spinner';
     spinner.innerHTML = '<div class="spinner-circle"></div>';
-    container.style.position = 'relative';
-    container.appendChild(spinner);
+    // Append to body to ensure it's in the top stacking context
+    document.body.appendChild(spinner);
+    globalPullToRefreshSpinner = spinner;
     return spinner;
+}
+
+// Get logo position for spinner alignment
+function getLogoCenterY() {
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        const header = logo.closest('.top-header');
+        if (header) {
+            const headerRect = header.getBoundingClientRect();
+            // Return the vertical center of the header (where logo is)
+            return headerRect.top + (headerRect.height / 2);
+        }
+    }
+    // Fallback: assume header height is 60px, so center is 30px
+    return 30;
 }
 
 // Initialize pull-to-refresh for a scrollable container
 function initializePullToRefresh(container) {
-    const spinner = createPullToRefreshSpinner(container);
+    const spinner = getPullToRefreshSpinner();
     let touchStartY = 0;
     let touchStartScrollTop = 0;
     let pullDistance = 0;
     let isPulling = false;
-    const PULL_THRESHOLD = 80; // Distance in pixels to trigger refresh
     const MAX_PULL = 120; // Maximum pull distance
+    const REFRESH_THRESHOLD = MAX_PULL * 0.80; // Refresh when 50% of max pull is reached (ensures full pull triggers refresh)
+
+    // Set initial spinner position at logo center
+    const logoCenterY = getLogoCenterY();
+    spinner.style.top = `${logoCenterY}px`;
+    spinner.style.transform = `translateX(-50%) translateY(-20px)`; // -20px centers the 40px spinner
 
     // Touch start
     container.addEventListener('touchstart', (e) => {
@@ -74,30 +105,49 @@ function initializePullToRefresh(container) {
 
             // Show spinner and update its position
             spinner.classList.add('active');
-            const translateY = Math.min(pullDistance, MAX_PULL);
-            spinner.style.transform = `translateX(-50%) translateY(${translateY - 100}px)`;
-            spinner.style.opacity = Math.min(pullDistance / PULL_THRESHOLD, 1);
+            // Disable transitions during dragging for smooth real-time updates
+            spinner.style.transition = 'none';
+            // Move spinner down from logo position as user pulls
+            // Start at -50% (centered at logo) and move down by pullDistance pixels
+            const spinnerHeight = 40; // spinner height in pixels
+            const translateYValue = -spinnerHeight / 2 + pullDistance; // Start at -20px (half height) and add pullDistance
+            spinner.style.transform = `translateX(-50%) translateY(${translateYValue}px)`;
+            // Fade in based on pull distance (smooth opacity increase)
+            spinner.style.opacity = Math.min(pullDistance / REFRESH_THRESHOLD, 1);
         } else {
-            // User is scrolling up, hide spinner
+            // User is scrolling up, hide spinner smoothly
             pullDistance = 0;
-            spinner.classList.remove('active');
+            const logoCenterY = getLogoCenterY();
+            spinner.style.top = `${logoCenterY}px`;
+            // Re-enable transitions for smooth animation
+            spinner.style.transition = '';
+            spinner.style.transform = `translateX(-50%) translateY(-20px)`;
+            spinner.style.opacity = '0';
+            setTimeout(() => {
+                spinner.classList.remove('active');
+            }, 300); // Wait for transition to complete
         }
     }, { passive: true });
 
     // Touch end
     container.addEventListener('touchend', () => {
-        if (pullDistance >= PULL_THRESHOLD) {
-            // Trigger refresh
-            spinner.style.opacity = '1';
+        // Trigger refresh if fully pulled (reached refresh threshold)
+        if (pullDistance >= REFRESH_THRESHOLD) {
+            // Trigger refresh immediately
             window.location.reload();
         } else {
-            // Hide spinner if threshold not reached
+            // Smoothly slide back to logo position and fade out
+            const logoCenterY = getLogoCenterY();
+            spinner.style.top = `${logoCenterY}px`;
+            // Re-enable transitions for smooth animation back to starting position
+            spinner.style.transition = '';
+            spinner.style.transform = `translateX(-50%) translateY(-20px)`;
             spinner.style.opacity = '0';
+
+            // Remove active class after animation completes
             setTimeout(() => {
                 spinner.classList.remove('active');
-                spinner.style.transform = `translateX(-50%) translateY(-100%)`;
-                spinner.style.opacity = '';
-            }, 200); // Wait for opacity transition
+            }, 300); // Match transition duration
             pullDistance = 0;
         }
         isPulling = false;
@@ -125,11 +175,17 @@ function initializeScrollableContainers() {
             isScrollableContainerScrolling = true;
 
             // Hide pull-to-refresh spinner if container scrolls away from top
-            const spinner = container.querySelector('.pull-to-refresh-spinner');
+            const spinner = getPullToRefreshSpinner();
             if (spinner && container.scrollTop > 0) {
-                spinner.classList.remove('active');
-                spinner.style.transform = `translateX(-50%) translateY(-100%)`;
-                spinner.style.opacity = '';
+                const logoCenterY = getLogoCenterY();
+                spinner.style.top = `${logoCenterY}px`;
+                // Re-enable transitions for smooth animation
+                spinner.style.transition = '';
+                spinner.style.transform = `translateX(-50%) translateY(-20px)`;
+                spinner.style.opacity = '0';
+                setTimeout(() => {
+                    spinner.classList.remove('active');
+                }, 300); // Wait for transition to complete
             }
 
             // Reset flag after scroll ends

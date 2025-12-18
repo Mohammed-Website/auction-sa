@@ -69,19 +69,23 @@
 
 /* Pull to Refresh Spinner */
 .pull-to-refresh-spinner {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 30px;
+    /* Will be dynamically updated to logo center position */
     left: 50%;
-    transform: translateX(-50%) translateY(-100%);
+    transform: translateX(-50%) translateY(-20px);
+    /* Start centered at logo (-half of 40px height) */
     width: 40px;
     height: 40px;
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    transition: opacity 0.2s ease;
-    opacity: 0;
+    z-index: 99999 !important;
     pointer-events: none;
+    isolation: isolate;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: transform, opacity;
 }
 
 .pull-to-refresh-spinner.active {
