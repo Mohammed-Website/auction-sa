@@ -30,6 +30,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - 60px);
+    padding: 0 var(--spacing-sm);
 }
 
 .auction-property-main-page-detail-category-header {

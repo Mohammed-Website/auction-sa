@@ -63,8 +63,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-    padding: 0 var(--spacing-md);
     position: relative;
+    padding-bottom: 1rem !important;
 }
 
 /* Pull to Refresh Spinner */

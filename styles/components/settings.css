@@ -7,9 +7,13 @@
     display: block;
     visibility: visible;
     opacity: 1;
-    padding-top: 55px;
+    padding-top: 45px;
     box-sizing: border-box;
     position: relative;
+}
+
+.settings-content{
+    padding: 0 var(--spacing-sm);
 }
 
 /* Ensure settings header is fixed at the top */

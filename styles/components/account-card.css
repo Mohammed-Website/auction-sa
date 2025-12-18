@@ -12,11 +12,9 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    height: auto;
     overflow: visible;
+    padding: 0 var(--spacing-md);
 }
-
-/* Form-group in card-body now uses info-row classes, so no separate styles needed */
 
 /* Info Row Component */
 .info-row {
