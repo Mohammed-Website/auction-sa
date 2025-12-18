@@ -508,7 +508,7 @@
                     if (typeof window.scrollScrollableContainersToTop === 'function') {
                         setTimeout(() => {
                             window.scrollScrollableContainersToTop('home-section');
-                        }, 300); // Wait for section switch to complete
+                        }, 50); // Wait for section switch to complete
                     }
                 }
             });
