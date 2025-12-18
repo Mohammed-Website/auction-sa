@@ -20,7 +20,7 @@
 
 html {
     height: 100vh;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 
 body {
