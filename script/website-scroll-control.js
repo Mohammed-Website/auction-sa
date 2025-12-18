@@ -25,6 +25,85 @@ function isWithinScrollableContainer(element) {
 // Track which containers have been initialized to avoid duplicate listeners
 const initializedContainers = new WeakSet();
 
+// Create pull-to-refresh spinner for a container
+function createPullToRefreshSpinner(container) {
+    if (container.querySelector('.pull-to-refresh-spinner')) {
+        return container.querySelector('.pull-to-refresh-spinner');
+    }
+
+    const spinner = document.createElement('div');
+    spinner.className = 'pull-to-refresh-spinner';
+    spinner.innerHTML = '<div class="spinner-circle"></div>';
+    container.style.position = 'relative';
+    container.appendChild(spinner);
+    return spinner;
+}
+
+// Initialize pull-to-refresh for a scrollable container
+function initializePullToRefresh(container) {
+    const spinner = createPullToRefreshSpinner(container);
+    let touchStartY = 0;
+    let touchStartScrollTop = 0;
+    let pullDistance = 0;
+    let isPulling = false;
+    const PULL_THRESHOLD = 80; // Distance in pixels to trigger refresh
+    const MAX_PULL = 120; // Maximum pull distance
+
+    // Touch start
+    container.addEventListener('touchstart', (e) => {
+        touchStartScrollTop = container.scrollTop;
+        if (touchStartScrollTop === 0) {
+            touchStartY = e.touches[0].clientY;
+            isPulling = true;
+        }
+    }, { passive: true });
+
+    // Touch move
+    container.addEventListener('touchmove', (e) => {
+        if (!isPulling || container.scrollTop > 0) {
+            isPulling = false;
+            return;
+        }
+
+        const touchCurrentY = e.touches[0].clientY;
+        const deltaY = touchCurrentY - touchStartY;
+
+        // Only handle downward pull (pulling down when at top)
+        if (deltaY > 0) {
+            pullDistance = Math.min(deltaY * 0.5, MAX_PULL); // Scale down the pull for better UX
+
+            // Show spinner and update its position
+            spinner.classList.add('active');
+            const translateY = Math.min(pullDistance, MAX_PULL);
+            spinner.style.transform = `translateX(-50%) translateY(${translateY - 100}px)`;
+            spinner.style.opacity = Math.min(pullDistance / PULL_THRESHOLD, 1);
+        } else {
+            // User is scrolling up, hide spinner
+            pullDistance = 0;
+            spinner.classList.remove('active');
+        }
+    }, { passive: true });
+
+    // Touch end
+    container.addEventListener('touchend', () => {
+        if (pullDistance >= PULL_THRESHOLD) {
+            // Trigger refresh
+            spinner.style.opacity = '1';
+            window.location.reload();
+        } else {
+            // Hide spinner if threshold not reached
+            spinner.style.opacity = '0';
+            setTimeout(() => {
+                spinner.classList.remove('active');
+                spinner.style.transform = `translateX(-50%) translateY(-100%)`;
+                spinner.style.opacity = '';
+            }, 200); // Wait for opacity transition
+            pullDistance = 0;
+        }
+        isPulling = false;
+    }, { passive: true });
+}
+
 // Track scroll events on scrollable containers and handle wheel events
 function initializeScrollableContainers() {
     const containers = document.querySelectorAll('.scrollable-container');
@@ -38,9 +117,20 @@ function initializeScrollableContainers() {
         // Mark as initialized
         initializedContainers.add(container);
 
+        // Initialize pull-to-refresh for mobile
+        initializePullToRefresh(container);
+
         // Add scroll listener to each container
         container.addEventListener('scroll', () => {
             isScrollableContainerScrolling = true;
+
+            // Hide pull-to-refresh spinner if container scrolls away from top
+            const spinner = container.querySelector('.pull-to-refresh-spinner');
+            if (spinner && container.scrollTop > 0) {
+                spinner.classList.remove('active');
+                spinner.style.transform = `translateX(-50%) translateY(-100%)`;
+                spinner.style.opacity = '';
+            }
 
             // Reset flag after scroll ends
             clearTimeout(container._scrollTimeout);
