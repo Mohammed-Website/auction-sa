@@ -341,6 +341,19 @@
      * This function is called when the user clicks "تنزيل البرنامج" menu item
      */
     window.handleInstallAppAction = function () {
+        // Check for iOS first (iOS doesn't support beforeinstallprompt event)
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            // Check if already installed
+            if (window.PWAInstaller && window.PWAInstaller.isInstalled && window.PWAInstaller.isInstalled()) {
+                showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
+                return;
+            }
+            // Show iOS installation instructions
+            showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
+            return;
+        }
+
         // Check if PWA installer is available
         if (window.PWAInstaller && typeof window.PWAInstaller.install === 'function') {
             // Always do a fresh check if already installed (don't rely on cached value)
@@ -365,13 +378,18 @@
                         });
                     } else {
                         // Still not available, show helpful message
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                         const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
                         const isEdge = /Edg/.test(navigator.userAgent);
                         const isFirefox = /Firefox/.test(navigator.userAgent);
 
                         let message = 'لتثبيت التطبيق:\n\n';
 
-                        if (isChrome || isEdge) {
+                        if (isIOS) {
+                            message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
+                            message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
+                            message += '3. اضغط "إضافة" (Add)';
+                        } else if (isChrome || isEdge) {
                             message += '1. ابحث عن أيقونة التثبيت في شريط العنوان (على اليمين)\n';
                             message += '2. أو اضغط على قائمة المتصفح (⋮) واختر "تثبيت التطبيق"\n';
                             message += '3. أو انتظر قليلاً ثم حاول مرة أخرى';
@@ -399,12 +417,8 @@
             }
         } else {
             // Fallback for browsers that don't support PWA installation
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            if (isIOS) {
-                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-            } else {
-                showFloatingMessage('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"', 7000);
-            }
+            // (iOS is already handled above, so this is for other unsupported browsers)
+            showFloatingMessage('لتثبيت التطبيق:\n\nاستخدم قائمة المتصفح للبحث عن خيار "تثبيت التطبيق" أو "Install App"', 7000);
         }
     };
 
