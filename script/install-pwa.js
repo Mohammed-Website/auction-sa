@@ -199,11 +199,35 @@
                 return false;
             }
 
-            // For iOS devices, show instructions (they don't support beforeinstallprompt)
+            // For iOS devices, use Web Share API to open share sheet
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) {
-                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-                return false;
+                // Check if Web Share API is available
+                if (navigator.share) {
+                    try {
+                        // Use Web Share API to open iOS share sheet
+                        await navigator.share({
+                            title: 'مزادنا للعقارات السعودية',
+                            text: 'ثبت التطبيق على الشاشة الرئيسية',
+                            url: window.location.href
+                        });
+                        // After sharing, show instructions to add to home screen
+                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)', 6000);
+                        return false;
+                    } catch (error) {
+                        // User cancelled or error occurred
+                        if (error.name !== 'AbortError') {
+                            console.error('Error sharing:', error);
+                            // Fallback to instructions
+                            showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
+                        }
+                        return false;
+                    }
+                } else {
+                    // Web Share API not available, show instructions
+                    showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
+                    return false;
+                }
             }
 
             // If prompt not available, wait a moment and check again
@@ -340,7 +364,7 @@
      * Handle the "install-app" menu action
      * This function is called when the user clicks "تنزيل البرنامج" menu item
      */
-    window.handleInstallAppAction = function () {
+    window.handleInstallAppAction = async function () {
         // Check for iOS first (iOS doesn't support beforeinstallprompt event)
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (isIOS) {
@@ -349,9 +373,36 @@
                 showFloatingMessage('التطبيق مثبت بالفعل على هذا الجهاز');
                 return;
             }
-            // Show iOS installation instructions
-            showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
-            return;
+
+            // Use Web Share API to open iOS share sheet automatically
+            if (navigator.share) {
+                try {
+                    // Open the share sheet - user will see "Add to Home Screen" option
+                    await navigator.share({
+                        title: 'مزادنا للعقارات السعودية',
+                        text: 'ثبت التطبيق على الشاشة الرئيسية',
+                        url: window.location.href
+                    });
+                    // After share sheet closes, show reminder
+                    setTimeout(() => {
+                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen) ثم اضغط "إضافة"', 6000);
+                    }, 500);
+                    return;
+                } catch (error) {
+                    // User cancelled share sheet
+                    if (error.name === 'AbortError') {
+                        return; // User cancelled, don't show message
+                    }
+                    // Other error - fallback to instructions
+                    console.error('Error sharing:', error);
+                    showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
+                    return;
+                }
+            } else {
+                // Web Share API not available, show instructions
+                showFloatingMessage('لتثبيت التطبيق على iOS:\n\n1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n3. اضغط "إضافة" (Add)', 8000);
+                return;
+            }
         }
 
         // Check if PWA installer is available
@@ -386,9 +437,31 @@
                         let message = 'لتثبيت التطبيق:\n\n';
 
                         if (isIOS) {
-                            message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
-                            message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
-                            message += '3. اضغط "إضافة" (Add)';
+                            // For iOS, try to use Web Share API if available
+                            if (navigator.share) {
+                                // Try to open share sheet
+                                navigator.share({
+                                    title: 'مزادنا للعقارات السعودية',
+                                    text: 'ثبت التطبيق على الشاشة الرئيسية',
+                                    url: window.location.href
+                                }).then(() => {
+                                    setTimeout(() => {
+                                        showFloatingMessage('في قائمة المشاركة، اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)', 6000);
+                                    }, 500);
+                                }).catch((error) => {
+                                    if (error.name !== 'AbortError') {
+                                        message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
+                                        message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
+                                        message += '3. اضغط "إضافة" (Add)';
+                                        showFloatingMessage(message, 8000);
+                                    }
+                                });
+                                return; // Don't show the fallback message if share was attempted
+                            } else {
+                                message += '1. اضغط على زر المشاركة (Share) في أسفل المتصفح\n';
+                                message += '2. اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen)\n';
+                                message += '3. اضغط "إضافة" (Add)';
+                            }
                         } else if (isChrome || isEdge) {
                             message += '1. ابحث عن أيقونة التثبيت في شريط العنوان (على اليمين)\n';
                             message += '2. أو اضغط على قائمة المتصفح (⋮) واختر "تثبيت التطبيق"\n';
