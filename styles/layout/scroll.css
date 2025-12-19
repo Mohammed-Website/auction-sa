@@ -1,39 +1,46 @@
 /* Horizontal Scroll Container */
 .horizontal-scroll-container {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;
-    margin-right: -1rem;
-    margin-left: -1rem;
-    padding-right: 1rem;
-    padding-left: 2rem;
-    /* Extra space at the end for the last card (RTL: left side when scrolling) */
-    scroll-snap-type: x mandatory;
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 0.9rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    transform: translateY(0);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
     scroll-behavior: smooth;
-    pointer-events: auto !important;
-    cursor: grab;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
 }
 
+/* Ensure cards don't shrink and maintain their size */
+.horizontal-scroll-container>* {
+    flex-shrink: 0;
+}
+
+/* Hide scrollbar for a cleaner look (optional - can be removed if you want visible scrollbar) */
 .horizontal-scroll-container::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    background: rgba(0, 0, 0, 0.5);
 }
 
-.horizontal-scroll-grid {
-    display: flex;
-    padding-bottom: 0.5rem;
+/* Hide vertical scrollbar */
+#indoforall-clint-rate-area::-webkit-scrollbar {
+    display: none;
 }

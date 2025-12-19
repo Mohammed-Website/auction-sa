@@ -15,6 +15,10 @@
     scroll-snap-stop: always;
 }
 
+.property-card-home-page:last-child{
+    margin-left: 0;
+}
+
 .property-image-home-page {
     width: 95%;
     height: 150px;
