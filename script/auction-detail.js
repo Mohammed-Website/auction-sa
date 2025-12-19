@@ -332,6 +332,56 @@
     }
 
     /**
+     * Get asset status based on dates
+     * @param {string} bidStartDate - The bid start date string
+     * @param {string} bidEndDate - The bid end date string
+     * @returns {Object} Object with text and className for the status badge
+     */
+    function getAssetStatus(bidStartDate, bidEndDate) {
+        const now = new Date();
+        const startDate = parseArabicDate(bidStartDate);
+        const endDate = parseArabicDate(bidEndDate);
+
+        // If dates can't be parsed, default to "جاري الآن"
+        if (!startDate || !endDate) {
+            return {
+                text: 'جاري الآن',
+                className: 'property-detail-status-live'
+            };
+        }
+
+        // If current date is after end date -> "إنتهى" (Ended)
+        if (now > endDate) {
+            return {
+                text: 'إنتهى',
+                className: 'property-detail-status-ended'
+            };
+        }
+
+        // If current date is between start and end date -> "جاري الآن" (Currently running)
+        if (now >= startDate && now <= endDate) {
+            return {
+                text: 'جاري الآن',
+                className: 'property-detail-status-live'
+            };
+        }
+
+        // If current date is before start date -> "قادم قريباً" (Upcoming)
+        if (now < startDate) {
+            return {
+                text: 'قادم قريباً',
+                className: 'property-detail-status-upcoming'
+            };
+        }
+
+        // Default fallback
+        return {
+            text: 'جاري الآن',
+            className: 'property-detail-status-live'
+        };
+    }
+
+    /**
      * Render asset card HTML
      */
     function renderAssetCard(asset, index) {
@@ -355,6 +405,8 @@
         // Get remaining time info for label
         const remainingTimeInfo = getRemainingTimeInfo(bidStartDate, bidEndDate);
 
+        // Get asset status for category tab
+        const assetStatus = getAssetStatus(bidStartDate, bidEndDate);
 
         return `
             <div class="auction-property-main-page-detail-asset-card">
@@ -371,7 +423,7 @@
 
                 <button class="auction-property-main-page-detail-category-tab">عقارات</button>
                 <button class="auction-property-main-page-detail-category-tab" style="background: #eaf3ff; color: #2c5aa0;">إلكتروني - انفاذ</button>
-                <button class="auction-property-main-page-detail-category-tab">جاري الآن</button>
+                <button class="auction-property-main-page-detail-category-tab ${assetStatus.className}">${assetStatus.text}</button>
                 
 
                 <div class="asset-metadata">

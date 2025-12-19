@@ -1,5 +1,5 @@
 // My Actions Section - Tab Switching Logic
-;(function () {
+; (function () {
     'use strict';
 
     let eventListenersAttached = false;
@@ -12,11 +12,6 @@
 
         const filterContainer = document.createElement('div');
         filterContainer.className = 'finished-filters';
-        filterContainer.style.display = 'flex';
-        filterContainer.style.justifyContent = 'flex-start';
-        filterContainer.style.gap = '8px';
-        filterContainer.style.margin = '1rem 0';
-        filterContainer.style.width = '100%';
 
         const buttons = [
             { id: 'won-auctions', text: 'الرابحة' },
@@ -33,15 +28,18 @@
             filterContainer.appendChild(button);
         });
 
-        if (finishedContent.firstChild) {
-            finishedContent.insertBefore(filterContainer, finishedContent.firstChild);
+        // Initially hide the finished-filters container (will be shown when finished tab is active)
+        filterContainer.style.display = 'none';
+
+        if (finishedContent.lastChild) {
+            finishedContent.insertBefore(filterContainer, finishedContent.lastChild);
         } else {
             finishedContent.appendChild(filterContainer);
         }
 
         const filterButtons = filterContainer.querySelectorAll('.my-actions-tab');
         filterButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const isActive = this.classList.contains('active');
                 filterButtons.forEach(b => b.classList.remove('active'));
                 if (!isActive) {
@@ -63,12 +61,14 @@
                 </div>
 
                 <div class="my-actions-tabs">
-                    <button class="my-actions-tab active" data-tab="pending" id="pending-tab">
-                        <span>المزادات قيد الانتظار</span>
-                    </button>
-                    <button class="my-actions-tab" data-tab="finished" id="finished-tab">
-                        <span>المزادات المنتهية</span>
-                    </button>
+                    <div class="my-actions-tabs-main-buttons">
+                        <button class="my-actions-tab active" data-tab="pending" id="pending-tab">
+                            <span>المزادات قيد الانتظار</span>
+                        </button>
+                        <button class="my-actions-tab" data-tab="finished" id="finished-tab">
+                            <span>المزادات المنتهية</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="my-actions-content scrollable-container">
@@ -108,8 +108,23 @@
                 const targetContent = document.getElementById(`${targetTab}-content`);
                 if (targetContent) {
                     targetContent.classList.add('active');
+
+                    // Show/hide finished-filters div based on active tab
+                    const finishedFilters = document.querySelector('.finished-filters');
                     if (targetTab === 'finished') {
-                        setTimeout(createFilterButtons, 10);
+                        setTimeout(() => {
+                            createFilterButtons();
+                            // Show finished-filters when finished tab is active
+                            const filters = document.querySelector('.finished-filters');
+                            if (filters) {
+                                filters.style.display = 'flex';
+                            }
+                        }, 10);
+                    } else if (targetTab === 'pending') {
+                        // Hide finished-filters when pending tab is active
+                        if (finishedFilters) {
+                            finishedFilters.style.display = 'none';
+                        }
                     }
                 }
             });
@@ -127,6 +142,14 @@
 
         renderMyActionsSection();
         initMyActionsTabs();
+
+        // Ensure finished-filters is hidden initially (pending tab is active by default)
+        setTimeout(() => {
+            const finishedFilters = document.querySelector('.finished-filters');
+            if (finishedFilters) {
+                finishedFilters.style.display = 'none';
+            }
+        }, 50);
 
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {

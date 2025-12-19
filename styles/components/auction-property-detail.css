@@ -95,6 +95,11 @@
     color: #fff;
 }
 
+.property-detail-status-ended {
+    background: #6b46c1;
+    color: #fff;
+}
+
 /* Auction Main Card */
 .auction-property-main-page-detail-top-image {
     margin: 1rem 0;

@@ -577,10 +577,10 @@
             };
         }
 
-        // If current date is after end date -> "انتهى" (Ended) with dark blue bg
+        // If current date is after end date -> "إنتهى" (Ended) with purple bg
         if (now > auction_endDate) {
             return {
-                text: 'انتهى',
+                text: 'إنتهى',
                 className: 'ended-badge-home-page'
             };
         }

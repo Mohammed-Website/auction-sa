@@ -16,14 +16,32 @@
 
 /* Tab Switching Section */
 .my-actions-tabs {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.my-actions-tabs-main-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-sm);
+    gap: 0 var(--spacing-sm);
     width: 100%;
+    padding: 0 var(--spacing-sm);
+}
+
+.finished-filters {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 1rem 0;
+    width: 95%;
 }
 
 .my-actions-tab {
-    width: 100%;
+    width: fit-content;
     padding: var(--spacing-xs) var(--spacing-md);
     border: none;
     border-radius: var(--radius-sm);
@@ -104,8 +122,8 @@
         font-size: var(--font-size-sm);
     }
 
-    .my-actions-tabs {
-        gap: var(--spacing-xs);
+    .my-actions-tabs-main-buttons {
+        gap: 0 var(--spacing-xs);
     }
 
     .my-actions-tab {
