@@ -20,13 +20,6 @@
 
 /* Wrapper for tabs and tab content to occupy same space */
 .account-tabs-wrapper {
-    position: relative;
     width: 95%;
-    min-height: 50px;
     align-self: center;
-}
-
-/* When a tab view is active, adjust wrapper height */
-.account-tabs-wrapper:has(.tab-view.active) {
-    min-height: auto;
 }

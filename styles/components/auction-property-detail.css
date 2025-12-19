@@ -137,7 +137,6 @@
     font-size: var(--font-size-base, 1rem);
     color: var(--text-primary, #333);
     text-align: right;
-    flex: 1;
 }
 
 /* Buttons */

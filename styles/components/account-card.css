@@ -1,35 +1,21 @@
 /* Account Card Component */
 .account-card {
-    background: var(--bg-white);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-sm);
     overflow: visible;
     position: relative;
 }
 
-
-.card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow: visible;
-    padding: 0 var(--spacing-md);
-}
-
 /* Info Row Component */
 .info-row {
+    background: var(--bg-white);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-xs);
     border-bottom: 1px solid var(--border-light);
     gap: var(--spacing-md);
-}
-
-.info-row:last-child {
-    border-bottom: none;
-    margin-bottom: var(--spacing-md);
 }
 
 .info-item {
@@ -61,8 +47,6 @@
 /* Profile Image in Card Body */
 .profile-image-row {
     padding-bottom: var(--spacing-xl);
-    margin-bottom: var(--spacing-md);
-    border-bottom: 2px solid var(--border-light);
 }
 
 .profile-image-value {
@@ -128,6 +112,3 @@
     stroke: var(--bg-white);
     stroke-width: 2.5;
 }
-
-/* Form Groups in Card */
-/* Form-group in account-card now uses info-row classes, so no separate styles needed */

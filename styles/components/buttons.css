@@ -16,6 +16,7 @@
     justify-content: center;
     gap: var(--spacing-sm);
     font-family: inherit;
+    margin-top: 1rem;
 }
 
 .edit-btn:hover,
