@@ -14,6 +14,18 @@
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 0;
+    /* Hide scrollbar completely */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Hide scrollbar completely */
+.horizontal-scroll-container::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 /* Ensure cards don't shrink and maintain their size */
@@ -21,23 +33,40 @@
     flex-shrink: 0;
 }
 
-/* Hide scrollbar for a cleaner look (optional - can be removed if you want visible scrollbar) */
-.horizontal-scroll-container::-webkit-scrollbar {
+/* Scroll Indicators */
+.scroll-indicators {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    position: relative;
+    z-index: 10;
+}
+
+.scroll-indicator {
+    width: 8px;
     height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
-.horizontal-scroll-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
+.scroll-indicator.active {
+    background: #2c5aa0;
+    width: 24px;
     border-radius: 4px;
 }
 
-.horizontal-scroll-container::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
+.scroll-indicator:hover {
+    background: #1e3d6f;
 }
 
-.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
+/* Wrapper for container and indicators */
+.horizontal-scroll-wrapper {
+    position: relative;
 }
 
 /* Hide vertical scrollbar */
