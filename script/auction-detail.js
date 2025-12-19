@@ -23,139 +23,310 @@
     }
 
     /**
-     * Calculate countdown from start date
+     * Parse Arabic date/time string to JavaScript Date object
+     * Handles formats like "2025-12-28 12:00 صباحً" or "2025-12-28 12:00 مساءً"
+     * @param {string} dateString - Date string in Arabic format
+     * @returns {Date|null} Parsed date or null if invalid
      */
-    function calculateCountdown(startDate) {
-        if (!startDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    function parseArabicDate(dateString) {
+        if (!dateString) return null;
 
         try {
-            // Parse date string (format: "2025/12/20 — 08:00 مساءً" or "2025-12-20 6:00 مساءً")
-            let dateStr = startDate.replace('—', '-').replace('/', '-');
-            const timeMatch = dateStr.match(/(\d{1,2}):(\d{2})\s*(صباحً|مساءً)/);
+            // Replace Arabic time indicators and em dashes
+            let normalized = dateString
+                .replace(/صباحً|ص/g, 'AM')
+                .replace(/مساءً|م/g, 'PM')
+                .replace(/[—–−]/g, '-') // Replace various dash types with regular dash
+                .trim();
 
-            if (!timeMatch) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            // Extract date and time parts
+            const parts = normalized.split(/\s+/);
+            if (parts.length < 2) return null;
 
-            const dateMatch = dateStr.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-            if (!dateMatch) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            const datePart = parts[0]; // "2025-12-28" or "2025/12/11"
+            const timePart = parts.slice(1).join(' '); // "12:00 AM" or "08:00 PM"
 
-            const year = parseInt(dateMatch[1]);
-            const month = parseInt(dateMatch[2]) - 1; // JS months are 0-indexed
-            const day = parseInt(dateMatch[3]);
-            let hours = parseInt(timeMatch[1]);
-            const minutes = parseInt(timeMatch[2]);
-            const period = timeMatch[3];
+            // Parse the date
+            const [year, month, day] = datePart.split(/[-\/]/).map(Number);
+            if (!year || !month || !day) return null;
+
+            // Parse time
+            const timeMatch = timePart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!timeMatch) return null;
+
+            let hours = parseInt(timeMatch[1], 10);
+            const minutes = parseInt(timeMatch[2], 10);
+            const ampm = timeMatch[3].toUpperCase();
 
             // Convert to 24-hour format
-            if (period === 'مساءً' && hours !== 12) {
+            if (ampm === 'PM' && hours !== 12) {
                 hours += 12;
-            } else if (period === 'صباحً' && hours === 12) {
+            } else if (ampm === 'AM' && hours === 12) {
                 hours = 0;
             }
 
-            const targetDate = new Date(year, month, day, hours, minutes);
-            const now = new Date();
-            const diff = targetDate - now;
-
-            if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hoursRem = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutesRem = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const secondsRem = Math.floor((diff % (1000 * 60)) / 1000);
-
-            return { days, hours: hoursRem, minutes: minutesRem, seconds: secondsRem };
+            return new Date(year, month - 1, day, hours, minutes, 0);
         } catch (error) {
-            console.error('Error calculating countdown:', error);
-            return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            console.warn('Failed to parse date:', dateString, error);
+            return null;
         }
     }
 
+    /**
+     * Calculate time remaining until target date
+     * @param {Date} targetDate - The target date to count down to
+     * @returns {Object} Object with days, hours, minutes, seconds
+     */
+    function calculateTimeRemaining(targetDate) {
+        if (!targetDate) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
 
+        const now = new Date();
+        const diff = targetDate.getTime() - now.getTime();
 
+        if (diff <= 0) {
+            return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        return { days, hours, minutes, seconds, expired: false };
+    }
 
     /**
-     * Render countdown timer HTML
+     * Get remaining time label and target date for countdown
+     * @param {string} bidStartDate - The bid start date string
+     * @param {string} bidEndDate - The bid end date string
+     * @returns {Object} Object with label text and target date string for countdown
      */
-    function renderCountdown(countdown, containerId) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
+    function getRemainingTimeInfo(bidStartDate, bidEndDate) {
+        const now = new Date();
+        const startDate = parseArabicDate(bidStartDate);
+        const endDate = parseArabicDate(bidEndDate);
 
-        const html = `
+        // If dates can't be parsed, default to showing end date
+        if (!startDate || !endDate) {
+            return {
+                label: 'ينتهي المزاد بعد:',
+                targetDate: bidEndDate || bidStartDate
+            };
+        }
+
+        // If current date is before start date -> show countdown to start date
+        if (now < startDate) {
+            return {
+                label: 'يبدأ في',
+                targetDate: bidStartDate
+            };
+        }
+
+        // If current date is after end date -> auction has ended
+        if (now > endDate) {
+            return {
+                label: 'انتهى المزاد',
+                targetDate: null // No countdown needed
+            };
+        }
+
+        // If current date is between start and end date -> show countdown to end date
+        return {
+            label: 'ينتهي في',
+            targetDate: bidEndDate
+        };
+    }
+
+    /**
+     * Format a number as two digits (e.g., 5 becomes "05")
+     * @param {number} num - Number to format
+     * @returns {string} Two-digit string
+     */
+    function padNumber(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    /**
+     * Create flip clock digit HTML structure
+     * @param {string} digit - The digit to display
+     * @param {string} unit - The unit type (days, hours, minutes, seconds)
+     * @returns {string} HTML for a single digit box
+     */
+    function createFlipDigit(digit, unit) {
+        return `
+            <div class="flip-digit-box" data-unit="${unit}">
+                <div class="flip-digit-inner">
+                    <span class="flip-digit-text">${digit}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Create flip clock structure for countdown
+     * @param {Object} timeObj - Object with days, hours, minutes, seconds
+     * @returns {string} HTML for the flip clock
+     */
+    function createFlipClockHTML(timeObj) {
+        if (timeObj.expired) {
+            return `
+                <div class="auction-property-main-page-detail-flip-clock-container">
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'seconds')}${createFlipDigit('0', 'seconds')}
+                        </div>
+                        <div class="flip-label">ثانية</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'minutes')}${createFlipDigit('0', 'minutes')}
+                        </div>
+                        <div class="flip-label">دقيقة</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'hours')}${createFlipDigit('0', 'hours')}
+                        </div>
+                        <div class="flip-label">ساعة</div>
+                    </div>
+                    <div class="flip-time-group">
+                        <div class="flip-digits-pair">
+                            ${createFlipDigit('0', 'days')}${createFlipDigit('0', 'days')}
+                        </div>
+                        <div class="flip-label">يوم</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const daysStr = padNumber(timeObj.days);
+        const hoursStr = padNumber(timeObj.hours);
+        const minutesStr = padNumber(timeObj.minutes);
+        const secondsStr = padNumber(timeObj.seconds);
+
+        return `
             <div class="auction-property-main-page-detail-flip-clock-container">
                 <div class="flip-time-group">
                     <div class="flip-digits-pair">
-                        ${createFlipDigit('0', 'days')}${createFlipDigit('0', 'days')}
+                        ${createFlipDigit(secondsStr[1], 'seconds')}${createFlipDigit(secondsStr[0], 'seconds')}
                     </div>
-                    <div class="flip-label">يوم</div>
+                    <div class="flip-label">ثانية</div>
                 </div>
                 <div class="flip-time-group">
                     <div class="flip-digits-pair">
-                        ${createFlipDigit('0', 'hours')}${createFlipDigit('0', 'hours')}
-                    </div>
-                    <div class="flip-label">ساعة</div>
-                </div>
-                <div class="flip-time-group">
-                    <div class="flip-digits-pair">
-                        ${createFlipDigit('0', 'minutes')}${createFlipDigit('0', 'minutes')}
+                        ${createFlipDigit(minutesStr[1], 'minutes')}${createFlipDigit(minutesStr[0], 'minutes')}
                     </div>
                     <div class="flip-label">دقيقة</div>
                 </div>
                 <div class="flip-time-group">
                     <div class="flip-digits-pair">
-                        ${createFlipDigit('0', 'seconds')}${createFlipDigit('0', 'seconds')}
+                        ${createFlipDigit(hoursStr[1], 'hours')}${createFlipDigit(hoursStr[0], 'hours')}
                     </div>
-                    <div class="flip-label">ثانية</div>
+                    <div class="flip-label">ساعة</div>
+                </div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit(daysStr[1], 'days')}${createFlipDigit(daysStr[0], 'days')}
+                    </div>
+                    <div class="flip-label">يوم</div>
                 </div>
             </div>
         `;
-
-        container.innerHTML = html;
-
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
     }
 
     /**
-     * Update countdown timer with flip animation
+     * Update a single digit with flip animation
+     * @param {HTMLElement} digitBox - The digit box element
+     * @param {string} newDigit - The new digit value
      */
-    function updateCountdown(asset, containerId) {
-        const countdown = calculateCountdown(asset.bidStartDate);
-        const container = document.getElementById(containerId);
-        if (!container) return;
+    function updateFlipDigit(digitBox, newDigit) {
+        const digitText = digitBox.querySelector('.flip-digit-text');
+        if (!digitText) return;
 
-        const boxes = container.querySelectorAll('.countdown-box');
-        const prevValues = {};
-        boxes.forEach(box => {
-            const unit = box.getAttribute('data-unit');
-            prevValues[unit] = parseInt(box.textContent.replace(/[٠-٩]/g, (char) => {
-                const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-                return arabicDigits.indexOf(char).toString();
-            })) || 0;
-        });
+        const currentDigit = digitText.textContent;
 
-        // Update values
-        const newValues = {
-            days: countdown.days,
-            hours: countdown.hours,
-            minutes: countdown.minutes,
-            seconds: countdown.seconds
-        };
+        if (currentDigit === newDigit) return; // No change needed
 
-        boxes.forEach(box => {
-            const unit = box.getAttribute('data-unit');
-            const newValue = newValues[unit];
-            const oldValue = prevValues[unit];
+        // Add flip animation class (old number will fade out)
+        digitBox.classList.add('flip-animate');
 
-            if (newValue !== oldValue) {
-                box.classList.add('flip');
-                setTimeout(() => {
-                    box.textContent = newValue;
-                    box.classList.remove('flip');
-                }, 300);
-            } else {
-                box.textContent = newValue;
+        // Update the digit value at the midpoint (when old number is fully faded out)
+        setTimeout(() => {
+            digitText.textContent = newDigit;
+        }, 150); // Half of animation duration (50% - when fade-out completes)
+
+        // Remove animation class after animation completes
+        setTimeout(() => {
+            digitBox.classList.remove('flip-animate');
+        }, 300); // Match CSS animation duration
+    }
+
+
+
+
+    /**
+     * Update countdown timer for a single element with flip clock
+     * Also updates the label dynamically based on auction status
+     * @param {HTMLElement} element - The container element
+     * @param {string} bidStartDate - The bid start date string
+     * @param {string} bidEndDate - The bid end date string
+     */
+    function updateCountdownTimer(element, bidStartDate, bidEndDate) {
+        // Get remaining time info to determine which date to use and what label to show
+        const remainingTimeInfo = getRemainingTimeInfo(bidStartDate, bidEndDate);
+
+        // Update the label (it's a sibling element within the same parent)
+        const parentSection = element.parentElement;
+        if (parentSection) {
+            const labelElement = parentSection.querySelector('.countdown-label');
+            if (labelElement) {
+                labelElement.textContent = remainingTimeInfo.label;
+            }
+        }
+
+        // If auction has ended, show ended message instead of countdown
+        if (!remainingTimeInfo.targetDate) {
+            element.innerHTML = '<div style="color: #1e3d6f; font-weight: 600; text-align: center; padding: 0.5rem;">انتهى المزاد</div>';
+            return;
+        }
+
+        const targetDate = parseArabicDate(remainingTimeInfo.targetDate);
+        if (!targetDate) {
+            element.innerHTML = '<div style="color: red;">Invalid date</div>';
+            return;
+        }
+
+        const timeRemaining = calculateTimeRemaining(targetDate);
+
+        // Check if flip clock structure exists
+        let container = element.querySelector('.auction-property-main-page-detail-flip-clock-container');
+
+        if (!container) {
+            // First time - create the structure
+            element.innerHTML = createFlipClockHTML(timeRemaining);
+            container = element.querySelector('.auction-property-main-page-detail-flip-clock-container');
+            return;
+        }
+
+        // Update existing digits with animation
+        const daysStr = padNumber(timeRemaining.days);
+        const hoursStr = padNumber(timeRemaining.hours);
+        const minutesStr = padNumber(timeRemaining.minutes);
+        const secondsStr = padNumber(timeRemaining.seconds);
+
+        // Get all time groups
+        const timeGroups = container.querySelectorAll('.flip-time-group');
+        // Reversed order to match HTML: seconds, minutes, hours, days
+        const digitValues = [secondsStr, minutesStr, hoursStr, daysStr];
+
+        timeGroups.forEach((group, groupIndex) => {
+            const digitBoxes = group.querySelectorAll('.flip-digit-box');
+            const value = digitValues[groupIndex];
+
+            if (digitBoxes.length >= 2) {
+                // Swap the digits: first box shows ones digit, second box shows tens digit
+                updateFlipDigit(digitBoxes[0], value[1]);
+                updateFlipDigit(digitBoxes[1], value[0]);
             }
         });
     }
@@ -164,41 +335,25 @@
      * Render asset card HTML
      */
     function renderAssetCard(asset, index) {
-        const countdown = calculateCountdown(asset.auctionAsset_bidStartDate);
+        // Get dates - handle both naming conventions
+        const bidStartDate = asset.auctionAsset_bidStartDate || asset.bidStartDate;
+        const bidEndDate = asset.auctionAsset_bidEndDate || asset.bidEndDate;
         const containerId = `asset-countdown-${asset.id || index}`;
 
         // Determine tags based on asset data
         const tags = [];
         if (asset.auctionAsset_location) tags.push({ text: 'محلي', class: 'tag-green' });
-        if (asset.auctionAsset_bidStartDate) {
-            try {
-                // Try to parse the date to check if it's in the future
-                const dateStr = asset.bidStartDate.replace('—', '-').replace('/', '-');
-                const timeMatch = dateStr.match(/(\d{1,2}):(\d{2})\s*(صباحً|مساءً)/);
-                const dateMatch = dateStr.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-
-                if (dateMatch && timeMatch) {
-                    const year = parseInt(dateMatch[1]);
-                    const month = parseInt(dateMatch[2]) - 1;
-                    const day = parseInt(dateMatch[3]);
-                    let hours = parseInt(timeMatch[1]);
-                    const period = timeMatch[3];
-
-                    if (period === 'مساءً' && hours !== 12) hours += 12;
-                    else if (period === 'صباحً' && hours === 12) hours = 0;
-
-                    const startDate = new Date(year, month, day, hours);
-                    const now = new Date();
-                    if (startDate > now) {
-                        tags.push({ text: 'قادم', class: 'tag-green' });
-                    }
-                }
-            } catch (e) {
-                // If parsing fails, assume it's upcoming
+        if (bidStartDate) {
+            const startDate = parseArabicDate(bidStartDate);
+            const now = new Date();
+            if (startDate && startDate > now) {
                 tags.push({ text: 'قادم', class: 'tag-green' });
             }
         }
         tags.push({ text: 'الكتروني - انفاذ', class: 'tag-blue' });
+
+        // Get remaining time info for label
+        const remainingTimeInfo = getRemainingTimeInfo(bidStartDate, bidEndDate);
 
 
         return `
@@ -253,7 +408,7 @@
                 </div>
                 
                 <div class="asset-countdown">
-                    <div class="countdown-label">يبدأ في</div>
+                    <div class="countdown-label">${remainingTimeInfo.label}</div>
                     <div id="${containerId}"></div>
                 </div>
                 
@@ -381,12 +536,19 @@
         deferHeavyOperations(() => {
             assets.forEach((asset, index) => {
                 const containerId = `asset-countdown-${asset.id || index}`;
-                const countdown = calculateCountdown(asset.auction_bidStartDate);
-                renderCountdown(countdown, containerId);
+                const countdownElement = document.getElementById(containerId);
+                if (!countdownElement) return;
+
+                // Get dates - handle both naming conventions
+                const bidStartDate = asset.auctionAsset_bidStartDate || asset.bidStartDate;
+                const bidEndDate = asset.auctionAsset_bidEndDate || asset.bidEndDate;
+
+                // Update immediately
+                updateCountdownTimer(countdownElement, bidStartDate, bidEndDate);
 
                 // Update countdown every second
                 const intervalId = setInterval(() => {
-                    updateCountdown(asset, containerId);
+                    updateCountdownTimer(countdownElement, bidStartDate, bidEndDate);
                 }, 1000);
 
                 // Store interval ID for cleanup
