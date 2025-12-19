@@ -143,3 +143,15 @@
     }
 
 })();
+
+
+/* Create flip clock digit HTML structure */
+function createFlipDigit(digit, unit) {
+    return `
+        <div class="flip-digit-box" data-unit="${unit}">
+            <div class="flip-digit-inner">
+                <span class="flip-digit-text">${digit}</span>
+            </div>
+        </div>
+    `;
+}

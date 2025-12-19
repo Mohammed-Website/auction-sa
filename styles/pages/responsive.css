@@ -204,6 +204,37 @@
     }
 }
 
+
+/* Desktop Styles */
+@media (max-width: 1024px) {
+    .flip-digit-box {
+        width: 1.5rem;
+        height: 2.5rem;
+    }
+}
+
+
+@media (min-width: 480px) {
+    .auction-property-main-page-detail-flip-clock-container {
+        justify-content: space-around;
+        padding: 0 15vw;
+    }
+
+    .auction-property-main-page-detail-asset-card{
+        padding: 1rem;
+    }
+
+    .asset-thumbnail {
+        width: 8rem;
+        height: 8rem;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: var(--bg-hover, #f5f5f5);
+        order: 1;
+        flex-shrink: 0;
+    }
+}
+
 /* Desktop Styles */
 @media (min-width: 1024px) {
     body {

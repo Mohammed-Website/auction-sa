@@ -71,6 +71,8 @@
     }
 
 
+
+
     /**
      * Render countdown timer HTML
      */
@@ -79,25 +81,30 @@
         if (!container) return;
 
         const html = `
-            <div class="auction-property-main-page-detail-countdown-timer">
-                <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="days">${countdown.days}</div>
-                    <div class="countdown-label-small">يوم</div>
+            <div class="auction-property-main-page-detail-flip-clock-container">
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit('0', 'days')}${createFlipDigit('0', 'days')}
+                    </div>
+                    <div class="flip-label">يوم</div>
                 </div>
-                <span class="countdown-separator">:</span>
-                <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="hours">${countdown.hours}</div>
-                    <div class="countdown-label-small">ساعة</div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit('0', 'hours')}${createFlipDigit('0', 'hours')}
+                    </div>
+                    <div class="flip-label">ساعة</div>
                 </div>
-                <span class="countdown-separator">:</span>
-                <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="minutes">${countdown.minutes}</div>
-                    <div class="countdown-label-small">دقيقة</div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit('0', 'minutes')}${createFlipDigit('0', 'minutes')}
+                    </div>
+                    <div class="flip-label">دقيقة</div>
                 </div>
-                <span class="countdown-separator">:</span>
-                <div class="countdown-unit">
-                    <div class="countdown-box" data-unit="seconds">${countdown.seconds}</div>
-                    <div class="countdown-label-small">ثانية</div>
+                <div class="flip-time-group">
+                    <div class="flip-digits-pair">
+                        ${createFlipDigit('0', 'seconds')}${createFlipDigit('0', 'seconds')}
+                    </div>
+                    <div class="flip-label">ثانية</div>
                 </div>
             </div>
         `;
@@ -197,13 +204,13 @@
         return `
             <div class="auction-property-main-page-detail-asset-card">
                 <div class="auction-property-main-page-detail-asset-card-header">
-                    <i data-lucide="more-vertical" class="asset-menu-icon"></i>
-                    <div class="asset-title-wrapper">
-                        <h3 class="asset-title">${asset.auctionAsset_title || 'عقار'} بصك ${asset.auctionAsset_deedNumber || ''}</h3>
-                    </div>
                     <div class="asset-thumbnail">
                         <img src="${asset.auctionAsset_image || asset.auctionAsset_propertyImages?.[0] || ''}" alt="${asset.auctionAsset_title || 'عقار'}" onerror="this.style.display='none'">
                     </div>
+                    <div class="asset-title-wrapper">
+                        <h3 class="asset-title">${asset.auctionAsset_title || 'عقار'}<br><span class="asset-deed-number" style="color: var(--text-secondary);">بصك ${asset.auctionAsset_deedNumber || ''}</span></h3>
+                    </div>
+                    <i data-lucide="more-vertical" class="asset-menu-icon"></i>
                 </div>
                 
 

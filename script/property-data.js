@@ -141,39 +141,17 @@
         return { days, hours, minutes, seconds, expired: false };
     }
 
-    /**
-     * Format a number as two digits (e.g., 5 becomes "05")
-     * @param {number} num - Number to format
-     * @returns {string} Two-digit string
-     */
+    /* Format a number as two digits (e.g., 5 becomes "05") */
     function padNumber(num) {
         return num.toString().padStart(2, '0');
     }
 
-    /**
-     * Create flip clock digit HTML structure
-     * @param {string} digit - The digit to display
-     * @param {string} unit - The unit type (days, hours, minutes, seconds)
-     * @returns {string} HTML for a single digit box
-     */
-    function createFlipDigit(digit, unit) {
-        return `
-            <div class="flip-digit-box" data-unit="${unit}">
-                <div class="flip-digit-inner">
-                    <span class="flip-digit-text">${digit}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Create flip clock structure for countdown
-     * @param {Object} timeObj - Object with days, hours, minutes, seconds
-     * @returns {string} HTML for the flip clock
-     */
+    
+    
+    /* Create flip clock structure for countdown */
     function createFlipClockHTML(timeObj) {
-        if (timeObj.expired) {
-            return `
+            if (timeObj.expired) {
+                return `
                 <div class="flip-clock-container">
                     <div class="flip-time-group">
                         <div class="flip-digits-pair">
@@ -201,14 +179,14 @@
                     </div>
                 </div>
             `;
-        }
+            }
 
-        const daysStr = padNumber(timeObj.days);
-        const hoursStr = padNumber(timeObj.hours);
-        const minutesStr = padNumber(timeObj.minutes);
-        const secondsStr = padNumber(timeObj.seconds);
+            const daysStr = padNumber(timeObj.days);
+            const hoursStr = padNumber(timeObj.hours);
+            const minutesStr = padNumber(timeObj.minutes);
+            const secondsStr = padNumber(timeObj.seconds);
 
-        return `
+            return `
             <div class="flip-clock-container">
                 <div class="flip-time-group">
                     <div class="flip-digits-pair">
@@ -236,7 +214,7 @@
                 </div>
             </div>
         `;
-    }
+        }
 
     /**
      * Update a single digit with flip animation
@@ -244,27 +222,27 @@
      * @param {string} newDigit - The new digit value
      */
     function updateFlipDigit(digitBox, newDigit) {
-        const digitText = digitBox.querySelector('.flip-digit-text');
-        if (!digitText) return;
+            const digitText = digitBox.querySelector('.flip-digit-text');
+            if (!digitText) return;
 
-        const currentDigit = digitText.textContent;
+            const currentDigit = digitText.textContent;
 
-        if (currentDigit === newDigit) return; // No change needed
+            if (currentDigit === newDigit) return; // No change needed
 
-        // Add flip animation class (old number will fade out)
-        digitBox.classList.add('flip-animate');
+            // Add flip animation class (old number will fade out)
+            digitBox.classList.add('flip-animate');
 
-        // Update the digit value at the midpoint (when old number is fully faded out)
-        // This ensures the old number stays visible during fade-out
-        setTimeout(() => {
-            digitText.textContent = newDigit;
-        }, 150); // Half of animation duration (50% - when fade-out completes)
+            // Update the digit value at the midpoint (when old number is fully faded out)
+            // This ensures the old number stays visible during fade-out
+            setTimeout(() => {
+                digitText.textContent = newDigit;
+            }, 150); // Half of animation duration (50% - when fade-out completes)
 
-        // Remove animation class after animation completes
-        setTimeout(() => {
-            digitBox.classList.remove('flip-animate');
-        }, 300); // Match CSS animation duration
-    }
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                digitBox.classList.remove('flip-animate');
+            }, 300); // Match CSS animation duration
+        }
 
     /**
      * Update countdown timer for a single element with flip clock
@@ -274,62 +252,62 @@
      * @param {string} auction_bidEndDate - The bid end date string
      */
     function updateCountdownTimer(element, auction_bidStartDate, auction_bidEndDate) {
-        // Get remaining time info to determine which date to use and what label to show
-        const remainingTimeInfo = getRemainingTimeInfo(auction_bidStartDate, auction_bidEndDate);
+            // Get remaining time info to determine which date to use and what label to show
+            const remainingTimeInfo = getRemainingTimeInfo(auction_bidStartDate, auction_bidEndDate);
 
-        // Update the label (it's a sibling element within the same parent)
-        const parentSection = element.parentElement;
-        if (parentSection) {
-            const labelElement = parentSection.querySelector('.remaining-time-label');
-            if (labelElement) {
-                labelElement.textContent = remainingTimeInfo.label;
+            // Update the label (it's a sibling element within the same parent)
+            const parentSection = element.parentElement;
+            if (parentSection) {
+                const labelElement = parentSection.querySelector('.remaining-time-label');
+                if (labelElement) {
+                    labelElement.textContent = remainingTimeInfo.label;
+                }
             }
-        }
 
-        // If auction has ended, show ended message instead of countdown
-        if (!remainingTimeInfo.targetDate) {
-            element.innerHTML = '<div style="color: #1e3d6f; font-weight: 600; text-align: center; padding: 0.5rem;">انتهى المزاد</div>';
-            return;
-        }
-
-        const targetDate = parseArabicDate(remainingTimeInfo.targetDate);
-        if (!targetDate) {
-            element.innerHTML = '<div style="color: red;">Invalid date</div>';
-            return;
-        }
-
-        const timeRemaining = calculateTimeRemaining(targetDate);
-
-        // Check if flip clock structure exists
-        let container = element.querySelector('.flip-clock-container');
-
-        if (!container) {
-            // First time - create the structure
-            element.innerHTML = createFlipClockHTML(timeRemaining);
-            container = element.querySelector('.flip-clock-container');
-            return;
-        }
-
-        // Update existing digits with animation
-        const daysStr = padNumber(timeRemaining.days);
-        const hoursStr = padNumber(timeRemaining.hours);
-        const minutesStr = padNumber(timeRemaining.minutes);
-        const secondsStr = padNumber(timeRemaining.seconds);
-
-        // Get all time groups
-        const timeGroups = container.querySelectorAll('.flip-time-group');
-        const digitValues = [daysStr, hoursStr, minutesStr, secondsStr];
-
-        timeGroups.forEach((group, groupIndex) => {
-            const digitBoxes = group.querySelectorAll('.flip-digit-box');
-            const value = digitValues[groupIndex];
-
-            if (digitBoxes.length >= 2) {
-                updateFlipDigit(digitBoxes[0], value[0]);
-                updateFlipDigit(digitBoxes[1], value[1]);
+            // If auction has ended, show ended message instead of countdown
+            if (!remainingTimeInfo.targetDate) {
+                element.innerHTML = '<div style="color: #1e3d6f; font-weight: 600; text-align: center; padding: 0.5rem;">انتهى المزاد</div>';
+                return;
             }
-        });
-    }
+
+            const targetDate = parseArabicDate(remainingTimeInfo.targetDate);
+            if (!targetDate) {
+                element.innerHTML = '<div style="color: red;">Invalid date</div>';
+                return;
+            }
+
+            const timeRemaining = calculateTimeRemaining(targetDate);
+
+            // Check if flip clock structure exists
+            let container = element.querySelector('.flip-clock-container');
+
+            if (!container) {
+                // First time - create the structure
+                element.innerHTML = createFlipClockHTML(timeRemaining);
+                container = element.querySelector('.flip-clock-container');
+                return;
+            }
+
+            // Update existing digits with animation
+            const daysStr = padNumber(timeRemaining.days);
+            const hoursStr = padNumber(timeRemaining.hours);
+            const minutesStr = padNumber(timeRemaining.minutes);
+            const secondsStr = padNumber(timeRemaining.seconds);
+
+            // Get all time groups
+            const timeGroups = container.querySelectorAll('.flip-time-group');
+            const digitValues = [daysStr, hoursStr, minutesStr, secondsStr];
+
+            timeGroups.forEach((group, groupIndex) => {
+                const digitBoxes = group.querySelectorAll('.flip-digit-box');
+                const value = digitValues[groupIndex];
+
+                if (digitBoxes.length >= 2) {
+                    updateFlipDigit(digitBoxes[0], value[0]);
+                    updateFlipDigit(digitBoxes[1], value[1]);
+                }
+            });
+        }
 
     /**
      * Initialize countdown timers for all auction cards
@@ -812,7 +790,6 @@
                             return;
                         }
 
-                        console.log('Good')
                         // Open property detail page
                         const auctionId = property.id;
 
