@@ -54,13 +54,6 @@
     };
 
 
-    /**
-     * Format price for display
-     * Adds "ريال" (Riyal) to the number
-     */
-    function formatPrice(price) {
-        return price + ' ريال';
-    }
 
     /**
      * Format rental price
@@ -351,28 +344,20 @@
         const features = [];
 
         // Add totalBed if available (preferred over bedrooms if both exist)
-        if (property.totalBed !== undefined) {
-            features.push(`<i data-lucide="bed" class="property-feature-icon-home-page"></i> ${property.totalBed}`);
-        }
-        // Fallback to bedrooms if totalBed doesn't exist
-        else if (property.bedrooms) {
-            features.push(`<i data-lucide="bed" class="property-feature-icon-home-page"></i> ${property.bedrooms}`);
+        if (property.property_totalBed !== undefined) {
+            features.push(`<i data-lucide="bed" class="property-feature-icon-home-page"></i> ${property.property_totalBed}`);
         }
 
         // Add totalBathroom if available (preferred over bathrooms if both exist)
-        if (property.totalBathroom !== undefined) {
-            features.push(`<i data-lucide="bath" class="property-feature-icon-home-page"></i> ${property.totalBathroom}`);
-        }
-        // Fallback to bathrooms if totalBathroom doesn't exist
-        else if (property.bathrooms) {
-            features.push(`<i data-lucide="bath" class="property-feature-icon-home-page"></i> ${property.bathrooms}`);
+        if (property.property_totalBathroom !== undefined) {
+            features.push(`<i data-lucide="bath" class="property-feature-icon-home-page"></i> ${property.property_totalBathroom}`);
         }
 
         // Add area if available
-        if (property.area) {
+        if (property.property_area) {
             // Handle area format - could be "450 م²" or just "450"
-            const areaValue = property.area.toString().replace(/[^\d]/g, '');
-            const areaText = areaValue ? `${areaValue} م²` : property.area;
+            const areaValue = property.property_area.toString().replace(/[^\d]/g, '');
+            const areaText = areaValue ? `${areaValue} م²` : property.property_area;
             features.push(`<i data-lucide="maximize" class="property-feature-icon-home-page"></i> ${areaText}`);
         }
 
@@ -401,7 +386,7 @@
      * Handles different image URL formats and optimizes Unsplash URLs
      */
     function getImageUrl(property) {
-        const imageUrl = property.auction_image || property.buy_image || property.rent_image || 'default-auction-main-image.jpg';
+        const imageUrl = property.auction_image || property.buyProperty_image || property.rentProperty_image || 'default-auction-main-image.jpg';
         if (!imageUrl) return null;
 
         // If it's an Unsplash URL without proper dimensions, add them
@@ -455,36 +440,36 @@
 
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
-        const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = property.specialWord ?
-            `<div class="home-page-special-word-badge">${property.specialWord}</div>` : '';
+        const companyLogo = property.buyProperty_compLogo ? `<img src="${property.buyProperty_compLogo}" alt="${property.buyProperty_compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = property.buyProperty_specialWord ?
+            `<div class="home-page-special-word-badge">${property.buyProperty_specialWord}</div>` : '';
 
         return `
             <div class="property-card-home-page">
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
-                        <span class="company-name">${property.compName || ''}</span>
+                        <span class="company-name">${property.buyProperty_compName || ''}</span>
                     </div>
                     ${specialWordBadge}
                 </div>
                 <div class="property-image-home-page" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
                 <div class="property-content-home-page">
-                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.title || 'عقار للبيع'}</h3>
+                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.buyProperty_title || 'عقار للبيع'}</h3>
                     <div class="bid-section-top">
                         <div class="location-wrapper">
                             <i data-lucide="map-pin" class="property-card-location-icon"></i>
-                            <span>${property.location || 'غير محدد'}</span>
+                            <span>${property.buyProperty_location || 'غير محدد'}</span>
                         </div>
                         <i data-lucide="heart" class="property-card-heart-icon"></i>
                     </div>
                     ${renderFeatures(property)}
-                    <p class="property-price-home-page">${property.price ? (property.price.includes('ريال') ? property.price : `${property.price} ريال`) : 'غير محدد'}</p>
+                    <p class="property-price-home-page">${property.buyProperty_price ? `${property.buyProperty_price} ريال` : 'غير محدد'}</p>
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${property.viewCount ? property.viewCount : '0'}</span>
+                            <span class="property-view-number-home-page">${property.buyProperty_viewCount ? property.buyProperty_viewCount : '0'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             اشتري الآن
@@ -504,12 +489,12 @@
 
         const imageUrl = getImageUrl(property);
         const imageStyle = imageUrl ? `style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;"` : '';
-        const companyLogo = property.compLogo ? `<img src="${property.compLogo}" alt="${property.compName || 'شركة'}" class="company-logo">` : '';
-        const specialWordBadge = property.specialWord ?
-            `<div class="home-page-special-word-badge">${property.specialWord}</div>` : '';
+        const companyLogo = property.rentProperty_compLogo ? `<img src="${property.rentProperty_compLogo}" alt="${property.rentProperty_compName || 'شركة'}" class="company-logo">` : '';
+        const specialWordBadge = property.rentProperty_specialWord ?
+            `<div class="home-page-special-word-badge">${property.rentProperty_specialWord}</div>` : '';
 
         // Handle price - check if it already includes "/ شهرياً" or "/ سنوياً"
-        let priceText = property.price || '';
+        let priceText = property.rentProperty_price || '';
         if (priceText && !priceText.includes('/')) {
             priceText = formatRentalPrice(priceText);
         }
@@ -519,18 +504,18 @@
                 <div class="card-header">
                     <div class="company-details">
                         ${companyLogo}
-                        <span class="company-name">${property.compName || ''}</span>
+                        <span class="company-name">${property.rentProperty_compName || ''}</span>
                     </div>
                     ${specialWordBadge}
                 </div>
                 <div class="property-image-home-page" ${imageStyle}></div>
                 ${renderBadge(property.badge)}
                 <div class="property-content-home-page">
-                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.title || 'عقار للإيجار'}</h3>
+                    <h3 class="property-title-home-page" style="margin-bottom: 10px;">${property.rentProperty_title || 'عقار للإيجار'}</h3>
                     <div class="bid-section-top">
                         <div class="location-wrapper">
                             <i data-lucide="map-pin" class="property-card-location-icon"></i>
-                            <span>${property.location || 'غير محدد'}</span>
+                            <span>${property.rentProperty_location || 'غير محدد'}</span>
                         </div>
                         <i data-lucide="heart" class="property-card-heart-icon"></i>
                     </div>
@@ -539,7 +524,7 @@
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${property.viewCount ? property.viewCount : '0'}</span>
+                            <span class="property-view-number-home-page">${property.rentProperty_viewCount ? property.rentProperty_viewCount : '0'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             استأجر الآن
@@ -704,11 +689,11 @@
                     <div class="property-cta-container-home-page">
                         <div class="property-view-count-home-page">
                             <i data-lucide="eye" class="property-view-icon-home-page"></i>
-                            <span class="property-view-number-home-page">${auction.viewCount ? auction.viewCount : '0'}</span>
+                            <span class="property-view-number-home-page">${auction.auction_viewCount ? auction.auction_viewCount : '0'}</span>
                         </div>
                         <div class="auction-property-count-home-page">
                             <span class="property-view-number-home-page">عدد الأصول</span>
-                            <span class="property-view-number-home-page">${auction.numberOfAssets ? auction.numberOfAssets : '1'}</span>
+                            <span class="property-view-number-home-page">${auction.auction_numberOfAssets ? auction.auction_numberOfAssets : '1'}</span>
                         </div>
                         <button class="property-cta-btn-home-page">
                             شارك الآن
