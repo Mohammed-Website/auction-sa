@@ -801,7 +801,7 @@
             hideAllHeaders();
 
 
-            
+
             // Hide all other views
             const settingsView = document.getElementById('profile-settings-view');
             if (settingsView) {

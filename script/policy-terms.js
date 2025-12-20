@@ -307,6 +307,25 @@
         attachEventListeners();
     }
 
+    // Disable back button for a specified duration
+    function disableBackButton(duration = 500) {
+        const policyTermsBackBtn = document.getElementById('policy-terms-back-btn');
+        if (!policyTermsBackBtn) return;
+
+        // Disable the button
+        policyTermsBackBtn.disabled = true;
+        policyTermsBackBtn.style.pointerEvents = 'none';
+        policyTermsBackBtn.setAttribute('aria-disabled', 'true');
+
+        // Re-enable after duration
+        setTimeout(() => {
+            policyTermsBackBtn.disabled = false;
+            policyTermsBackBtn.style.pointerEvents = 'auto';
+            policyTermsBackBtn.style.opacity = '1';
+            policyTermsBackBtn.removeAttribute('aria-disabled');
+        }, duration);
+    }
+
     // Attach event listeners
     function attachEventListeners() {
         if (eventListenersAttached) return;
@@ -314,6 +333,11 @@
         const policyTermsBackBtn = document.getElementById('policy-terms-back-btn');
         if (policyTermsBackBtn) {
             policyTermsBackBtn.onclick = function () {
+                // Check if button is disabled
+                if (this.disabled || this.getAttribute('aria-disabled') === 'true') {
+                    return;
+                }
+
                 // Remove active class from policy-terms-view
                 const policyTermsView = document.getElementById('policy-terms-view');
                 if (policyTermsView) {
@@ -353,6 +377,9 @@
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     const isActive = policyTermsView.classList.contains('active');
                     if (isActive) {
+                        // Disable back button for 0.5 seconds when view becomes active
+                        disableBackButton(500);
+
                         // Re-initialize Lucide icons when view becomes active
                         if (typeof lucide !== 'undefined') {
                             setTimeout(() => {

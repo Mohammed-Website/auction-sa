@@ -280,7 +280,7 @@
         if (parentSection) {
             const labelElement = parentSection.querySelector('.countdown-label');
             if (labelElement) {
-                labelElement.textContent = remainingTimeInfo.label;
+                labelElement.textContent = `${remainingTimeInfo.label}:`;
             }
         }
 
