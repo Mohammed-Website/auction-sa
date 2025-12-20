@@ -29,7 +29,8 @@
         ACCOUNT_INFO: 'account-info',  // Account information tabs
         SETTINGS: 'settings',       // Settings page
         FAVORITES: 'favorites',    // Favorites page
-        POLICY_TERMS: 'policy-terms'  // Policy Terms / Privacy Policy page
+        POLICY_TERMS: 'policy-terms',  // Policy Terms / Privacy Policy page
+        HELP_CENTER: 'help-center'  // Help Center page
     };
 
     // ============================================================================
@@ -101,6 +102,24 @@
                     }
                 }
             }
+        },
+        [ProfileRoutes.HELP_CENTER]: {
+            headerId: 'help-center-header',
+            viewId: 'help-center-view',
+            hash: '#/profile/help-center',
+            historyDelay: 400,
+            init: () => {
+                if (typeof window.HelpCenterPage !== 'undefined') {
+                    if (typeof window.HelpCenterPage.renderHelpCenterView === 'function') {
+                        window.HelpCenterPage.renderHelpCenterView();
+                    }
+                    if (typeof window.HelpCenterPage.init === 'function') {
+                        setTimeout(() => {
+                            window.HelpCenterPage.init();
+                        }, 100);
+                    }
+                }
+            }
         }
         // Future pages (start-auction, add-property, manage-properties) can be added here
     };
@@ -145,6 +164,10 @@
         if (policyTermsHeader && !keepSet.has(policyTermsHeader.id)) {
             policyTermsHeader.style.display = 'none';
         }
+        const helpCenterHeader = document.getElementById('help-center-header');
+        if (helpCenterHeader && !keepSet.has(helpCenterHeader.id)) {
+            helpCenterHeader.style.display = 'none';
+        }
     }
 
     function hideSecondaryViews(exceptViewId) {
@@ -160,6 +183,10 @@
         }
         if (policyTermsView && policyTermsView.id !== exceptViewId) {
             policyTermsView.classList.remove('active');
+        }
+        const helpCenterView = document.getElementById('help-center-view');
+        if (helpCenterView && helpCenterView.id !== exceptViewId) {
+            helpCenterView.classList.remove('active');
         }
     }
 
@@ -184,6 +211,12 @@
         if (menuView) menuView.classList.remove('active');
         if (accountInfoView) accountInfoView.classList.remove('active');
         hideSecondaryViews(config.viewId);
+
+        // Also hide help-center-view if not the target
+        const helpCenterView = document.getElementById('help-center-view');
+        if (helpCenterView && helpCenterView.id !== config.viewId) {
+            helpCenterView.classList.remove('active');
+        }
 
         // Show the target view
         const targetView = document.getElementById(config.viewId);
@@ -608,7 +641,8 @@
                 // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
             case 'help':
-                // TODO: Show help page
+                navigateActionToRoute(ProfileRoutes.HELP_CENTER);
+                // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
 
             case 'logout':
@@ -789,6 +823,15 @@
             });
         }
 
+        // ROUTE 5: Navigate to Help Center page (single-page helper)
+        else if (route === ProfileRoutes.HELP_CENTER && profileSinglePages[ProfileRoutes.HELP_CENTER]) {
+            showSingleProfilePage(ProfileRoutes.HELP_CENTER, profileSinglePages[ProfileRoutes.HELP_CENTER], {
+                menuView,
+                accountInfoView,
+                profileSection
+            });
+        }
+
         // ROUTE 4: Navigate back to Menu
         else if (route === ProfileRoutes.MENU) {
             // Show the profile page title
@@ -814,6 +857,10 @@
             const termsAndConditionsView = document.getElementById('policy-terms-view');
             if (termsAndConditionsView) {
                 termsAndConditionsView.classList.remove('active');
+            }
+            const helpCenterView = document.getElementById('help-center-view');
+            if (helpCenterView) {
+                helpCenterView.classList.remove('active');
             }
 
 
@@ -930,6 +977,8 @@
                 navigateToProfileRoute(ProfileRoutes.FAVORITES);
             } else if (hash === '#/profile/policy-terms') {
                 navigateToProfileRoute(ProfileRoutes.POLICY_TERMS);
+            } else if (hash === '#/profile/help-center') {
+                navigateToProfileRoute(ProfileRoutes.HELP_CENTER);
             }
         });
 
@@ -956,6 +1005,8 @@
                 navigateToProfileRoute(ProfileRoutes.FAVORITES);
             } else if (hash === '#/profile/policy-terms') {
                 navigateToProfileRoute(ProfileRoutes.POLICY_TERMS);
+            } else if (hash === '#/profile/help-center') {
+                navigateToProfileRoute(ProfileRoutes.HELP_CENTER);
             }
         });
 
@@ -966,7 +1017,8 @@
                 if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO ||
                     currentProfileRoute === ProfileRoutes.SETTINGS ||
                     currentProfileRoute === ProfileRoutes.FAVORITES ||
-                    currentProfileRoute === ProfileRoutes.POLICY_TERMS) {
+                    currentProfileRoute === ProfileRoutes.POLICY_TERMS ||
+                    currentProfileRoute === ProfileRoutes.HELP_CENTER) {
                     // Go back to menu
                     navigateToProfileRoute(ProfileRoutes.MENU);
                     if (event && event.preventDefault) {
