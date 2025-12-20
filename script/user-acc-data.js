@@ -13,10 +13,51 @@
     // Track render state to rebuild markup once
     let accountInfoRendered = false;
 
+    // User data cache
+    let userData = null;
+
+    /**
+     * Fetch user data from JSON file
+     * @returns {Promise<Object|null>} User data object or null if error
+     */
+    async function fetchUserData() {
+        if (userData) {
+            return userData; // Return cached data
+        }
+
+        try {
+            const response = await fetch('json-data/user-data.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            userData = await response.json();
+            return userData;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    }
+
     // Build the account info view markup
-    function renderAccountInfoView() {
+    async function renderAccountInfoView() {
         const accountInfoView = document.getElementById('profile-account-info-view');
         if (!accountInfoView || accountInfoRendered) return;
+
+        // Fetch user data
+        const data = await fetchUserData();
+        if (!data) {
+            console.warn('User data not available, using default values');
+        }
+
+        // Use data from JSON or fallback to defaults
+        const userName = data?.name || 'غير محدد';
+        const userNationalId = data?.nationalId || 'غير محدد';
+        const userBirthDate = data?.birthDate || 'غير محدد';
+        const userSex = data?.sex || 'غير محدد';
+        const userNationality = data?.nationality || 'غير محدد';
+        const userAvatar = data?.avatar || '';
+        const userEmail = data?.email || 'غير محدد';
+        const userPhone = data?.phone || 'غير محدد';
 
         accountInfoView.innerHTML = `
             <div class="account-info-container">
@@ -50,8 +91,8 @@
                                         </div>
                                         <div class="info-value profile-image-value">
                                             <div class="profile-image-edit">
-                                                <div class="profile-image" id="basic-data-profile-image">
-                                                    <i class="fas fa-user profile-image-placeholder"></i>
+                                                <div class="profile-image" id="basic-data-profile-image" ${userAvatar ? `style="background-image: url('${userAvatar}'); background-size: cover; background-position: center;"` : ''}>
+                                                    ${!userAvatar ? '<i class="fas fa-user profile-image-placeholder"></i>' : ''}
                                                 </div>
                                                 <button class="edit-image-btn" type="button">
                                                     <i data-lucide="camera" class="edit-image-icon"></i>
@@ -64,35 +105,35 @@
                                             <i data-lucide="user" class="info-icon"></i>
                                             <span>الاسم الكامل</span>
                                         </div>
-                                        <div class="info-value">عبدالله محمد</div>
+                                        <div class="info-value">${userName}</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="id-card" class="info-icon"></i>
                                             <span>الهوية الوطنية</span>
                                         </div>
-                                        <div class="info-value">1029384756</div>
+                                        <div class="info-value">${userNationalId}</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="calendar" class="info-icon"></i>
                                             <span>تاريخ الميلاد</span>
                                         </div>
-                                        <div class="info-value">01/01/1990</div>
+                                        <div class="info-value">${userBirthDate}</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="fingerprint-pattern" class="info-icon"></i>
                                             <span>الجنس</span>
                                         </div>
-                                        <div class="info-value">ذكر</div>
+                                        <div class="info-value">${userSex}</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="flag" class="info-icon"></i>
                                             <span>الجنسية</span>
                                         </div>
-                                        <div class="info-value">سعودي</div>
+                                        <div class="info-value">${userNationality}</div>
                                     </div>
                                     <button class="edit-btn">
                                         <i data-lucide="edit" class="edit-icon"></i>
@@ -110,14 +151,14 @@
                                             <i data-lucide="mail" class="info-icon"></i>
                                             <span>البريد الإلكتروني</span>
                                         </div>
-                                        <div class="info-value">abdullahmakingbos@propertyapp.com</div>
+                                        <div class="info-value">${userEmail}</div>
                                     </div>
                                     <div class="info-row">
                                         <div class="info-label">
                                             <i data-lucide="phone" class="info-icon"></i>
                                             <span>رقم الجوال</span>
                                         </div>
-                                        <div class="info-value">0557894321</div>
+                                        <div class="info-value">${userPhone}</div>
                                     </div>
                                     <button class="edit-btn">
                                         <i data-lucide="edit" class="edit-icon"></i>
@@ -447,14 +488,14 @@
     }
 
     // Initialize when account info view becomes active
-    function initAccountInfoView() {
+    async function initAccountInfoView() {
         const accountInfoView = document.getElementById('profile-account-info-view');
         if (!accountInfoView) {
             return;
         }
 
-        // Build the view markup once
-        renderAccountInfoView();
+        // Build the view markup once (await since it's async)
+        await renderAccountInfoView();
 
         // Update sticky header positions
         updateStickyHeaderPositions();

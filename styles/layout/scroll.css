@@ -14,11 +14,8 @@
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 0;
-    /* Hide scrollbar completely */
     -ms-overflow-style: none;
-    /* IE and Edge */
     scrollbar-width: none;
-    /* Firefox */
 }
 
 /* Hide scrollbar completely */
@@ -49,7 +46,6 @@
     height: 8px;
     border-radius: 50%;
     background: #ddd;
-    cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
 }

@@ -10,6 +10,24 @@
     margin-left: 0.25rem;
 }
 
+/* Heart icon clickable styles */
+.property-card-heart-icon {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Favorited state - red heart */
+.property-card-heart-icon.favorited {
+    color: #dc3545 !important;
+    stroke: #dc3545 !important;
+}
+
+.property-card-heart-icon.favorited svg {
+    fill: #dc3545;
+    stroke: #dc3545;
+}
+
 .property-feature-icon-home-page {
     width: 16px;
     height: 16px;

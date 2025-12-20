@@ -80,6 +80,13 @@
     flex-shrink: 0;
 }
 
+.bid-section-top .property-card-heart-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
 .bid-section-top .location-wrapper span {
     font-size: 0.9rem;
     color: #333;
@@ -126,6 +133,11 @@
         height: 16px;
     }
 
+    .bid-section-top .property-card-heart-icon {
+        width: 18px;
+        height: 18px;
+    }
+
     .bid-section-bottom .remaining-time-label {
         font-size: 0.7rem;
     }
@@ -139,6 +151,11 @@
     .bid-section-top .property-card-location-icon {
         width: 16px;
         height: 16px;
+    }
+
+    .bid-section-top .property-card-heart-icon {
+        width: 18px;
+        height: 18px;
     }
 
     .bid-section-bottom .remaining-time-label {

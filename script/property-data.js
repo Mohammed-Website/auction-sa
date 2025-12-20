@@ -776,8 +776,11 @@
                 // Add click handler for auction cards
                 if (renderFunction === 'renderAuctionCard' && cardElement.classList.contains('auction-card-home-page')) {
                     cardElement.addEventListener('click', function (e) {
-                        // Don't trigger if clicking on buttons or interactive elements
-                        if (e.target.closest('button') || e.target.closest('.property-cta-btn-home-page')) {
+                        // Don't trigger if clicking on buttons, heart icon, or interactive elements
+                        if (e.target.closest('button') ||
+                            e.target.closest('.property-cta-btn-home-page') ||
+                            e.target.closest('.property-card-heart-icon') ||
+                            e.target.classList.contains('property-card-heart-icon')) {
                             return;
                         }
 
@@ -823,7 +826,16 @@
         if (typeof lucide !== 'undefined') {
             setTimeout(() => {
                 lucide.createIcons();
+                // Initialize heart icon click handlers after icons are created and DOM is ready
+                requestAnimationFrame(() => {
+                    initializeHeartIcons(gridElement);
+                });
             }, 100);
+        } else {
+            // If Lucide is not available, still initialize heart icons after DOM is ready
+            requestAnimationFrame(() => {
+                initializeHeartIcons(gridElement);
+            });
         }
 
         // Initialize countdown timers for auction cards
@@ -1143,6 +1155,52 @@
             } else {
                 indicator.classList.remove('active');
             }
+        });
+    }
+
+    /**
+     * Initialize heart icon click handlers
+     * Makes heart icons clickable and toggles favorited state with animation
+     * @param {HTMLElement} gridElement - The grid/container element
+     */
+    function initializeHeartIcons(gridElement) {
+        // Ensure DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initializeHeartIcons(gridElement);
+            });
+            return;
+        }
+
+        if (!gridElement) return;
+
+        const heartIcons = gridElement.querySelectorAll('.property-card-heart-icon');
+
+        heartIcons.forEach(heartIcon => {
+            // Skip if already has a click handler attached
+            if (heartIcon.hasAttribute('data-heart-handler-attached')) {
+                return;
+            }
+
+            heartIcon.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent card click event
+                e.preventDefault(); // Prevent any default behavior
+
+                const isFavorited = heartIcon.classList.contains('favorited');
+
+                if (isFavorited) {
+                    // Remove favorited state (turn back to white)
+                    heartIcon.classList.remove('favorited');
+                    console.log('removed favorited state');
+                } else {
+                    // Add favorited state (turn red) and trigger animation
+                    heartIcon.classList.add('favorited');
+                    console.log('removed favorited state');
+                }
+            });
+
+            // Mark as having handler attached
+            heartIcon.setAttribute('data-heart-handler-attached', 'true');
         });
     }
 
