@@ -22,4 +22,13 @@
 .account-tabs-wrapper {
     width: 95%;
     align-self: center;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.account-tabs-wrapper>* {
+    grid-column: 1;
+    grid-row: 1;
 }

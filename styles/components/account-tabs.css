@@ -23,7 +23,10 @@
     opacity: 0;
     transform: translateX(20px);
     pointer-events: none;
-    transition: opacity var(--transition-base), transform var(--transition-base), height var(--transition-base), margin-bottom var(--transition-base);
+    height: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden;
+    transition: opacity var(--transition-base), transform var(--transition-base), height 0s, margin-bottom 0s;
 }
 
 /* Unified Back Button Styling - Used by all back buttons */
@@ -158,6 +161,24 @@
     transition: color var(--transition-base);
     flex: 1;
     text-align: right;
+}
+
+/* Account Tab Content - overlapped with account-tabs using grid */
+.account-tab-content {
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    visibility: hidden;
+    transition: opacity var(--transition-base), visibility 0s var(--transition-base);
+}
+
+/* When account-tabs is hidden, account-tab-content becomes visible */
+.account-tabs.hidden~.account-tab-content {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+    visibility: visible;
+    transition: opacity var(--transition-base), visibility 0s;
 }
 
 .tab-view {
