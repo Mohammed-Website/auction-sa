@@ -15,6 +15,19 @@
     min-height: 100vh;
 }
 
+/* Gradient that starts from header and extends to middle of actions */
+.help-center-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 400px;
+    background: linear-gradient(180deg, #1a465e 0%, #4a9ba8 50%, #e8f4f8 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
 /* Ensure help center header is fixed at the top */
 #help-center-header {
     position: fixed !important;
@@ -25,24 +38,22 @@
     display: flex !important;
 }
 
+/* Help center back button icon - white color */
+#help-center-header .account-tabs-title {
+    color: #ffffff !important;
+}
+
+#help-center-back-btn .back-icon {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
 .help-center-content-wrapper {
     padding: var(--spacing-lg) var(--spacing-sm);
     max-width: 100%;
     margin: 0 auto;
     position: relative;
-}
-
-/* Single seamless gradient that spans from greeting to middle of actions */
-.help-center-content-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: calc(-1 * var(--spacing-sm));
-    right: calc(-1 * var(--spacing-sm));
-    height: 350px;
-    background: linear-gradient(180deg, #2d5f7a 0%, #4a9ba8 50%, #e8f4f8 100%);
-    z-index: 0;
-    pointer-events: none;
+    z-index: 1;
 }
 
 /* Greeting Section */
