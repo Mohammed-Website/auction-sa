@@ -28,7 +28,8 @@
         MENU: 'menu',              // The main menu with all options
         ACCOUNT_INFO: 'account-info',  // Account information tabs
         SETTINGS: 'settings',       // Settings page
-        FAVORITES: 'favorites'    // Favorites page
+        FAVORITES: 'favorites',    // Favorites page
+        POLICY_TERMS: 'policy-terms'  // Policy Terms / Privacy Policy page
     };
 
     // ============================================================================
@@ -80,6 +81,26 @@
                     }, 100);
                 }
             }
+        },
+        [ProfileRoutes.POLICY_TERMS]: {
+            headerId: 'policy-terms-header',
+            viewId: 'policy-terms-view',
+            hash: '#/profile/policy-terms',
+            historyDelay: 400,
+            init: () => {
+                if (typeof window.PolicyTermsPage !== 'undefined') {
+                    // Check if we need to render content based on last action
+                    const lastAction = window.PolicyTermsPage.getLastContentType ? window.PolicyTermsPage.getLastContentType() : 'terms';
+                    if (typeof window.PolicyTermsPage.renderPolicyTermsView === 'function') {
+                        window.PolicyTermsPage.renderPolicyTermsView(lastAction);
+                    }
+                    if (typeof window.PolicyTermsPage.init === 'function') {
+                        setTimeout(() => {
+                            window.PolicyTermsPage.init();
+                        }, 100);
+                    }
+                }
+            }
         }
         // Future pages (start-auction, add-property, manage-properties) can be added here
     };
@@ -111,7 +132,7 @@
             }
         });
 
-        // Hide settings and favorites headers if not kept
+        // Hide settings, favorites, and policy-terms headers if not kept
         const settingsHeader = document.getElementById('settings-header');
         if (settingsHeader && !keepSet.has(settingsHeader.id)) {
             settingsHeader.style.display = 'none';
@@ -120,17 +141,25 @@
         if (favoritesHeader && !keepSet.has(favoritesHeader.id)) {
             favoritesHeader.style.display = 'none';
         }
+        const policyTermsHeader = document.getElementById('policy-terms-header');
+        if (policyTermsHeader && !keepSet.has(policyTermsHeader.id)) {
+            policyTermsHeader.style.display = 'none';
+        }
     }
 
     function hideSecondaryViews(exceptViewId) {
         const settingsView = document.getElementById('profile-settings-view');
         const favoritesView = document.getElementById('profile-favorites-view');
+        const policyTermsView = document.getElementById('policy-terms-view');
 
         if (settingsView && settingsView.id !== exceptViewId) {
             settingsView.classList.remove('active');
         }
         if (favoritesView && favoritesView.id !== exceptViewId) {
             favoritesView.classList.remove('active');
+        }
+        if (policyTermsView && policyTermsView.id !== exceptViewId) {
+            policyTermsView.classList.remove('active');
         }
     }
 
@@ -563,10 +592,20 @@
                 // TODO: Navigate to statements page
                 break;
             case 'terms':
-                // TODO: Show terms and conditions
+                // Show terms and conditions
+                if (typeof window.PolicyTermsPage !== 'undefined' && typeof window.PolicyTermsPage.showTermsAndConditions === 'function') {
+                    window.PolicyTermsPage.showTermsAndConditions();
+                }
+                navigateActionToRoute(ProfileRoutes.POLICY_TERMS);
+                // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
             case 'privacy':
-                // TODO: Show privacy policy
+                // Show privacy policy
+                if (typeof window.PolicyTermsPage !== 'undefined' && typeof window.PolicyTermsPage.showPrivacyPolicy === 'function') {
+                    window.PolicyTermsPage.showPrivacyPolicy();
+                }
+                navigateActionToRoute(ProfileRoutes.POLICY_TERMS);
+                // Scroll is handled in showSingleProfilePage for immediate, invisible scroll
                 break;
             case 'help':
                 // TODO: Show help page
@@ -741,6 +780,15 @@
             });
         }
 
+        // ROUTE 4: Navigate to Policy Terms page (single-page helper)
+        else if (route === ProfileRoutes.POLICY_TERMS && profileSinglePages[ProfileRoutes.POLICY_TERMS]) {
+            showSingleProfilePage(ProfileRoutes.POLICY_TERMS, profileSinglePages[ProfileRoutes.POLICY_TERMS], {
+                menuView,
+                accountInfoView,
+                profileSection
+            });
+        }
+
         // ROUTE 4: Navigate back to Menu
         else if (route === ProfileRoutes.MENU) {
             // Show the profile page title
@@ -752,6 +800,8 @@
             // Hide all headers (none should be visible on the menu)
             hideAllHeaders();
 
+
+            
             // Hide all other views
             const settingsView = document.getElementById('profile-settings-view');
             if (settingsView) {
@@ -761,6 +811,14 @@
             if (favoritesView) {
                 favoritesView.classList.remove('active');
             }
+            const termsAndConditionsView = document.getElementById('policy-terms-view');
+            if (termsAndConditionsView) {
+                termsAndConditionsView.classList.remove('active');
+            }
+
+
+
+
             accountInfoView.classList.remove('active');
 
             // Show the menu view
@@ -870,6 +928,8 @@
                 navigateToProfileRoute(ProfileRoutes.SETTINGS);
             } else if (hash === '#/profile/favorites') {
                 navigateToProfileRoute(ProfileRoutes.FAVORITES);
+            } else if (hash === '#/profile/policy-terms') {
+                navigateToProfileRoute(ProfileRoutes.POLICY_TERMS);
             }
         });
 
@@ -894,16 +954,19 @@
                 navigateToProfileRoute(ProfileRoutes.SETTINGS);
             } else if (hash === '#/profile/favorites') {
                 navigateToProfileRoute(ProfileRoutes.FAVORITES);
+            } else if (hash === '#/profile/policy-terms') {
+                navigateToProfileRoute(ProfileRoutes.POLICY_TERMS);
             }
         });
 
         // Handle Android back button (for mobile apps)
         if (typeof document.addEventListener !== 'undefined') {
             document.addEventListener('backbutton', function (event) {
-                // If we're on account-info, settings, or favorites, go back to menu
+                // If we're on account-info, settings, favorites, or policy-terms, go back to menu
                 if (currentProfileRoute === ProfileRoutes.ACCOUNT_INFO ||
                     currentProfileRoute === ProfileRoutes.SETTINGS ||
-                    currentProfileRoute === ProfileRoutes.FAVORITES) {
+                    currentProfileRoute === ProfileRoutes.FAVORITES ||
+                    currentProfileRoute === ProfileRoutes.POLICY_TERMS) {
                     // Go back to menu
                     navigateToProfileRoute(ProfileRoutes.MENU);
                     if (event && event.preventDefault) {

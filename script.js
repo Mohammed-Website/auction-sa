@@ -63,7 +63,7 @@
             'script/user-actions-section.js',      // My actions section
             'script/user-fav.js',
             'script/website-scroll-control.js',
-
+            'script/policy-terms.js',             // Policy terms page (includes terms and privacy content)
             'script/user-settings.js'            // User settings
         ];
 
