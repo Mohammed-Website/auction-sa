@@ -134,10 +134,14 @@
 }
 
 .info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: var(--font-size-base, 1rem);
     color: var(--text-primary, #333);
     text-align: right;
 }
+
 
 /* Buttons */
 .auction-property-main-page-detail-buttons {
