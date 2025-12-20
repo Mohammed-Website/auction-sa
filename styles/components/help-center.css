@@ -11,8 +11,7 @@
     padding-top: 45px;
     box-sizing: border-box;
     position: relative;
-    background: #f8f9fa;
-    /* Light off-white background */
+    background: transparent;
     min-height: 100vh;
 }
 
@@ -24,23 +23,35 @@
     right: 0 !important;
     z-index: 1000 !important;
     display: flex !important;
-    background: var(--bg-white);
 }
 
 .help-center-content-wrapper {
     padding: var(--spacing-lg) var(--spacing-sm);
     max-width: 100%;
     margin: 0 auto;
-    background: #f8f9fa;
-    /* Light off-white background */
+    position: relative;
+}
+
+/* Single seamless gradient that spans from greeting to middle of actions */
+.help-center-content-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(-1 * var(--spacing-sm));
+    right: calc(-1 * var(--spacing-sm));
+    height: 350px;
+    background: linear-gradient(180deg, #2d5f7a 0%, #4a9ba8 50%, #e8f4f8 100%);
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* Greeting Section */
 .help-center-greeting {
     text-align: right;
     padding: var(--spacing-lg) var(--spacing-md);
-    background: var(--primary-color);
     margin: 0 calc(-1 * var(--spacing-sm)) var(--spacing-xl);
+    position: relative;
+    z-index: 1;
 }
 
 .greeting-title {
@@ -65,7 +76,12 @@
     flex-direction: column;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-2xl);
+    position: relative;
+    z-index: 1;
 }
+
+/* Remove separate gradient from actions - now handled by greeting::after */
+
 
 /* Individual Help Action Card */
 .help-action-card {
